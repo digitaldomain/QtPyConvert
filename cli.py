@@ -3,9 +3,18 @@
 import re
 from dd.runtime import api
 api.load("qt_py")
-from Qt import QtGui, QtWidgets, QtCore
+from Qt import QtGui, QtWidgets, QtCore, _common_members
+
 
 def find_things(lines):
+    """
+    find_things will look for any uses of QtGui or QtCore as well as any uses of "from [PySide|PyQt4] import .*"
+    It stores these and returns them as a list of tuples. module, function and line index.
+
+    :param list lines: List of lines of the file that we are reading.
+    :return: List of matches that it found in the file. These are in the form of (module, function, line index)
+    :rtype: list[tuple]
+    """
     capture_groups = []
     for index, line in enumerate(lines):
         match = re.search(r"(QtGui|QtCore)\.(\w+)", line)
@@ -20,7 +29,19 @@ def find_things(lines):
             capture_groups.append((mod, imports_, index))
     return capture_groups
 
+
 def test_things(things):
+    """
+    test_things will filter the matched modules to any QtGui and QtCore modules and replace them with the help of Qt.py.
+
+     # TODO: This should be broken out and optimized. Currently it checks QtGui before QtWidgets. \
+         It should use _common_members.
+
+    :param list[tuple] things: List of matches that it found in the file.
+        These are in the form of (module, function, line index)
+    :return: List of tuples. (Original module, correct module, function, line_index)
+    :rtype: list[tuple]
+    """
     bad = []
     for mod, func, line_index in things:
         if mod in ["PySide", "PyQt4"]:
@@ -62,6 +83,14 @@ def test_things(things):
 
 
 def fix(results, fp, text_lines):
+    """
+    fix takes a list of tuples from "test_things", a string filepath to the file, and a list of text lines of that file.
+    It will use the data gathered in "test_things" to replace specific lines with their correct re-implementations.
+
+    :param list[tuples] results: List of tuples. (Original module, correct module, function, line_index)
+    :param str fp: Path to the file that we want to write to.
+    :param list[str] text_lines: List of strings that are the lines of the file that was loaded.
+    """
     import_index = -1
     required_mods = []
     for orig, good, func, line_index in results:
@@ -81,6 +110,12 @@ def fix(results, fp, text_lines):
 
 
 def do(path):
+    """
+    do is the main entrypoint/driver for the qt_py_convert tool. It takes a path which will be read from and written to.
+    It should my a single python file.
+
+    :param str path: File path that we will convert.
+    """
     with open(path, "rb") as fh:
         data = fh.readlines()
     results = test_things(find_things(data))
@@ -104,5 +139,4 @@ if __name__ == "__main__":
         print("--" * 30)
         print("")
 
-# TODO: Better imports when I replace. Currently is it <old> + <new>
 # TODO: Make this poor POS code better, docstrings, function names, general sensibility, etc
