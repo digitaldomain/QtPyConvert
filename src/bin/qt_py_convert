@@ -1,8 +1,9 @@
 #!/tools/bin/python2.7
 
 import re
-from dd.runtime import api
-api.load("qt_py")
+
+import dd.runtime.api
+dd.runtime.api.load("qt_py")
 from Qt import QtGui, QtWidgets, QtCore, _common_members
 
 
