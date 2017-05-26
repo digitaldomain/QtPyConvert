@@ -1,0 +1,7 @@
+private
+
+*~
+*.pyc
+
+pylint*.out
+.idea*
