@@ -1,3 +1,4 @@
+# No shebang line. This module is meant to be imported
 """
 Example of the coroutine co-routine pattern. Run like::
 
@@ -18,10 +19,18 @@ Example of the coroutine co-routine pattern. Run like::
 """
 
 
-def no_op_example_coroutine():
+def example_coroutine():
+    """ Return the first 25 characters of each line """
     # Initialize all state and send() arguments
     line_num = ""
     line = ""
     while True:
         line_num, line = yield line_num, line
+
+        # Do work with provided values...
+        #   - The while loop will return results after this iteration is complete
+        #   - 'continue' can be used continue as well
+        line = line[:25]
+
+        # TODO: Dry-run usage
 
