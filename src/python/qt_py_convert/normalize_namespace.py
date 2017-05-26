@@ -19,12 +19,49 @@ def do(path, dry_run=True):
     with open(path, "rb") as fh:
         lines = fh.readlines()
 
-    lines_data = strip_comments(lines)
-    for line_num, line_text in lines_data:
-        print line_num, "|", line_text
+    no_op_example = no_op_example_coroutine()
+    next(no_op_example)
+
+    for line_num, line in enumerate(lines):
+
+        line_num, text = no_op_example.send((line_num, line))
+        print line_num, "|",text
+
+        # comments_handler = comments_handler_coroutine()
+
+        # line_num, code_text, comment_text = handle_comments(lines)
+        # print line_num, "|", code_text, " -- comment text:", comment_text
+
+def do(path, dry_run=True):
+    """
+    do is the main entry point/driver for this module of the qt_py_convert tool.
+
+    :param str path:
+        File path to process
+    :param bool dry_run:
+        If True, print action instead of taking action (nothing is done)
+    """
+    with open(path, "rb") as fh:
+        lines = fh.readlines()
+
+    no_op_example = no_op_example_coroutine()
+    next(no_op_example)
+
+    for line_num, line in enumerate(lines):
+
+        line_num, text = no_op_example.send((line_num, line))
+        print line_num, "|",text
+
+def no_op_example_coroutine():
+    line_num = line = ""
+    while True:
+        line_num, line = yield line_num, line
 
 
-def strip_comments(lines):
+def comments_handler_coroutine(lines):
+    """
+
+    """
     continue_comment = False
     result_lines = []
     for line_num, line_text in enumerate(lines):
