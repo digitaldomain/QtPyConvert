@@ -13,3 +13,10 @@ The ``qt_py_convert`` package
 This project maintains a [CHANGELOG](CHANGELOG.md).
 
 Developers should read [CONTRIBUTING](CONTRIBUTING.md) to get started.
+
+
+Some Simple Goals
+-----------------
+1. Use simple python flow control over complex regular expressions unless readability or performance suffers (usually it is the opposite). This should create easier to maintainable code. 
+2. Use generators with a clear single responsibility where ever possible. These are like plugins which handle a specific conversion and but can still have state survive to the next line. This will aid in collaboration and make test-driven development easier.
+3. Use a global dry-run state to, when True, skip editing and display printed reports instead.
