@@ -1,5 +1,6 @@
+# No shebang line. This module is meant to be imported
 """
-DO NOT CHANGE THIS CODE! Tests will use specific lines to assert results
+Tests will use specific lines to assert results so if changing this, run and update all tests.
 Module with a mix of namespaces and code and comment mentions (including a css snippit.
 
 Mentioning a QWidget and QtCore.QRect here in the module comment too. These should be ignored when
@@ -50,11 +51,11 @@ class AutoExpandingPlainTextEdit(QtGui.QPlainTextEdit):
         self.updateGeometry()
 
 
-class Color(QtGui.QWidget):
+class ColorPicker(QtGui.QWidget):
     """Base class for limited-length float/color vectors."""
 
     def __init__(self, r=0, b=0, g=0, a=1, parent=None):
-        super(Color, self).__init__(parent)
+        super(ColorPicker, self).__init__(parent)
 
         self.values = [r, g, b, a]
 
@@ -73,15 +74,14 @@ class Color(QtGui.QWidget):
         # Takes rgb and rgba as floats (0-1) and the name is a hex.
         color = QColor()
         color.setRgbF(*self.values)
-        self.color_button.setStyleSheet(
-            "QPushButton {"
-            "   padding: 1px 1px 2px 1px;"  # top right bottom left
-            "   border-radius: 2px;"
-            "   background-color: rgba(%s, %s, %s, %s);"
-            "}" % (
-                color.red(), color.green(), color.blue(), color.alpha()
-            )
-        )
+        style = """  # A pretty complex example here. Treat as string, not doc
+            QPushButton {"
+               padding: 1px 1px 2px 1px;  # top right bottom left
+               border-radius: 2px;
+               background-color: rgba(%s, %s, %s, %s);
+            }
+        """ % (color.red(), color.green(), color.blue(), color.alpha())
+        self.color_button.setStyleSheet(style)
 
     def pickColor(self):
         """Show a gui to interactively pick a color."""

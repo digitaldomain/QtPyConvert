@@ -1,13 +1,15 @@
 #!/usr/bin/env python
-import os, sys
+import os
+import sys
 import unittest
 
 from qt_py_convert import coroutines
 
-TEST_CODE_REL_PATH = "sources/normalize_namespaces_test_code.py"
+
+TEST_CODE_REL_PATH = "sources/test_code.py"
 
 
-class TestNoOpExample(unittest.TestCase):
+class TestCoroutinesExample(unittest.TestCase):
 
     def setUp(self):
         source_path = os.path.abspath(TEST_CODE_REL_PATH)
@@ -22,12 +24,9 @@ class TestNoOpExample(unittest.TestCase):
         next(no_op_example)  # Start the coroutine to prime it to the first yield
 
         for line_num, line in enumerate(self.lines):
-            # Remove new line character
-            line = line.strip("\n")
-
             # Prove this line is longer than 25 before passing to the coroutine
             if line_num == 2:
-                self.assertEquals(len(line), 72)
+                self.assertEquals(len(line), 95)
 
             line_num, text = no_op_example.send((line_num, line))
 
