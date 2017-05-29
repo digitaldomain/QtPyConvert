@@ -10,7 +10,6 @@ dd.runtime.api.load("qt_py")
 from Qt import _common_members
 
 
-# TODO: Add test module
 def process_file(path, dry_run=True):
     """
     do is the main entry point/driver for this module of the qt_py_convert tool.
