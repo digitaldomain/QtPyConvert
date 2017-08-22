@@ -18,3 +18,11 @@ src/wrappers/context/.svn/
 
 .idea/*
 *.pyc
+private
+
+*~
+*.pyc
+
+pylint*.out
+.idea*
+
