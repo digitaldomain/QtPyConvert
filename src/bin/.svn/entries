@@ -1,0 +1,28 @@
+10
+
+dir
+0
+http://svnmaster/svn/software/packages/qt_py_convert/trunk/src/bin
+http://svnmaster/svn/software
+add
+
+
+
+
+
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+1d3d7e0d-05aa-4e72-b17e-a8dcb1fe7950
+
