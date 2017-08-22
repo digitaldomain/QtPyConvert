@@ -7,23 +7,36 @@ from qt_py_convert.run import process_file, process_folder
 
 def parse():
     parser = argparse.ArgumentParser(
-        "QT.py - convert"
+        "qt_py_convert"
     )
 
     parser.add_argument(
         "file_or_directory",
         help="Pass an explicit file or a directory to run"
     )
+    parser.add_argument(
+        "-r", "--recursive",
+        default=True,
+        help="Recursively search for python files to convert. "
+             "Only applicable when passing a directory",
+    )
+    parser.add_argument(
+        "-w", "--write",
+        default=False,
+        help="Overwrite the file in place",
+    )
     return parser.parse_args()
 
 
-def main(path):
+def main(path, recursive=True, write=False):
+    print("Processing %s" % path)
     if os.path.isdir(path):
-        process_folder(path)
+        print()
+        process_folder(path, recursive=recursive, write=write, fast_exit=True)
     else:
-        process_file(path)
+        process_file(path, write=write, fast_exit=True)
 
 
 if __name__ == "__main__":
     args = parse()
-    main(args.file_or_directory)
+    main(args.file_or_directory, args.recursive, args.write)

@@ -13,7 +13,7 @@ Schema: '1.0'
 # established conventions defined for the facility concerning software
 # versioning.
 Name: qt_py_convert
-Version: '0.1.2'
+Version: '0.1.3'
 
 # The type of installation that will be performed for this software.
 # This information MUST be provided.
@@ -49,4 +49,9 @@ Description: >
 # Maintainers SHOULD carefuly design requirements according the actual
 # software needs.  It is usually accepted that tight ranges are more 
 # limiting and may resolve in unexpected behavior.
-#Requires:
+Requires:
+    - rply
+    - redbaron
+    - baron
+    - appdirs
+    - qt_py
