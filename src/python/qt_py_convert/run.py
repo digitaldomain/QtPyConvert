@@ -3,8 +3,8 @@ from pprint import pprint
 import re
 
 
-import Qt
-import redbaron
+from qt_py_convert.external import Qt
+from qt_py_convert.external import redbaron
 
 from qt_py_convert._modules import from_imports
 from qt_py_convert._modules import imports

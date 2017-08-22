@@ -1,4 +1,4 @@
-from _modules.general import _color, AliasDict
+from qt_py_convert.general import _color, AliasDict
 
 
 class Processes(object):

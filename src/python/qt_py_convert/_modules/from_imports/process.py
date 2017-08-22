@@ -1,5 +1,5 @@
-from _modules.expand_stars import process as stars_process
-from _modules.general import __supported_bindings__, _color, AliasDict
+from qt_py_convert._modules.expand_stars import process as stars_process
+from qt_py_convert.general import __supported_bindings__, _color, AliasDict
 
 
 class Processes(object):
