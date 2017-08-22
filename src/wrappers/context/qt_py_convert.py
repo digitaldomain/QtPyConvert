@@ -21,7 +21,8 @@ class Qt_py_convert(dd.runtime.api.Context):
 
         # If the package contains python code, uncomment this to register
         # the package on the python-path, otherwise remove this line.
-        #self.environ["PYTHONPATH"] = self.expandPaths("$QT_PY_CONVERT_PACKAGE_ROOT/python:$PYTHONPATH")
+        self.environ["PYTHONPATH"] = self.expandPaths("$QT_PY_CONVERT_PACKAGE_ROOT/python:$PYTHONPATH")
+        self.environ["PATH"] = self.expandPaths("$QT_PY_CONVERT_PACKAGE_ROOT/bin:$PATH")
 
         # If the distribution will contain man-pages, uncomment the
         # following line, otherwise, remove it.

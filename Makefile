@@ -8,7 +8,7 @@ USE_MAKEFILE_VERSION = 3
  
 # List of wrapper scripts to install when invoking the target `wrapper'.
 # By default, all files under $PACKAGE_ROOT/wrappers will be installed.
-#WRAPPERS += wrappers/myTool1
+#WRAPPERS += src/wrappers/qt_py_convert
  
 # List of platform names to install distributions and wrappers on.
 # By default, installation will always be performed for the current platform.
