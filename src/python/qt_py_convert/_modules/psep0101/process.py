@@ -78,8 +78,15 @@ class Processes(object):
 
     @staticmethod
     def _process_qsignal(red, objects):
-        # self.connect( <X>, QtCore.SIGNAL('<Y>'), <Z>)
-        # <X>.<Y>.connect(<Z>)
+        # Turns:
+        #   self.connect( <X>, QtCore.SIGNAL('<Y>'), <Z>)
+        # to:
+        #   <X>.<Y>.connect(<Z>)
+        # ------
+        # Also turns:
+        #   self.emit(QtCore.SIGNAL('<function>(<args>)')
+        # to:
+        #   self.<function>.emit(<args>)
         SIGNAL_RE = re.compile(
             r"(?:self\.)?connect\((?:\s+)?(?P<X>.*?),(?:\s+)?QtCore\.SIGNAL\((?:\s+)?[\'\"](?P<Y>.*?)\(\)[\'\"](?:\s+)?\),(?:\s+)?(?P<Z>.*?)(?:\s+)?\)"
         )
