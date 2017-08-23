@@ -37,6 +37,21 @@ def _cleanup_imports(red, aliases, mappings):
                         for member in members:
                             names.append(mappings[member].split(".")[0])
 
+                    if not names:
+                        print(
+                            "%s: %s" % (
+                                _color(31, "WARNING"),
+                                _color(32, "We have found no usages of Qt in "
+                                           "this script despite you previously"
+                                           " having imported the binding.\nIf "
+                                           "you think this is in error, "
+                                           "please let us know and submit an "
+                                           "issue ticket with the example you "
+                                           "think is wrong.")
+                            )
+                        )
+                        child.parent.remove(child)
+                        continue
                     # What we want to replace to.
                     replace_text = "from Qt import {key}".format(
                         key=", ".join(names)
@@ -302,4 +317,4 @@ if __name__ == "__main__":
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/assetbrowser/trunk/src", recursive=True, write=True)
     # folder = os.path.abspath("../../../../tests/sources")
     # process_folder(folder, recursive=True, write=True)
-    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/atomic/trunk/src/python/atomic/Atomic/ImportExport.py", write=True, fast_exit=False)
+    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/atomic/trunk/src/python/atomic/Atomic/scenevalidation/validateFrameRange.py", write=True, fast_exit=False)
