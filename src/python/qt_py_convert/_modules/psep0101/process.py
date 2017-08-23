@@ -19,13 +19,18 @@ class Processes(object):
     def _process_qstring(red, objects):
         # Replace each node
         for node in objects:
-           node.parent.replace(
-               re.sub(
-                   r"((?:QtCore\.)?QString)",
-                   six.text_type.__name__,
-                   node.parent.dumps()
-               )
-           )
+            raw = node.parent.dumps()
+            changed = re.sub(
+                r"((?:QtCore\.)?QString)",
+                six.text_type.__name__,
+                raw
+            )
+            if changed != raw:
+                psep_handler(
+                    "Replacing \"%s\" with \"%s\""
+                    % (_color(32, raw), _color(34, changed))
+                )
+                node.parent.replace(changed)
 
         # Search tree for usages of a QString method. (Good luck with that)
         pass
@@ -35,14 +40,18 @@ class Processes(object):
         # TODO: find different usage cases of QStringList. Probably just need support for construction and isinstance.
         # Replace each node
         for node in objects:
-           node.parent.replace(
-               re.sub(
-                   r"((?:QtCore\.)?QString)",
-                   "list",
-                   node.parent.dumps()
-               )
-           )
-
+            raw = node.parent.dumps()
+            changed = re.sub(
+                r"((?:QtCore\.)?QString)",
+                "list",
+                raw
+            )
+            if changed != raw:
+                psep_handler(
+                    "Replacing \"%s\" with \"%s\""
+                    % (_color(32, raw), _color(34, changed))
+                )
+                node.parent.replace(changed)
         # Search tree for usages of a QStringList method. (Good luck with that)
         pass
 
@@ -50,13 +59,19 @@ class Processes(object):
     def _process_qchar(red, objects):
         # Replace each node
         for node in objects:
-           node.parent.replace(
-               re.sub(
-                   r"((?:QtCore\.)?QChar)",
-                   six.text_type.__name__,
-                   node.parent.dumps()
-               )
-           )
+            raw = node.parent.dumps()
+            changed = re.sub(
+                r"((?:QtCore\.)?QChar)",
+                six.text_type.__name__,
+                raw
+            )
+            if changed != raw:
+                psep_handler(
+                    "Replacing \"%s\" with \"%s\""
+                    % (_color(32, raw), _color(34, changed))
+                )
+                node.parent.replace(changed)
+
 
         # Search tree for usages of a QChar method. (Good luck with that)
         pass
@@ -99,13 +114,18 @@ class Processes(object):
     def _process_qstringref(red, objects):
         # Replace each node
         for node in objects:
-           node.parent.replace(
-               re.sub(
-                   r"((?:QtCore\.)?QStringRef)",
-                   six.text_type.__name__,
-                   node.parent.dumps()
-               )
-           )
+            raw = node.parent.dumps()
+            changed = re.sub(
+                r"((?:QtCore\.)?QStringRef)",
+                six.text_type.__name__,
+                raw
+            )
+            if changed != raw:
+                psep_handler(
+                    "Replacing \"%s\" with \"%s\""
+                    % (_color(32, raw), _color(34, changed))
+                )
+                node.parent.replace(changed)
 
         # Search tree for usages of a QStringRef method. (Good luck with that)
         pass
