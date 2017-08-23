@@ -65,12 +65,18 @@ def mark_indentation_generator(sequence):
         if current[0] in ("COLON", "COMMENT") and iterator.show_next(1)[0] == "ENDL":
             # if we aren't in "if stuff:\n\n"
             if iterator.show_next(2)[0] not in ("ENDL",):
+                ADD_INDENT = False
                 space = get_space(iterator.show_next())
-                if space is not None:
+                if space is not None and (not indentations or (
+                    indentations[-1] < space
+                )):
+                    ADD_INDENT = True
+
+                if ADD_INDENT:
                     indentations.append(space)
                 yield current
                 yield next(iterator)
-                if space is not None:
+                if ADD_INDENT:
                     yield ('INDENT', '')
                 continue
             else:  # else, skip all "\n"
