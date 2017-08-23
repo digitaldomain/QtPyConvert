@@ -1,6 +1,7 @@
 import os
 from pprint import pprint
 import re
+import traceback
 
 
 from qt_py_convert.external import Qt
@@ -238,6 +239,7 @@ def run(text, fast_exit=False):
         red = redbaron.RedBaron(text)
     except Exception as err:
         print(str(err))
+        traceback.print_exc()
         return AliasDict, {}, text
 
     from_a, from_m = from_imports.process(red)
@@ -317,4 +319,4 @@ if __name__ == "__main__":
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/assetbrowser/trunk/src", recursive=True, write=True)
     # folder = os.path.abspath("../../../../tests/sources")
     # process_folder(folder, recursive=True, write=True)
-    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/atomic/trunk/src/python/atomic/Atomic/scenevalidation/validateFrameRange.py", write=True, fast_exit=False)
+    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/atomic/trunk/src/python/atomic/Atomic/LayerBuilder.py", write=True, fast_exit=False)
