@@ -67,6 +67,14 @@ def mark_indentation_generator(sequence):
             if iterator.show_next(2)[0] not in ("ENDL",):
                 ADD_INDENT = False
                 space = get_space(iterator.show_next())
+
+                # We will add an INDENT if the following conditions are hit:
+                #     There is indent
+                # AND
+                #   EITHER:
+                #     We are not currently indented at all
+                #   OR
+                #     The latest indent is less than the one we will add.
                 if space is not None and (not indentations or (
                     indentations[-1] < space
                 )):
