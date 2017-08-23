@@ -5,6 +5,14 @@ import re
 
 import six
 
+from qt_py_convert.general import _color
+
+
+def psep_handler(msg):
+    print(
+        "[%s] %s" % (_color(35, "psep0101"), msg)
+    )
+
 
 class Processes(object):
     @staticmethod
@@ -60,11 +68,32 @@ class Processes(object):
         SIGNAL_RE = re.compile(
             r"(?:self\.)?connect\((?:\s+)?(?P<X>.*?),(?:\s+)?QtCore\.SIGNAL\((?:\s+)?[\'\"](?P<Y>.*?)\(\)[\'\"](?:\s+)?\),(?:\s+)?(?P<Z>.*?)(?:\s+)?\)"
         )
+        SIGNAL_EMIT_RE = re.compile(
+            r"(?:(?P<owner>\w+)\.)?emit\((?:\s+)?(?:QtCore\.)?SIGNAL\((?:\s+)?[\"\'](?P<function>\w+)\((?P<args>.*?)\)[\"\'](?:\s+)?\)(?:\s+)?\)"
+        )
         for node in objects:
             raw = node.parent.dumps()
-            new_node = SIGNAL_RE.sub(r"\g<X>.\g<Y>.connect(\g<Z>)", raw)
-            if new_node != raw:
-                node.parent.replace(new_node)
+            connect = SIGNAL_RE.sub(
+                r"\g<X>.\g<Y>.connect(\g<Z>)",
+                raw
+            )
+            emit = SIGNAL_EMIT_RE.sub(
+                r"\g<owner>.\g<function>.emit(\g<args>)",
+                raw
+            )
+            if connect != raw:
+                psep_handler(
+                    "Replacing \"%s\" with \"%s\""
+                    % (_color(32, raw), _color(34, connect))
+                )
+                node.parent.replace(connect)
+            elif emit != raw:
+                psep_handler(
+                    "Replacing \"%s\" with \"%s\""
+                    % (_color(32, raw), _color(34, emit))
+                )
+                node.parent.replace(emit)
+
 
     @staticmethod
     def _process_qstringref(red, objects):
