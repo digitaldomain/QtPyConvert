@@ -32,9 +32,9 @@ def main(path, recursive=True, write=False):
     print("Processing %s" % path)
     if os.path.isdir(path):
         print()
-        process_folder(path, recursive=recursive, write=write, fast_exit=True)
+        process_folder(path, recursive=recursive, write=write)
     else:
-        process_file(path, write=write, fast_exit=True)
+        process_file(path, write=write)
 
 
 if __name__ == "__main__":
