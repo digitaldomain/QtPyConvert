@@ -319,4 +319,4 @@ if __name__ == "__main__":
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/assetbrowser/trunk/src", recursive=True, write=True)
     # folder = os.path.abspath("../../../../tests/sources")
     # process_folder(folder, recursive=True, write=True)
-    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/atomic/trunk/src/python/atomic/Atomic/LayerBuilder.py", write=True, fast_exit=False)
+    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/atomic/trunk/src/python/atomic/Atomic/LayerInfoWidget.py", write=True, fast_exit=False)
