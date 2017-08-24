@@ -42,7 +42,7 @@ class Processes(object):
         for node in objects:
             raw = node.parent.dumps()
             changed = re.sub(
-                r"((?:QtCore\.)?QString)",
+                r"((?:QtCore\.)?QStringList)",
                 "list",
                 raw
             )
