@@ -41,7 +41,7 @@ class Processes(object):
             for _from_as_name in node.parent.targets:
                 if _from_as_name.type == "star":
                     # TODO: Make this a flag and make use the expand module.
-                    _, star_mappings = stars_process.process(
+                    _, star_mappings = stars_process(
                         red
                     )
                     mappings.update(star_mappings)

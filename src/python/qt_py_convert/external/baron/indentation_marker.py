@@ -61,40 +61,20 @@ def mark_indentation_generator(sequence):
                 indentations.pop()
 
         # if were are at ":\n" like in "if stuff:\n"
-        # Comments can be at whatever indentation they feel like.
-        if current[0] in ("COLON", "COMMENT") and iterator.show_next(1)[0] == "ENDL":
+        if current[0] == "COLON" and iterator.show_next(1)[0] == "ENDL":
             # if we aren't in "if stuff:\n\n"
             if iterator.show_next(2)[0] not in ("ENDL",):
-                ADD_INDENT = False
-                space = get_space(iterator.show_next())
-
-                # We will add an INDENT if the following conditions are hit:
-                #     There is indent
-                # AND
-                #   EITHER:
-                #     We are not currently indented at all
-                #   OR
-                #     The latest indent is less than the one we will add.
-                if space is not None and (not indentations or (
-                    indentations[-1] < space
-                )):
-                    ADD_INDENT = True
-
-                if ADD_INDENT:
-                    indentations.append(space)
+                indentations.append(get_space(iterator.show_next()))
                 yield current
                 yield next(iterator)
-                if ADD_INDENT:
-                    yield ('INDENT', '')
+                yield ('INDENT', '')
                 continue
             else:  # else, skip all "\n"
                 yield current
                 for i in iterator:
                     if i[0] == 'ENDL' and iterator.show_next()[0] not in ('ENDL',):
-                        space = get_space(i)
-                        if space is not None:
-                            indentations.append(get_space(i))
-                            yield ('INDENT', '')
+                        indentations.append(get_space(i))
+                        yield ('INDENT', '')
                         yield i
                         break
                     yield i
