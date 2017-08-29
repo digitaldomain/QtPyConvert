@@ -26,7 +26,7 @@ def _emit_repl(match_obj):
 
 def process_connect(function_str):
     SIGNAL_RE = re.compile(
-        r"(?P<root>\w+)?\.connect\((?:\s+)?(?P<owner>.*>?),(?:\s+)?(?:QtCore\.)?SIGNAL\((?:\s+)?[\'\"](?P<signal>\w+)\((?P<args>.*?)\)[\'\"](?:\s+)?\),(?:\s+)?(?P<slot>.*?)\)"
+        r"(?P<root>[\w\.]+)?\.connect\((?:\s+)?(?P<owner>.*>?),(?:\s+)?(?:QtCore\.)?SIGNAL\((?:\s+)?[\'\"](?P<signal>\w+)\((?P<args>.*?)\)[\'\"](?:\s+)?\),(?:\s+)?(?P<slot>.*?)\)"
     )
     replacement_str = SIGNAL_RE.sub(
         _connect_repl,
@@ -39,7 +39,7 @@ def process_connect(function_str):
 
 def process_disconnect(function_str):
     SIGNAL_RE = re.compile(
-        r"(?P<root>\w+)?\.disconnect\((?:\s+)?(?P<owner>.*>?),(?:\s+)?(?:QtCore\.)?SIGNAL\((?:\s+)?[\'\"](?P<signal>\w+)\((?P<args>.*?)\)[\'\"](?:\s+)?\),(?:\s+)?(?P<slot>.*?)\)"
+        r"(?P<root>[\w\.]+)?\.disconnect\((?:\s+)?(?P<owner>.*>?),(?:\s+)?(?:QtCore\.)?SIGNAL\((?:\s+)?[\'\"](?P<signal>\w+)\((?P<args>.*?)\)[\'\"](?:\s+)?\),(?:\s+)?(?P<slot>.*?)\)"
     )
 
     # SIGN = re.compile(
@@ -60,7 +60,7 @@ def process_disconnect(function_str):
 
 def process_emit(function_str):
     SIGNAL_RE = re.compile(
-        r"(?P<owner>\w+)?\.emit\((?:\s+)?(?:QtCore\.)?SIGNAL\((?:\s+)?[\"\'](?P<signal>\w+)\((?P<arg_types>.*?)\)[\"\'](?:\s+)?\)(?:\s+)?(?:,(?:\s+)?)?(?P<args>.*?)\)"
+        r"(?P<owner>[\w\.]+)?\.emit\((?:\s+)?(?:QtCore\.)?SIGNAL\((?:\s+)?[\"\'](?P<signal>\w+)\((?P<arg_types>.*?)\)[\"\'](?:\s+)?\)(?:\s+)?(?:,(?:\s+)?)?(?P<args>.*?)\)"
     )
     match = SIGNAL_RE.search(function_str)
     replacement_str = SIGNAL_RE.sub(

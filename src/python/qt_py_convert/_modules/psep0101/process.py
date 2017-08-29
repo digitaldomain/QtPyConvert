@@ -17,12 +17,29 @@ def psep_handler(msg):
 
 class Processes(object):
     @staticmethod
+    def _process_qvariant(red, objects):
+        # Replace each node
+        for node in objects:
+            raw = node.parent.dumps()
+            changed = re.sub(
+                r"((?:QtCore\.)?QVariant\(?P<value>.*?)\)",
+                r"\g<value>",
+                raw
+            )
+            if changed != raw:
+                psep_handler(
+                    "Replaceing \"%s\" with \"%s\""
+                    % (_color(32, raw), _color(34, changed))
+                )
+                node.parent.replace(changed)
+
+    @staticmethod
     def _process_qstring(red, objects):
         # Replace each node
         for node in objects:
             raw = node.parent.dumps()
             changed = re.sub(
-                r"((?:QtCore\.)?QString)",
+                r"((?:QtCore\.)?QString(?:\.fromUtf8)?)",
                 six.text_type.__name__,
                 raw
             )

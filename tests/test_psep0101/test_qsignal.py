@@ -2,15 +2,27 @@ from qt_py_convert._modules.psep0101 import _qsignal
 
 
 def check_connection(source, dest):
-    assert _qsignal.process_connect(source) == dest
+    convert = _qsignal.process_connect(source)
+    try:
+        assert convert == dest
+    except AssertionError as err:
+        raise AssertionError("%s is not %s" % (convert, dest))
 
 
 def check_emit(source, dest):
-    assert _qsignal.process_emit(source) == dest
+    convert = _qsignal.process_emit(source)
+    try:
+        assert convert == dest
+    except AssertionError as err:
+        raise AssertionError("%s is not %s" % (convert, dest))
 
 
 def check_disconnect(source, dest):
-    assert _qsignal.process_disconnect(source) == dest
+    convert = _qsignal.process_disconnect(source)
+    try:
+        assert convert == dest
+    except AssertionError as err:
+        raise AssertionError("%s is not %s" % (convert, dest))
 
 
 def test_connection_no_args():
@@ -61,6 +73,40 @@ def test_connection_multi_arg_alt():
         "self.filterBox.textChanged.connect(self.slot_filterBoxEdited)"
     )
 
+def test_connection_qobject_suite():
+    check_connection(
+        "QtCore.QObject.connect(self.ui.pushButton, QtCore.SIGNAL('clicked()'), self.refresher)",
+        "self.ui.pushButton.clicked.connect(self.refresher)"
+    ),
+    check_connection(
+        "QtCore.QObject.connect(self.ui.pushButton_selAll, QtCore.SIGNAL('clicked()'), self.selectAllChannels)",
+        "self.ui.pushButton_selAll.clicked.connect(self.selectAllChannels)"
+    ),
+    check_connection(
+        "QtCore.QObject.connect(self.ui.buttonBox, QtCore.SIGNAL('accepted()'), self.configureShuffles)",
+        "self.ui.buttonBox.accepted.connect(self.configureShuffles)"
+    ),
+    check_connection(
+        "QtCore.QObject.connect(self.ui.buttonBox, QtCore.SIGNAL('rejected()'), self.close)",
+        "self.ui.buttonBox.rejected.connect(self.close)"
+    ),
+    check_connection(
+        "QtCore.QObject.connect(self.ui.treeView.selectionModel(), QtCore.SIGNAL('selectionChanged(QItemSelection, QItemSelection)'), self.setViewerLayer)",
+        "self.ui.treeView.selectionModel().selectionChanged.connect(self.setViewerLayer)"
+    ),
+    check_connection(
+        "QtCore.QObject.connect(self.ui.treeView.selectionModel(), QtCore.SIGNAL('selectedIndexes()'), self.toggleViewerLayer)",
+        "self.ui.treeView.selectionModel().selectedIndexes.connect(self.toggleViewerLayer)"
+    ),
+    check_connection(
+        "QtCore.QObject.connect(self.ui.checkBox_inViewer, QtCore.SIGNAL('stateChanged(int)'), self.setViewerLayer)",
+        "self.ui.checkBox_inViewer.stateChanged.connect(self.setViewerLayer)"
+    ),
+    check_connection(
+        "QtCore.QObject.connect(self.ui.checkBox_addWrites, QtCore.SIGNAL('stateChanged(int)'), self.togglePath)",
+        "self.ui.checkBox_addWrites.stateChanged.connect(self.togglePath)"
+    )
+
 def test_emit_no_args():
     check_emit(
         'self.emit(QtCore.SIGNAL("atomicPreflightChangedFrameRange()"))',
@@ -105,6 +151,7 @@ def test_disconnect_single_arg():
 
 
 if __name__ == "__main__":
+    import traceback
     _tests = filter(
         lambda key: True if key.startswith("test_") else False,
         globals().keys()
@@ -118,7 +165,7 @@ if __name__ == "__main__":
             print("    %s succeeded!" % test)
         except AssertionError as err:
             print("    %s failed!" % test)
-            failed.append((test, err))
+            failed.append((test, traceback.format_exc()))
         print("")
     for failure_name, failure_error in failed:
         print("""
