@@ -98,6 +98,16 @@ class Processes(object):
     def _process_qsignal(red, objects):
         for node in objects:
             raw = node.parent.dumps()
+
+            if "disconnect" in raw:
+                replacement = _qsignal.process_disconnect(raw)
+                if replacement != raw:
+                    psep_handler(
+                        "Replacing \"%s\" with \"%s\""
+                        % (_color(32, raw), _color(34, replacement))
+                    )
+                    node.parent.replace(replacement)
+                    continue
             if "connect" in raw:
                 replacement = _qsignal.process_connect(raw)
                 if replacement != raw:
@@ -106,7 +116,7 @@ class Processes(object):
                         % (_color(32, raw), _color(34, replacement))
                     )
                     node.parent.replace(replacement)
-                    return
+                    continue
             if "emit" in raw:
                 replacement = _qsignal.process_emit(raw)
                 if replacement != raw:
@@ -115,7 +125,7 @@ class Processes(object):
                         % (_color(32, raw), _color(34, replacement))
                     )
                     node.parent.replace(replacement)
-                    return
+                    continue
 
 
     @staticmethod
