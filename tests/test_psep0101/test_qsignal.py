@@ -310,6 +310,24 @@ def test_connect_converted_fromUTF_18():
     )
 
 
+def test_connect_old_style_multiline():
+    check_connection(
+        """self.connect(
+            self.data.ui,
+            QtCore.SIGNAL("launchPublishPopup"),
+            self.publishDigitalAssetPopup
+        )""",
+        "self.data.ui.launchPublishPopup.connect(self.publishDigitalAssetPopup)"
+    )
+
+
+def test_connect_old_style_pyargs():
+    check_connection(
+        'QtCore.QObject.connect(self.ticket_tool, QtCore.SIGNAL(_fromUtf8("currentIndexChanged(unicode)")), Flaregun.infoEntered)',
+        "self.ticket_tool.currentIndexChanged.connect(Flaregun.infoEntered)",
+    )
+
+
 if __name__ == "__main__":
     import traceback
     _tests = filter(
