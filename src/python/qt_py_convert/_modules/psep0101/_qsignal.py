@@ -45,11 +45,6 @@ def process_connect(function_str):
 \)""",
         re.VERBOSE
     )
-    match = SIGNAL_RE.search(function_str)
-    if match:
-        print(match)
-        groups = match.groupdict()
-        print(groups)
     replacement_str = SIGNAL_RE.sub(
         _connect_repl,
         function_str
