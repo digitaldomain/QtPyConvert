@@ -73,35 +73,57 @@ def test_connection_multi_arg_alt():
         "self.filterBox.textChanged.connect(self.slot_filterBoxEdited)"
     )
 
-def test_connection_qobject_suite():
+
+def test_connection_qobject1():
     check_connection(
         "QtCore.QObject.connect(self.ui.pushButton, QtCore.SIGNAL('clicked()'), self.refresher)",
         "self.ui.pushButton.clicked.connect(self.refresher)"
-    ),
+    )
+
+
+def test_connection_qobject2():
     check_connection(
         "QtCore.QObject.connect(self.ui.pushButton_selAll, QtCore.SIGNAL('clicked()'), self.selectAllChannels)",
         "self.ui.pushButton_selAll.clicked.connect(self.selectAllChannels)"
-    ),
+    )
+
+
+def test_connection_qobject3():
     check_connection(
         "QtCore.QObject.connect(self.ui.buttonBox, QtCore.SIGNAL('accepted()'), self.configureShuffles)",
         "self.ui.buttonBox.accepted.connect(self.configureShuffles)"
-    ),
+    )
+
+
+def test_connection_qobject4():
     check_connection(
         "QtCore.QObject.connect(self.ui.buttonBox, QtCore.SIGNAL('rejected()'), self.close)",
         "self.ui.buttonBox.rejected.connect(self.close)"
-    ),
+    )
+
+
+def test_connection_qobject5():
     check_connection(
         "QtCore.QObject.connect(self.ui.treeView.selectionModel(), QtCore.SIGNAL('selectionChanged(QItemSelection, QItemSelection)'), self.setViewerLayer)",
         "self.ui.treeView.selectionModel().selectionChanged.connect(self.setViewerLayer)"
-    ),
+    )
+
+
+def test_connection_qobject6():
     check_connection(
         "QtCore.QObject.connect(self.ui.treeView.selectionModel(), QtCore.SIGNAL('selectedIndexes()'), self.toggleViewerLayer)",
         "self.ui.treeView.selectionModel().selectedIndexes.connect(self.toggleViewerLayer)"
-    ),
+    )
+
+
+def test_connection_qobject7():
     check_connection(
         "QtCore.QObject.connect(self.ui.checkBox_inViewer, QtCore.SIGNAL('stateChanged(int)'), self.setViewerLayer)",
         "self.ui.checkBox_inViewer.stateChanged.connect(self.setViewerLayer)"
-    ),
+    )
+
+
+def test_connection_qobject8():
     check_connection(
         "QtCore.QObject.connect(self.ui.checkBox_addWrites, QtCore.SIGNAL('stateChanged(int)'), self.togglePath)",
         "self.ui.checkBox_addWrites.stateChanged.connect(self.togglePath)"
@@ -147,6 +169,144 @@ def test_disconnect_single_arg():
     check_disconnect(
         'self.disconnect(self.sceneDag, QtCore.SIGNAL("dagChanged(PyQt_PyObject)"), self._slotDagChanged)',
         "self.sceneDag.dagChanged.disconnect(self._slotDagChanged)"
+    )
+
+
+def test_connect_old_style_slot():
+    check_connection(
+        'self.connect(cancel_button, QtCore.SIGNAL("clicked()"), QtCore.SLOT("close()"))',
+        "cancel_button.clicked.connect(self.close)"
+    )
+
+
+def test_connect_converted_fromUTF():
+    check_connection(
+        'QtCore.QObject.connect(self.BUTTON_svn_check_out, QtCore.SIGNAL(_fromUtf8("pressed()")), OTLpublisher.checkOut)',
+        "self.BUTTON_svn_check_out.pressed.connect(OTLpublisher.checkOut)"
+    )
+
+
+def test_connect_converted_fromUTF_1():
+    check_connection(
+        'QtCore.QObject.connect(self.BUTTON_svn_check_in, QtCore.SIGNAL(_fromUtf8("pressed()")), OTLpublisher.checkIn)',
+        "self.BUTTON_svn_check_in.pressed.connect(OTLpublisher.checkIn)"
+    )
+
+
+def test_connect_converted_fromUTF_2():
+    check_connection(
+        'QtCore.QObject.connect(self.BUTTON_refresh_info, QtCore.SIGNAL(_fromUtf8("pressed()")), OTLpublisher.refreshInfo)',
+        "self.BUTTON_refresh_info.pressed.connect(OTLpublisher.refreshInfo)"
+    )
+
+
+def test_connect_converted_fromUTF_3():
+    check_connection(
+        'QtCore.QObject.connect(self.BUTTON_svn_cancel_check_out, QtCore.SIGNAL(_fromUtf8("released()")), OTLpublisher.checkOutCancel)',
+        "self.BUTTON_svn_cancel_check_out.released.connect(OTLpublisher.checkOutCancel)"
+    )
+
+
+def test_connect_converted_fromUTF_4():
+    check_connection(
+        'QtCore.QObject.connect(self.BUTTON_svn_revert_to_earlier_version, QtCore.SIGNAL(_fromUtf8("released()")), OTLpublisher.revertToEarlierSvnVersion)',
+        "self.BUTTON_svn_revert_to_earlier_version.released.connect(OTLpublisher.revertToEarlierSvnVersion)"
+    )
+
+
+def test_connect_converted_fromUTF_5():
+    check_connection(
+        'QtCore.QObject.connect(self.BUTTON_digital_asset_create, QtCore.SIGNAL(_fromUtf8("released()")), OTLpublisher.createDigitalAsset)',
+        "self.BUTTON_digital_asset_create.released.connect(OTLpublisher.createDigitalAsset)"
+    )
+
+
+def test_connect_converted_fromUTF_6():
+    check_connection(
+        'QtCore.QObject.connect(self.BUTTON_digital_asset_edit_type_properties, QtCore.SIGNAL(_fromUtf8("released()")), OTLpublisher.editTypeProperties)',
+        "self.BUTTON_digital_asset_edit_type_properties.released.connect(OTLpublisher.editTypeProperties)"
+    )
+def test_connect_converted_fromUTF_7():
+    check_connection(
+        'QtCore.QObject.connect(self.BUTTON_digital_asset_match_cur_def, QtCore.SIGNAL(_fromUtf8("released()")), OTLpublisher.matchCurDef)',
+        "self.BUTTON_digital_asset_match_cur_def.released.connect(OTLpublisher.matchCurDef)"
+    )
+
+
+def test_connect_converted_fromUTF_8():
+    check_connection(
+        'QtCore.QObject.connect(self.BUTTON_digital_asset_allow_editing, QtCore.SIGNAL(_fromUtf8("released()")), OTLpublisher.allowEditing)',
+        "self.BUTTON_digital_asset_allow_editing.released.connect(OTLpublisher.allowEditing)"
+    )
+
+
+def test_connect_converted_fromUTF_9():
+    check_connection(
+        'QtCore.QObject.connect(self.BUTTON_digital_asset_use_this_def, QtCore.SIGNAL(_fromUtf8("released()")), OTLpublisher.useThisDef)',
+        "self.BUTTON_digital_asset_use_this_def.released.connect(OTLpublisher.useThisDef)"
+    )
+
+
+def test_connect_converted_fromUTF_10():
+    check_connection(
+        'QtCore.QObject.connect(self.BUTTON_digital_asset_copy, QtCore.SIGNAL(_fromUtf8("released()")), OTLpublisher.copyDigitalAsset)',
+        "self.BUTTON_digital_asset_copy.released.connect(OTLpublisher.copyDigitalAsset)"
+    )
+
+
+def test_connect_converted_fromUTF_11():
+    check_connection(
+        'QtCore.QObject.connect(self.BUTTON_digital_asset_save, QtCore.SIGNAL(_fromUtf8("released()")), OTLpublisher.saveDigitalAsset)',
+        "self.BUTTON_digital_asset_save.released.connect(OTLpublisher.saveDigitalAsset)"
+    )
+
+
+def test_connect_converted_fromUTF_12():
+    check_connection(
+        'QtCore.QObject.connect(self.BUTTON_digital_asset_delete, QtCore.SIGNAL(_fromUtf8("released()")), OTLpublisher.deleteDigitalAsset)',
+        "self.BUTTON_digital_asset_delete.released.connect(OTLpublisher.deleteDigitalAsset)"
+    )
+
+
+def test_connect_converted_fromUTF_13():
+    check_connection(
+        'QtCore.QObject.connect(self.BUTTON_select_node, QtCore.SIGNAL(_fromUtf8("released()")), OTLpublisher.selectNode)',
+        "self.BUTTON_select_node.released.connect(OTLpublisher.selectNode)"
+    )
+
+
+def test_connect_converted_fromUTF_14():
+    check_connection(
+        'QtCore.QObject.connect(self.BUTTON_digital_asset_publish, QtCore.SIGNAL(_fromUtf8("released()")), OTLpublisher.publishDigitalAsset)',
+        "self.BUTTON_digital_asset_publish.released.connect(OTLpublisher.publishDigitalAsset)"
+    )
+
+
+def test_connect_converted_fromUTF_15():
+    check_connection(
+        'QtCore.QObject.connect(self.BUTTON_libsvn_copy, QtCore.SIGNAL(_fromUtf8("released()")), OTLpublisher.libSvnCopyDigitalAsset)',
+        "self.BUTTON_libsvn_copy.released.connect(OTLpublisher.libSvnCopyDigitalAsset)"
+    )
+
+
+def test_connect_converted_fromUTF_16():
+    check_connection(
+        'QtCore.QObject.connect(self.BUTTON_digital_asset_version_up, QtCore.SIGNAL(_fromUtf8("released()")), OTLpublisher.versionUp)',
+        "self.BUTTON_digital_asset_version_up.released.connect(OTLpublisher.versionUp)"
+    )
+
+
+def test_connect_converted_fromUTF_17():
+    check_connection(
+        'QtCore.QObject.connect(self.BUTTON_digital_asset_op_type_manager, QtCore.SIGNAL(_fromUtf8("released()")), OTLpublisher.opTypeManager)',
+        "self.BUTTON_digital_asset_op_type_manager.released.connect(OTLpublisher.opTypeManager)"
+    )
+
+
+def test_connect_converted_fromUTF_18():
+    check_connection(
+        'QtCore.QObject.connect(self.BUTTON_help, QtCore.SIGNAL(_fromUtf8("released()")), OTLpublisher.help)',
+        "self.BUTTON_help.released.connect(OTLpublisher.help)"
     )
 
 
