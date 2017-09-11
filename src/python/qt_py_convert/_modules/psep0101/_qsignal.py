@@ -9,7 +9,7 @@ def _connect_repl(match_obj):
     if "strslot" in groups and groups["strslot"]:
         template = template.replace("{slot}", "{root}.{strslot}")
 
-    groups["args"] = parse_args(groups["args"])
+    groups["args"] = parse_args(groups["args"] or "")
     return template.format(**groups)
 
 
@@ -19,7 +19,7 @@ def _disconnect_repl(match_obj):
     if "strslot" in groups and groups["strslot"]:
         template = template.replace("{slot}", "{root}.{strslot}")
 
-    groups["args"] = parse_args(groups["args"])
+    groups["args"] = parse_args(groups["args"] or "")
     return template.format(**groups)
 
 
@@ -33,18 +33,19 @@ def _emit_repl(match_obj):
 def process_connect(function_str):
     SIGNAL_RE = re.compile(
         r"""
-(?P<root>[\w\.]+)?\.connect\((?:\s+)?
-(?P<owner>.*>?),(?:\s+)?
-(?:QtCore\.)?SIGNAL\((?:\s+)?(?:_fromUtf8\()?(?:\s+)?[\'\"](?P<signal>\w+)\((?P<args>.*?)\)[\'\"](?:\s+)?\)?(?:\s+)?\),(?:\s+)?
+(?P<root>[\w\.]+)?\.connect\((?:[\s\n]+)?
+(?P<owner>.*>?),(?:[\s\n]+)?
+(?:QtCore\.)?SIGNAL\((?:[\s\n]+)?(?:_fromUtf8\()?(?:[\s\n]+)?[\'\"](?P<signal>\w+)(?:\((?P<args>.*?)\))?[\'\"](?:[\s\n]+)?\)?(?:[\s\n]+)?\),(?:[\s\n]+)?
 
   # Either QtCore.SLOT("thing()") or an actual callable in scope.
   # If it is the former, we are assuming that the str name is owned by root.
-    (?:(?:(?:QtCore\.)?SLOT\((?:\s+)?(?:_fromUtf8\()?(?:\s+)?[\'\"](?P<strslot>.*?)\((?P<slot_args>.*?)\)[\'\"](?:\s+)?\)?(?:\s+)?\))
+    (?:(?:(?:QtCore\.)?SLOT\((?:[\s\n]+)?(?:_fromUtf8\()?(?:[\s\n]+)?[\'\"](?P<strslot>.*?)\((?P<slot_args>.*?)\)[\'\"](?:[\s\n]+)?\)?(?:[\s\n]+)?\))
   |
-    (?:(?:\s+)?(?P<slot>.*?)(?:\s+)?))
+    (?:(?:[\s\n]+)?(?P<slot>.*?)(?:[\s\n]+)?))
 \)""",
-        re.VERBOSE
+        re.VERBOSE | re.MULTILINE
     )
+    match = SIGNAL_RE.search(function_str)
     replacement_str = SIGNAL_RE.sub(
         _connect_repl,
         function_str
@@ -57,21 +58,21 @@ def process_connect(function_str):
 def process_disconnect(function_str):
     SIGNAL_RE = re.compile(
         r"""
-(?P<root>[\w\.]+)?\.disconnect\((?:\s+)?
-(?P<owner>.*>?),(?:\s+)?
-(?:QtCore\.)?SIGNAL\((?:\s+)?(?:_fromUtf8\()?(?:\s+)?[\'\"](?P<signal>\w+)\((?P<args>.*?)\)[\'\"](?:\s+)?\)?(?:\s+)?\),(?:\s+)?
+(?P<root>[\w\.]+)?\.disconnect\((?:[\s\n]+)?
+(?P<owner>.*>?),(?:[\s\n]+)?
+(?:QtCore\.)?SIGNAL\((?:[\s\n]+)?(?:_fromUtf8\()?(?:[\s\n]+)?[\'\"](?P<signal>\w+)\((?P<args>.*?)\)[\'\"](?:[\s\n]+)?\)?(?:[\s\n]+)?\),(?:[\s\n]+)?
 
   # Either QtCore.SLOT("thing()") or an actual callable in scope.
   # If it is the former, we are assuming that the str name is owned by root.
-    (?:(?:(?:QtCore\.)?SLOT\((?:\s+)?(?:_fromUtf8\()?(?:\s+)?[\'\"](?P<strslot>.*?)\((?P<slot_args>.*?)\)[\'\"](?:\s+)?\)?(?:\s+)?\))
+    (?:(?:(?:QtCore\.)?SLOT\((?:[\s\n]+)?(?:_fromUtf8\()?(?:[\s\n]+)?[\'\"](?P<strslot>.*?)\((?P<slot_args>.*?)\)[\'\"](?:[\s\n]+)?\)?(?:[\s\n]+)?\))
   |
-    (?:(?:\s+)?(?P<slot>.*?)(?:\s+)?))
+    (?:(?:[\s\n]+)?(?P<slot>.*?)(?:[\s\n]+)?))
 \)""",
         re.VERBOSE
     )
 
     # SIGN = re.compile(
-    #     r"(?P<root>\w+)?\.disconnect\((?:\s+)?(?P<owner>.*?),(?:\s+)?(?:QtCore\.)?SIGNAL\((?:\s+)?[\'\"](?P<signal>\w+)\((?P)"
+    #     r"(?P<root>\w+)?\.disconnect\((?:[\s\n]+)?(?P<owner>.*?),(?:[\s\n]+)?(?:QtCore\.)?SIGNAL\((?:[\s\n]+)?[\'\"](?P<signal>\w+)\((?P)"
     # )
     """
     'self.disconnect(self, QtCore.SIGNAL("textChanged()"), self.slot_textChanged)',
@@ -88,7 +89,7 @@ def process_disconnect(function_str):
 
 def process_emit(function_str):
     SIGNAL_RE = re.compile(
-        r"(?P<owner>[\w\.]+)?\.emit\((?:\s+)?(?:QtCore\.)?SIGNAL\((?:\s+)?[\"\'](?P<signal>\w+)\((?P<arg_types>.*?)\)[\"\'](?:\s+)?\)(?:\s+)?(?:,(?:\s+)?)?(?P<args>.*?)\)"
+        r"(?P<owner>[\w\.]+)?\.emit\((?:[\s\n]+)?(?:QtCore\.)?SIGNAL\((?:[\s\n]+)?[\"\'](?P<signal>\w+)\((?P<arg_types>.*?)\)[\"\'](?:[\s\n]+)?\)(?:[\s\n]+)?(?:,(?:[\s\n]+)?)?(?P<args>.*?)\)"
     )
     match = SIGNAL_RE.search(function_str)
     replacement_str = SIGNAL_RE.sub(
