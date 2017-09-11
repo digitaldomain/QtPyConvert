@@ -165,27 +165,30 @@ def psep_process(store):
     _qstringlist_expression = re.compile(r"QStringList(?:[^\w]+(?:.*?))?$")
     _qchar_expression = re.compile(r"QChar(?:[^\w]+(?:.*?))?$")
     _qstringref_expression = re.compile(r"QStringRef(?:[^\w]+(?:.*?))?$")
-    _qsignal_expression = re.compile(r"QtCore\.SIGNAL")
+    _qsignal_expression = re.compile(r"[(?:connect)|(?:disconnect)|(?:emit)].*QtCore\.SIGNAL")
 
     def filter_function(value):
         """
         filter_function takes an AtomTrailersNode or a DottedNameNode and will filter them out if they match something that
         has changed in psep0101
         """
+        found = False
         if _qstring_expression.search(value.dumps()):
             store[Processes.QSTRING_PROCESS_STR].add(value)
-            return True
-        elif _qstringlist_expression.search(value.dumps()):
+            found = True
+        if _qstringlist_expression.search(value.dumps()):
             store[Processes.QSTRINGLIST_PROCESS_STR].add(value)
-            return True
-        elif _qchar_expression.search(value.dumps()):
+            found = True
+        if _qchar_expression.search(value.dumps()):
             store[Processes.QCHAR_PROCESS_STR].add(value)
-            return True
-        elif _qstringref_expression.search(value.dumps()):
+            found = True
+        if _qstringref_expression.search(value.dumps()):
             store[Processes.QSTRINGREF_PROCESS_STR].add(value)
-            return True
-        elif _qsignal_expression.search(value.dumps()):
+            found = True
+        if _qsignal_expression.search(value.dumps()):
             store[Processes.QSIGNAL_PROCESS_STR].add(value)
+            found = True
+        if found:
             return True
     return filter_function
 
