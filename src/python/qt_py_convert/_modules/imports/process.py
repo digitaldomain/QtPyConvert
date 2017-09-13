@@ -18,7 +18,7 @@ class Processes(object):
         )
         node.replace("import Qt")
 
-    @staticmethod
+    @classmethod
     def _process_import(cls, red, objects):
         binding_aliases = AliasDict
         mappings = {}
