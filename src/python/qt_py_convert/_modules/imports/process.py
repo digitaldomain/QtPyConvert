@@ -18,14 +18,15 @@ class Processes(object):
         )
         node.replace("import Qt")
 
-    def _process_import(self, red, objects):
+    @staticmethod
+    def _process_import(cls, red, objects):
         binding_aliases = AliasDict
         mappings = {}
 
         # Replace each node
         for node, binding in objects:
             for child in node.value:
-                _child_name = self._build_child_name(child)
+                _child_name = cls._build_child_name(child)
                 _child_as_name = child.target
 
                 _child_parts = _child_name.replace(binding, "")
@@ -35,7 +36,7 @@ class Processes(object):
                 if len(_child_parts) and _child_parts[0]:
                     second_level_module = _child_parts[0]
                 else:
-                    self._no_second_level_module(node, _child_parts)
+                    cls._no_second_level_module(node, _child_parts)
                     if _child_as_name:
                         mappings[_child_as_name] = "Qt"
                     continue
