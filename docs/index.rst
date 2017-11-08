@@ -1,35 +1,32 @@
-.. _qt_py_convert_index:
+.. Package documentation master file. Everything has to be linked to this
+   file in some way for Sphinx to document it.
 
-==============================================
-Qt_py_convert Documentation
-==============================================
+Overview
+========
 
+This is a utility package that will allow you to convert old PyQt4 or PySide code to use the Qt.py shim
 
-User Guides
-===========
-
-.. toctree::
-   :maxdepth: 2
-   :glob:
-
-   guides/*
-
-
-API Reference
-=============
-
-.. toctree::
-   :maxdepth: 2
-   :glob:
-
-   api/*
-
-
-Indices and tables
+User Documentation
 ==================
 
-* :ref:`overview`
+.. toctree::
+    :maxdepth: 3
+
+    user/pycharm_setup
+
+
+Code Reference
+==============
+.. toctree::
+    :maxdepth: 5
+
+    ddautoapi/qt_py_convert
+
+
+Glossary and Index
+==================
+
 * :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-* :ref:`glossary`
+
+.. * :doc:`glossary`
+
