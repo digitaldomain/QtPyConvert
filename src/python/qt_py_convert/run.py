@@ -138,7 +138,10 @@ def _convert_attributes(red, aliases):
 
 def _convert_body(red, aliases, mappings):
     def expression_factory(expr_key):
-        regex = re.compile(r"{value}(?:[\.\[\(].*)?$".format(value=expr_key))
+        regex = re.compile(
+            r"{value}(?:[\.\[\(].*)?$".format(value=expr_key),
+            re.DOTALL
+        )
 
         def expression_filter(value):
             return regex.match(value.dumps())
@@ -319,4 +322,6 @@ if __name__ == "__main__":
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/assetbrowser/trunk/src", recursive=True, write=True)
     # folder = os.path.abspath("../../../../tests/sources")
     # process_folder(folder, recursive=True, write=True)
-    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/nukepipeline/branches/nukepipeline_5/src/python/nukepipeline/common/guis/layersplitterui/exrSplitChan.py", write=True, fast_exit=False)
+    process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/shooter/branches/predefined_notes_branch/src", recursive=True, write=True)
+    # process_file("/dd/home/ahughes/dump/bad_whitespace.py", write=True)
+    # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ticket/trunk/src/python/ticket/flaregun_ui.py", write=True, fast_exit=False)

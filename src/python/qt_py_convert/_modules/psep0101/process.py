@@ -165,7 +165,7 @@ def psep_process(store):
     _qstringlist_expression = re.compile(r"QStringList(?:[^\w]+(?:.*?))?$")
     _qchar_expression = re.compile(r"QChar(?:[^\w]+(?:.*?))?$")
     _qstringref_expression = re.compile(r"QStringRef(?:[^\w]+(?:.*?))?$")
-    _qsignal_expression = re.compile(r"[(?:connect)|(?:disconnect)|(?:emit)].*QtCore\.SIGNAL")
+    _qsignal_expression = re.compile(r"[(?:connect)|(?:disconnect)|(?:emit)].*QtCore\.SIGNAL", re.DOTALL)
 
     def filter_function(value):
         """
