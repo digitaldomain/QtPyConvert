@@ -13,13 +13,16 @@ if _custom_bindings:
     print("Found Custom Bindings. Adding: %s" % _custom_bindings.split(os.pathsep))
     __supported_bindings__ += _custom_bindings.split(os.pathsep)
 
-misplaced_members_python_str = os.environ.get("QT_CUSTOM_MISPLACED_MEMBERS", '{}')
-print ("QT_CUSTOM_MISPLACED_MEMBERS = {0!r}".format(misplaced_members_python_str))
+# Note: Pattern here is a little more complex than needed to make the print lines optional
+_custom_misplaced_members = {}
+misplaced_members_python_str = os.environ.get("QT_CUSTOM_MISPLACED_MEMBERS")
+if misplaced_members_python_str:
+    print ("QT_CUSTOM_MISPLACED_MEMBERS = {0!r}".format(misplaced_members_python_str))
 
-_custom_misplaced_members = json.loads(misplaced_members_python_str)
+    _custom_misplaced_members = json.loads(misplaced_members_python_str)
 
-# Colored green
-print (_color(32, "Resolved QT_CUSTOM_MISPLACED_MEMBERS to json: {0!r}".format(_custom_misplaced_members)))
+    # Colored green
+    print (_color(32, "Resolved QT_CUSTOM_MISPLACED_MEMBERS to json: {0!r}".format(_custom_misplaced_members)))
 
 
 AliasDict = dict([
