@@ -25,9 +25,13 @@ class Processes(object):
 
         # Replace each node
         for node, binding in objects:
-            for child in node:
+            for child_index, child in enumerate(node):
                 _child_name = cls._build_child_name(child)
                 _child_as_name = child.target
+                if _child_name not in __supported_bindings__ and \
+                   _child_as_name not in __supported_bindings__:
+                    # Only one of our multi import node's children is relevant.
+                    continue
 
                 _child_parts = _child_name.replace(binding, "")
                 _child_parts = _child_parts.lstrip(".").split(".")
@@ -36,7 +40,20 @@ class Processes(object):
                 if len(_child_parts) and _child_parts[0]:
                     second_level_module = _child_parts[0]
                 else:
-                    cls._no_second_level_module(child, _child_parts)
+                    if len(node) == 1:
+                        # Only one in the import: "import PySide"
+                        cls._no_second_level_module(node.parent, _child_parts)
+                    else:
+                        # Multiple in the import: "import PySide, os"
+                        node_parent_orig = str(node.parent)
+                        node.pop(child_index)
+                        repl = node.parent.dumps() + "\nimport Qt"
+                        print(
+                            "Replacing %s with %s" % (
+                                node_parent_orig, repl
+                            )
+                        )
+                        node.parent.replace(repl)
                     if _child_as_name:
                         mappings[_child_as_name] = "Qt"
                     continue
