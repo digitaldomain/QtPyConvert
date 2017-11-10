@@ -22,7 +22,7 @@ class Processes(object):
         for node in objects:
             raw = node.parent.dumps()
             changed = re.sub(
-                r"((?:QtCore\.)?QVariant\(?P<value>.*?)\)",
+                r"(?:QtCore\.)?QVariant\((?P<value>.*?)\)",
                 r"\g<value>",
                 raw
             )
@@ -158,6 +158,8 @@ class Processes(object):
     QSTRINGREF_PROCESS = _process_qstringref
     QSIGNAL_PROCESS_STR = "QSIGNAL_PROCESS"
     QSIGNAL_PROCESS = _process_qsignal
+    QVARIANT_PROCESS_STR = "QVARIANT_PROCESS"
+    QVARIANT_PROCESS = _process_qvariant
 
 
 def psep_process(store):
@@ -166,6 +168,7 @@ def psep_process(store):
     _qchar_expression = re.compile(r"QChar(?:[^\w]+(?:.*?))?$")
     _qstringref_expression = re.compile(r"QStringRef(?:[^\w]+(?:.*?))?$")
     _qsignal_expression = re.compile(r"[(?:connect)|(?:disconnect)|(?:emit)].*QtCore\.SIGNAL", re.DOTALL)
+    _qvariant_expression = re.compile(r"QVariant(?:[^\w]+(?:.*?))?$")
 
     def filter_function(value):
         """
@@ -188,6 +191,9 @@ def psep_process(store):
         if _qsignal_expression.search(value.dumps()):
             store[Processes.QSIGNAL_PROCESS_STR].add(value)
             found = True
+        if _qvariant_expression.search(value.dumps()):
+            store[Processes.QVARIANT_PROCESS_STR].add(value)
+            found = True
         if found:
             return True
     return filter_function
@@ -200,6 +206,7 @@ def process(red):
         Processes.QCHAR_PROCESS_STR: set(),
         Processes.QSTRINGREF_PROCESS_STR: set(),
         Processes.QSIGNAL_PROCESS_STR: set(),
+        Processes.QVARIANT_PROCESS_STR: set(),
     }
     red.find_all("AtomTrailersNode", value=psep_process(psep_issues))
     red.find_all("DottedNameNode", value=psep_process(psep_issues))
