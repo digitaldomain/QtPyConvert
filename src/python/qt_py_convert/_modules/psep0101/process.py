@@ -103,8 +103,12 @@ class Processes(object):
                 replacement = _qsignal.process_disconnect(raw)
                 if replacement != raw:
                     psep_handler(
-                        "Replacing \"%s\" with \"%s\""
-                        % (_color(32, raw), _color(34, replacement))
+                        "Replacing \"%s\" with \"%s\" at line %d"
+                        % (
+                            _color(32, raw),
+                            _color(34, replacement),
+                            node.absolute_bounding_box.top_left.line - 1
+                        )
                     )
                     node.parent.replace(replacement)
                     continue
@@ -112,8 +116,12 @@ class Processes(object):
                 replacement = _qsignal.process_connect(raw)
                 if replacement != raw:
                     psep_handler(
-                        "Replacing \"%s\" with \"%s\""
-                        % (_color(32, raw), _color(34, replacement))
+                        "Replacing \"%s\" with \"%s\" at line %d"
+                        % (
+                            _color(32, raw),
+                            _color(34, replacement),
+                            node.absolute_bounding_box.top_left.line - 1
+                        )
                     )
                     node.parent.replace(replacement)
                     continue
@@ -121,8 +129,12 @@ class Processes(object):
                 replacement = _qsignal.process_emit(raw)
                 if replacement != raw:
                     psep_handler(
-                        "Replacing \"%s\" with \"%s\""
-                        % (_color(32, raw), _color(34, replacement))
+                        "Replacing \"%s\" with \"%s\" at line %d"
+                        % (
+                            _color(32, raw),
+                            _color(34, replacement),
+                            node.absolute_bounding_box.top_left.line - 1
+                        )
                     )
                     node.parent.replace(replacement)
                     continue

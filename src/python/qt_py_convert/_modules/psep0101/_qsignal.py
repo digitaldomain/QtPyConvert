@@ -9,6 +9,9 @@ def _connect_repl(match_obj):
     if "strslot" in groups and groups["strslot"]:
         template = template.replace("{slot}", "{root}.{strslot}")
 
+    if "owner" not in groups or not groups["owner"]:
+        template = template.replace("{owner}", "{root}")
+
     groups["args"] = parse_args(groups["args"] or "")
     return template.format(**groups)
 
@@ -34,7 +37,11 @@ def process_connect(function_str):
     SIGNAL_RE = re.compile(
         r"""
 (?P<root>[\w\.]+)?\.connect\((?:[\s\n]+)?
-(?P<owner>.*>?),(?:[\s\n]+)?
+
+# Making the owner optional. 
+# _connect_repl has been updated to use root if owner is missing.
+(?:(?P<owner>.*>?),(?:[\s\n]+)?)?   
+
 (?:QtCore\.)?SIGNAL\((?:[\s\n]+)?(?:_fromUtf8\()?(?:[\s\n]+)?[\'\"](?P<signal>\w+)(?:\((?P<args>.*?)\))?[\'\"](?:[\s\n]+)?\)?(?:[\s\n]+)?\),(?:[\s\n]+)?
 
   # Either QtCore.SLOT("thing()") or an actual callable in scope.
@@ -45,7 +52,7 @@ def process_connect(function_str):
 \)""",
         re.VERBOSE | re.MULTILINE
     )
-    match = SIGNAL_RE.search(function_str)
+    # match = SIGNAL_RE.search(function_str)
     replacement_str = SIGNAL_RE.sub(
         _connect_repl,
         function_str
