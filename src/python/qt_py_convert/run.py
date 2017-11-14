@@ -21,6 +21,8 @@ def _cleanup_imports(red, aliases, mappings):
     deletion_index = []
     imps = red.find_all("FromImportNode")
     imps += red.find_all("ImportNode")
+    print(_color(34, "==========================="))
+    print(_color(34, _color(4, "Consolidating Import lines.")))
     for child in imps:
         for value in child.value:
             if value.value == "Qt":
@@ -58,14 +60,23 @@ def _cleanup_imports(red, aliases, mappings):
                         key=", ".join(names)
                     )
                     print(
-                        "Cleaning imports from: \"%s\" to \"%s\"" % (
-                            str(child).strip("\n"), replace_text
+                        "%s imports from: \"%s\" to \"%s\" at line %d" % (
+                            _color(32, "Cleaning"),
+                            _color(37, child.dumps().strip("\n")),
+                            _color(37, replace_text),
+                            child.absolute_bounding_box.top_left.line - 1
                         )
                     )
                     child.replace(replace_text)
                     replaced = True
                 else:
-                    print("Deleting %s" % child)
+                    print(
+                        "%s \"%s\" at line %d" % (
+                            _color(31, "Deleting"),
+                            _color(37, child),
+                            child.absolute_bounding_box.top_left.line - 1
+                        )
+                    )
                     child.parent.remove(child)
             else:
                 pass
@@ -108,9 +119,7 @@ def _convert_attributes(red, aliases):
         "DottedNameNode",
         value=finder_function_factory(expressions)
     )
-    if nodes:
-        print("***")
-        print(_color(33, "Parsing AtomTrailersNodes"))
+    header_written = False
     for node in nodes:
         orig_node_str = node.dumps()
         added_module = False
@@ -124,6 +133,10 @@ def _convert_attributes(red, aliases):
                 mappings[orig_node_str] = modified
                 aliases["used"].add(module_)
                 added_module = True
+                if not header_written:
+                    print(_color(33, "========================="))
+                    print(_color(33, _color(4, "Parsing AtomTrailersNodes")))
+                    header_written = True
                 print("Replacing %s with %s at line %d" % (
                     str(orig_node_str).strip("\n"),
                     _color(37, modified),
@@ -135,6 +148,59 @@ def _convert_attributes(red, aliases):
         if not added_module:
             aliases["used"].add(orig_node_str.split(".")[0])
     return mappings
+
+
+def _convert_root_name_imports(red, aliases, mappings):
+    """
+    _convert_root_name_imports is a function that should be used in cases
+    where the original code just imported the python binding and did not
+    import any second level modules.
+
+    For example:
+    ```
+    import PySide
+
+    ```
+    :param red:
+    :type red:
+    :param aliases:
+    :type aliases:
+    :param mappings:
+    :type mappings:
+    :return:
+    :rtype:
+    """
+    def filter_function(value):
+        return value.dumps().startswith("Qt.")
+    matches = red.find_all("AtomTrailersNode", value=filter_function)
+    matches += red.find_all("DottedNameNode", value=filter_function)
+    L_STRIP_QT_RE = re.compile(r"^Qt\.",)
+
+    if matches:
+        print(_color(35, "===================================="))
+        print(_color(35, _color(4, "Replacing top level binding imports.")))
+
+    for match in matches:
+        name = L_STRIP_QT_RE.sub(
+            "", match.dumps(), count=1
+        )
+
+        root_name = name.split(".")[0]
+        if root_name in COMMON_MODULES:
+            aliases["root_aliases"].add(
+                root_name
+            )
+            print("Replacing %s with %s at line %d" % (
+                _color(37, str(match.dumps()).strip("\n")),
+                _color(37, name),
+                match.absolute_bounding_box.top_left.line-1
+            ))
+            match.replace(name)
+        else:
+            print(
+                "Unknown second level module from the Qt package \"%s\""
+                % _color(33, root_name)
+            )
 
 
 def _convert_body(red, aliases, mappings):
@@ -151,8 +217,8 @@ def _convert_body(red, aliases, mappings):
 
     # Body of the function
     for key in sorted(mappings, key=len):
-        print("***")
-        print(_color(36, key))
+        print(_color(36, "-"*len(key)))
+        print(_color(36, _color(4, key)))
         if "." in key:
             filter_function = expression_factory(key)
             matches = red.find_all("AtomTrailersNode", value=filter_function)
@@ -263,6 +329,7 @@ def run(text, fast_exit=False):
     # Convert using the psep0101 module.
     psep0101.process(red)
     _convert_body(red, aliases, mappings)
+    _convert_root_name_imports(red, aliases, mappings)
     _convert_attributes(red, aliases)
     if aliases["root_aliases"]:
         _cleanup_imports(red, aliases, mappings)
@@ -274,7 +341,22 @@ def run(text, fast_exit=False):
     return aliases, mappings, dumps
 
 
+def _is_py(path):
+    if path.endswith(".py"):
+        return True
+    elif not os.path.splitext(path)[1] and os.path.isfile(path):
+        with open(path, "rb") as fh:
+            if "python" in fh.read(1024):
+                return True
+    return False
+
+
 def process_file(fp, write=False, fast_exit=False):
+    if not _is_py(fp):
+        print(
+            "\tSkipping \"%s\"... It does not appear to be a python file." % fp
+        )
+        return
     with open(fp, "rb") as fh:
         source = fh.read()
 
@@ -289,15 +371,14 @@ def process_file(fp, write=False, fast_exit=False):
 
 
 def process_folder(folder, recursive=False, write=False, fast_exit=False):
-    def _get_py(path):
-        return True if path.endswith(".py") else False
 
     def _is_dir(path):
         return True if os.path.isdir(os.path.join(folder, path)) else False
 
     # TODO: Might need to parse the text to remove whitespace at the EOL.
     #       #101 at https://github.com/PyCQA/baron documents this issue.
-    for fn in filter(_get_py, os.listdir(folder)):
+
+    for fn in filter(_is_py, os.listdir(folder)):
         process_file(
             os.path.join(folder, fn), write=write, fast_exit=fast_exit
         )
@@ -324,5 +405,5 @@ if __name__ == "__main__":
     # folder = os.path.abspath("../../../../tests/sources")
     # process_folder(folder, recursive=True, write=True)
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/shooter/branches/predefined_notes_branch/src", recursive=True, write=True)
-    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/texturepipeline/trunk/src/bin/ddTexturePub", write=True)
+    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/texturepipeline/trunk/src/python/texturepipeline/mari/ddscripts/mariQtWrapper.py", write=False)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ticket/trunk/src/python/ticket/flaregun_ui.py", write=True, fast_exit=False)
