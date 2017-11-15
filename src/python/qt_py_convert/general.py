@@ -74,11 +74,24 @@ if misplaced_members_python_str:
     print (_color(32, "Resolved QT_CUSTOM_MISPLACED_MEMBERS to json: {0!r}".format(_custom_misplaced_members)))
 
 
-AliasDict = dict([
-    ("bindings", set()),
-    ("root_aliases", set()),
-    ("used", set()),
-])
+class AliasDictClass(dict):
+    def __init__(self):
+        super(AliasDictClass, self).__init__(
+            dict([
+                ("bindings", set()),
+                ("root_aliases", set()),
+                ("used", set()),
+            ])
+        )
+
+    def clean(self):
+        print(_color(31, "Cleaning the global AliasDict"))
+        self["bindings"] = set()
+        self["root_aliases"] = set()
+        self["used"] = set()
+
+
+AliasDict = AliasDictClass()
 
 
 def merge_dict(lhs, rhs, keys=None, keys_both=False):

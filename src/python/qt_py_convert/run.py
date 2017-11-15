@@ -333,6 +333,7 @@ def misplaced_members(aliases, mappings):
 
 
 def run(text, skip_lineno=False):
+    AliasDict.clean()
     try:
         red = redbaron.RedBaron(text)
     except Exception as err:
@@ -385,13 +386,17 @@ def process_file(fp, write=False, skip_lineno=False):
         source = fh.read()
 
     print("Processing %s" % fp)
-    aliases, mappings, modified_code = run(source, skip_lineno=skip_lineno)
-    pprint(aliases)
-    pprint(mappings)
-    if write:
-        print("Writing modified code to %s" % fp)
-        with open(fp, "wb") as fh:
-            fh.write(modified_code)
+    try:
+        aliases, mappings, modified_code = run(source, skip_lineno=skip_lineno)
+        pprint(aliases)
+        pprint(mappings)
+        if write:
+            print("Writing modified code to %s" % fp)
+            with open(fp, "wb") as fh:
+                fh.write(modified_code)
+    except:
+        print("ERROR: Error processing file: \"%s\"" % fp)
+        traceback.print_exc()
 
 
 def process_folder(folder, recursive=False, write=False, skip_lineno=False):

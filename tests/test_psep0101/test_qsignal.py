@@ -327,6 +327,22 @@ def test_connect_old_style_pyargs():
         "self.ticket_tool.currentIndexChanged.connect(Flaregun.infoEntered)",
     )
 
+def test_connect_old_style_no_owner():
+    check_connection(
+        """self.__shot_combo.connect(QtCore.SIGNAL("currentIndexChanged(int)"),
+                              self.__updateLinkVersionLabel)""",
+        """self.__shot_combo.currentIndexChanged.connect(self.__updateLinkVersionLabel)""",
+    )
+    check_connection(
+        """action.connect(QtCore.SIGNAL("triggered()"), self.selectPatches)""",
+        """action.triggered.connect(self.selectPatches)""",
+    )
+    check_connection(
+        """channel_all_check.connect(QtCore.SIGNAL("stateChanged(int)"),
+                              self.__updateChannelStates)""",
+        """channel_all_check.stateChanged.connect(self.__updateChannelStates)""",
+    )
+
 
 if __name__ == "__main__":
     import traceback
