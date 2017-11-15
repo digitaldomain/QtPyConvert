@@ -22,11 +22,19 @@ class Processes(object):
         for node in objects:
             raw = node.parent.dumps()
             changed = re.sub(
-                r"(?:QtCore\.)?QVariant\((?P<value>.*?)\)",
+                r"(?:QtCore\.)?QVariant\((?P<value>.*)\)",
                 r"\g<value>",
                 raw
             )
             if changed != raw:
+                # Some edge case logic here.
+                # Was having issues replacing the following code:
+                # return QtCore.QVariant()
+                # There was no parameter...So now that becomes:
+                # return None
+                if changed == "":
+                    changed = "None"
+
                 _change_verbose(
                     handler=psep_handler,
                     node=node.parent,

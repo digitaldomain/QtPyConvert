@@ -439,5 +439,5 @@ if __name__ == "__main__":
     # folder = os.path.abspath("../../../../tests/sources")
     # process_folder(folder, recursive=True, write=True)
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/shooter/branches/predefined_notes_branch/src", recursive=True, write=True)
-    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/texturepipeline/trunk/src/python/texturepipeline/mari/publishTextures/dialog.py", write=False, skip_lineno=True)
+    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/texturepipeline/trunk/src/python/texturepipeline/utils/level.py", write=False, skip_lineno=True)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ticket/trunk/src/python/ticket/flaregun_ui.py", write=True, fast_exit=False)

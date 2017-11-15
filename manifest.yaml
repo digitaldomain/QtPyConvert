@@ -13,7 +13,7 @@ Schema: '1.0'
 # established conventions defined for the facility concerning software
 # versioning.
 Name: qt_py_convert
-Version: '0.2.2'
+Version: '0.2.3'
 
 # The type of installation that will be performed for this software.
 # This information MUST be provided.
