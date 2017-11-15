@@ -1,4 +1,8 @@
-from qt_py_convert.general import __supported_bindings__, _color, AliasDict
+from qt_py_convert.general import __supported_bindings__, _color, AliasDict, _change_verbose
+
+
+def import_handler(msg):
+    print("[%s] %s" % (_color(35, "import *"), msg))
 
 
 class Processes(object):
@@ -7,19 +11,18 @@ class Processes(object):
         return ".".join([child_part.dumps() for child_part in child.value])
 
     @staticmethod
-    def _no_second_level_module(node, _child_parts):
+    def _no_second_level_module(node, _child_parts, skip_lineno=False):
 
-        print(
-            "Changing {old} to {new} at line {line}".format(
-                old=str(node).strip("\n"),
-                new=_color(35, "import Qt"),
-                line=node.absolute_bounding_box.top_left.line-1
-            )
+        _change_verbose(
+            handler=import_handler,
+            node=node,
+            replacement="import Qt",
+            skip_lineno=skip_lineno,
         )
         node.replace("import Qt")
 
     @classmethod
-    def _process_import(cls, red, objects):
+    def _process_import(cls, red, objects, skip_lineno=False):
         binding_aliases = AliasDict
         mappings = {}
 
@@ -62,18 +65,16 @@ class Processes(object):
                     continue
 
                 mappings[_child_as_name or _child_name] = ".".join(_child_parts)
-                print(
-                    "Changing {old} to {new} at line {line}".format(
-                        old=str(node.parent).strip("\n"),
-                        new=_color(
-                            35,
-                            "from Qt import {key}".format(
-                                key=second_level_module
-                            )
-                        ),
-                        line=node.parent.absolute_bounding_box.top_left.line - 1
-                    )
+
+                _change_verbose(
+                    handler=import_handler,
+                    node=node.parent,
+                    replacement="from Qt import {key}".format(
+                        key=second_level_module
+                    ),
+                    skip_lineno=skip_lineno,
                 )
+
                 node.parent.replace(
                     "from Qt import {key}".format(key=second_level_module)
                 )
@@ -105,7 +106,7 @@ def import_process(store):
     return filter_function
 
 
-def process(red, **kwargs):
+def process(red, skip_lineno=False, **kwargs):
 
     issues = {
         Processes.IMPORT_STR: set(),
@@ -114,6 +115,6 @@ def process(red, **kwargs):
     key = Processes.IMPORT_STR
 
     if issues[key]:
-        return getattr(Processes, key)(red, issues[key])
+        return getattr(Processes, key)(red, issues[key], skip_lineno=skip_lineno)
     else:
         return AliasDict, {}

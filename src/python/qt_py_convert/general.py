@@ -36,6 +36,25 @@ def _color(color, text):
         return text
     return "\033[%dm%s\033[0m" % (color, text)
 
+
+def _change_verbose(handler, node, replacement, skip_lineno=False, msg=None):
+    if msg is None:
+        msg = "Replacing \"{original}\" with \"{replacement}\""
+
+    original = _color(37, str(node).strip("\n"))
+    replacement = _color(37, replacement)
+    if not skip_lineno:
+        msg += " at line {line}"
+        if not hasattr(node, "absolute_bounding_box"):
+            line = "N/A"
+        else:
+            line = node.absolute_bounding_box.top_left.line - 1
+
+    return handler(
+        msg.format(**locals())
+    )
+
+
 # Binding support
 __supported_bindings__ = ["PySide2", "PySide", "PyQt5", "PyQt4"]  # , "ddg.gui.qt", "pyqode.qt"]
 _custom_bindings = os.environ.get("QT_CUSTOM_BINDINGS_SUPPORT")

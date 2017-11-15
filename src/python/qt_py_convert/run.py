@@ -11,12 +11,20 @@ from qt_py_convert._modules import from_imports
 from qt_py_convert._modules import imports
 from qt_py_convert._modules import psep0101
 from qt_py_convert.general import \
-    merge_dict, _custom_misplaced_members, _color, AliasDict
+    merge_dict, _custom_misplaced_members, _color, AliasDict, _change_verbose
 
 COMMON_MODULES = Qt._common_members.keys() + ["QtCompat"]
 
 
-def _cleanup_imports(red, aliases, mappings):
+def main_handler(msg):
+    print("[%s] %s" % (_color(35, "qt_py_convert"), msg))
+
+
+def atomtrailers_handler(msg):
+    print("[%s] %s" % (_color(35, "qt4->qt5"), msg))
+
+
+def _cleanup_imports(red, aliases, mappings, skip_lineno=False):
     replaced = False
     deletion_index = []
     imps = red.find_all("FromImportNode")
@@ -59,23 +67,31 @@ def _cleanup_imports(red, aliases, mappings):
                     replace_text = "from Qt import {key}".format(
                         key=", ".join(names)
                     )
-                    print(
-                        "%s imports from: \"%s\" to \"%s\" at line %d" % (
-                            _color(32, "Cleaning"),
-                            _color(37, child.dumps().strip("\n")),
-                            _color(37, replace_text),
-                            child.absolute_bounding_box.top_left.line - 1
-                        )
+
+                    cleaning_message = (
+                        "%s imports from: \"{original}\" to \"{replacement}\""
+                        % _color(32, "Cleaning")
                     )
+                    _change_verbose(
+                        msg=cleaning_message,
+                        handler=main_handler,
+                        node=child,
+                        replacement=replace_text,
+                        skip_lineno=skip_lineno,
+                    )
+
                     child.replace(replace_text)
                     replaced = True
                 else:
-                    print(
-                        "%s \"%s\" at line %d" % (
-                            _color(31, "Deleting"),
-                            _color(37, child),
-                            child.absolute_bounding_box.top_left.line - 1
-                        )
+                    deleting_message = (
+                        "%s \"{original}\"" % _color(31, "Deleting")
+                    )
+                    _change_verbose(
+                        msg=deleting_message,
+                        handler=main_handler,
+                        node=child,
+                        replacement="",
+                        skip_lineno=skip_lineno,
                     )
                     child.parent.remove(child)
             else:
@@ -86,7 +102,7 @@ def _cleanup_imports(red, aliases, mappings):
         # red.remove(child)
 
 
-def _convert_attributes(red, aliases):
+def _convert_attributes(red, aliases, skip_lineno=False):
     # Compile our expressions
     expressions = [
         (
@@ -137,11 +153,13 @@ def _convert_attributes(red, aliases):
                     print(_color(33, "========================="))
                     print(_color(33, _color(4, "Parsing AtomTrailersNodes")))
                     header_written = True
-                print("Replacing %s with %s at line %d" % (
-                    str(orig_node_str).strip("\n"),
-                    _color(37, modified),
-                    node.absolute_bounding_box.top_left.line-1
-                ))
+
+                _change_verbose(
+                    handler=atomtrailers_handler,
+                    node=node,
+                    replacement=modified,
+                    skip_lineno=skip_lineno,
+                )
                 node.value[0].replace(module_)
                 # node.replace(modified)
                 break
@@ -150,7 +168,7 @@ def _convert_attributes(red, aliases):
     return mappings
 
 
-def _convert_root_name_imports(red, aliases, mappings):
+def _convert_root_name_imports(red, aliases, mappings, skip_lineno=False):
     """
     _convert_root_name_imports is a function that should be used in cases
     where the original code just imported the python binding and did not
@@ -180,9 +198,9 @@ def _convert_root_name_imports(red, aliases, mappings):
         print(_color(35, "===================================="))
         print(_color(35, _color(4, "Replacing top level binding imports.")))
 
-    for match in matches:
+    for node in matches:
         name = L_STRIP_QT_RE.sub(
-            "", match.dumps(), count=1
+            "", node.dumps(), count=1
         )
 
         root_name = name.split(".")[0]
@@ -190,12 +208,13 @@ def _convert_root_name_imports(red, aliases, mappings):
             aliases["root_aliases"].add(
                 root_name
             )
-            print("Replacing %s with %s at line %d" % (
-                _color(37, str(match.dumps()).strip("\n")),
-                _color(37, name),
-                match.absolute_bounding_box.top_left.line-1
-            ))
-            match.replace(name)
+            _change_verbose(
+                handler=main_handler,
+                node=node,
+                replacement=name,
+                skip_lineno=skip_lineno,
+            )
+            node.replace(name)
         else:
             print(
                 "Unknown second level module from the Qt package \"%s\""
@@ -203,7 +222,7 @@ def _convert_root_name_imports(red, aliases, mappings):
             )
 
 
-def _convert_body(red, aliases, mappings):
+def _convert_body(red, aliases, mappings, skip_lineno=False):
     def expression_factory(expr_key):
         regex = re.compile(
             r"{value}(?:[\.\[\(].*)?$".format(value=expr_key),
@@ -226,23 +245,26 @@ def _convert_body(red, aliases, mappings):
         else:
             matches = red.find_all("NameNode", value=key)
         if matches:
-            for match in matches:
+            for node in matches:
                 # Dont replace imports, we already did that.
-                if not match.parent_find("ImportNode") and not match.parent_find("FromImportNode"):
+                if not node.parent_find("ImportNode") and not node.parent_find("FromImportNode"):
                     # If the node's parent has dot syntax. Make sure we are the first one.
                     # Reasoning: We are relying on namespacing, so we don't want to turn bob.foo.cat into bob.foo.bear.
                     #            Because bob.foo.cat might not be equal to the mike.cat that we meant to change.
-                    if match.parent.type == "atomtrailers" and not match.parent.value[0] == match:
+                    if node.parent.type == "atomtrailers" and not node.parent.value[0] == node:
                         continue
 
-                    print("Replacing %s with %s at line %d" % (
-                        _color(37, str(match).strip("\n")),
-                        _color(37, match.dumps().replace(key, mappings[key])),
-                        match.absolute_bounding_box.top_left.line-1
-                    ))
+                    replacement = node.dumps().replace(key, mappings[key])
+                    _change_verbose(
+                        handler=main_handler,
+                        node=node,
+                        replacement=replacement,
+                        skip_lineno=skip_lineno,
+                    )
                     if mappings[key].split(".")[0] in COMMON_MODULES:
                         aliases["used"].add(mappings[key].split(".")[0])
-                    match.replace(match.dumps().replace(key, mappings[key]))
+
+                    node.replace(replacement)
                     # match.replace(mappings[key])
 
 
@@ -287,6 +309,7 @@ def misplaced_members(aliases, mappings):
         else:
             print("Could not find misplaced members for %s" % binding.lower())
 
+        _msg = "Replacing \"{original}\" with \"{replacement}\" in mappings"
         if members:
             for source in members:
                 replaced = False
@@ -295,7 +318,12 @@ def misplaced_members(aliases, mappings):
                     dest, _ = members[source]
                 for current_key in mappings:
                     if mappings[current_key] == source:
-                        print("Replacing %s with %s in mappings" % (mappings[current_key], dest))
+                        _change_verbose(
+                            msg=_msg,
+                            handler=main_handler,
+                            node=mappings[current_key],
+                            replacement=dest,
+                        )
                         mappings[current_key] = dest
                         replaced = True
                 if not replaced:
@@ -304,7 +332,7 @@ def misplaced_members(aliases, mappings):
     return aliases, mappings
 
 
-def run(text, fast_exit=False):
+def run(text, skip_lineno=False):
     try:
         red = redbaron.RedBaron(text)
     except Exception as err:
@@ -312,12 +340,8 @@ def run(text, fast_exit=False):
         traceback.print_exc()
         return AliasDict, {}, text
 
-    from_a, from_m = from_imports.process(red)
-    import_a, import_m = imports.process(red)
-    if fast_exit:
-        if from_a == AliasDict and import_a == AliasDict:
-            if not from_m and not import_m:
-                return AliasDict, {}, text
+    from_a, from_m = from_imports.process(red, skip_lineno=skip_lineno)
+    import_a, import_m = imports.process(red, skip_lineno=skip_lineno)
     mappings = merge_dict(from_m, import_m, keys_both=True)
     aliases = merge_dict(from_a, import_a, keys=["bindings", "root_aliases"])
 
@@ -327,12 +351,12 @@ def run(text, fast_exit=False):
     mappings = _convert_mappings(aliases, mappings)
 
     # Convert using the psep0101 module.
-    psep0101.process(red)
-    _convert_body(red, aliases, mappings)
-    _convert_root_name_imports(red, aliases, mappings)
-    _convert_attributes(red, aliases)
+    psep0101.process(red, skip_lineno=skip_lineno)
+    _convert_body(red, aliases, mappings, skip_lineno=skip_lineno)
+    _convert_root_name_imports(red, aliases, mappings, skip_lineno=skip_lineno)
+    _convert_attributes(red, aliases, skip_lineno=skip_lineno)
     if aliases["root_aliases"]:
-        _cleanup_imports(red, aliases, mappings)
+        _cleanup_imports(red, aliases, mappings, skip_lineno=skip_lineno)
 
     # Done!
     dumps = red.dumps()
@@ -351,7 +375,7 @@ def _is_py(path):
     return False
 
 
-def process_file(fp, write=False, fast_exit=False):
+def process_file(fp, write=False, skip_lineno=False):
     if not _is_py(fp):
         print(
             "\tSkipping \"%s\"... It does not appear to be a python file." % fp
@@ -361,7 +385,7 @@ def process_file(fp, write=False, fast_exit=False):
         source = fh.read()
 
     print("Processing %s" % fp)
-    aliases, mappings, modified_code = run(source, fast_exit=fast_exit)
+    aliases, mappings, modified_code = run(source, skip_lineno=skip_lineno)
     pprint(aliases)
     pprint(mappings)
     if write:
@@ -370,7 +394,7 @@ def process_file(fp, write=False, fast_exit=False):
             fh.write(modified_code)
 
 
-def process_folder(folder, recursive=False, write=False, fast_exit=False):
+def process_folder(folder, recursive=False, write=False, skip_lineno=False):
 
     def _is_dir(path):
         return True if os.path.isdir(os.path.join(folder, path)) else False
@@ -380,7 +404,7 @@ def process_folder(folder, recursive=False, write=False, fast_exit=False):
 
     for fn in filter(_is_py, os.listdir(folder)):
         process_file(
-            os.path.join(folder, fn), write=write, fast_exit=fast_exit
+            os.path.join(folder, fn), write=write, skip_lineno=skip_lineno
         )
         print("-" * 50)
 
@@ -388,7 +412,12 @@ def process_folder(folder, recursive=False, write=False, fast_exit=False):
         return
 
     for fn in filter(_is_dir, os.listdir(folder)):
-        process_folder(os.path.join(folder, fn), recursive, write, fast_exit)
+        process_folder(
+            os.path.join(folder, fn),
+            recursive=recursive,
+            write=write,
+            skip_lineno=skip_lineno
+        )
 
 
 if __name__ == "__main__":
@@ -405,5 +434,5 @@ if __name__ == "__main__":
     # folder = os.path.abspath("../../../../tests/sources")
     # process_folder(folder, recursive=True, write=True)
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/shooter/branches/predefined_notes_branch/src", recursive=True, write=True)
-    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/texturepipeline/trunk/src/python/texturepipeline/mari/ddscripts/mariQtWrapper.py", write=False)
+    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/texturepipeline/trunk/src/python/texturepipeline/mari/publishTextures/dialog.py", write=False, skip_lineno=True)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ticket/trunk/src/python/ticket/flaregun_ui.py", write=True, fast_exit=False)

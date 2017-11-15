@@ -31,10 +31,16 @@ def parse():
         action="store_true",
         help="Overwrite the file in place.",
     )
+    parser.add_argument(
+        "--no-lines",
+        action="store_true",
+        help="Turn off printing the line numbers that things are replaced at. "
+             "Ends up being much faster.",
+    )
     return parser.parse_args()
 
 
-def main(pathlist, recursive=True, write=False):
+def main(pathlist, recursive=True, write=False, no_lines=False):
     # process_paths = []
     # for path in pathlist:
     #     if path == "*":
@@ -50,11 +56,20 @@ def main(pathlist, recursive=True, write=False):
     for path in [os.path.abspath(p) for p in pathlist]:
         # print("Processing %s" % path)
         if os.path.isdir(path):
-            process_folder(path, recursive=recursive, write=write)
+            process_folder(
+                path,
+                recursive=recursive,
+                write=write,
+                skip_lineno=no_lines
+            )
         else:
-            process_file(path, write=write)
+            process_file(
+                path,
+                write=write,
+                skip_lineno=no_lines
+            )
 
 
 if __name__ == "__main__":
     args = parse()
-    main(args.files_or_directories, args.recursive, args.write)
+    main(args.files_or_directories, args.recursive, args.write, args.no_lines)

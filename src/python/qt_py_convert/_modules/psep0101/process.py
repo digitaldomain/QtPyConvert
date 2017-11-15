@@ -5,7 +5,7 @@ import re
 
 import six
 
-from qt_py_convert.general import _color
+from qt_py_convert.general import _color, _change_verbose
 from qt_py_convert._modules.psep0101 import _qsignal
 
 
@@ -17,7 +17,7 @@ def psep_handler(msg):
 
 class Processes(object):
     @staticmethod
-    def _process_qvariant(red, objects):
+    def _process_qvariant(red, objects, skip_lineno=False):
         # Replace each node
         for node in objects:
             raw = node.parent.dumps()
@@ -27,14 +27,16 @@ class Processes(object):
                 raw
             )
             if changed != raw:
-                psep_handler(
-                    "Replaceing \"%s\" with \"%s\""
-                    % (_color(32, raw), _color(34, changed))
+                _change_verbose(
+                    handler=psep_handler,
+                    node=node.parent,
+                    replacement=changed,
+                    skip_lineno=skip_lineno,
                 )
                 node.parent.replace(changed)
 
     @staticmethod
-    def _process_qstring(red, objects):
+    def _process_qstring(red, objects, skip_lineno=False):
         # Replace each node
         for node in objects:
             raw = node.parent.dumps()
@@ -44,17 +46,20 @@ class Processes(object):
                 raw
             )
             if changed != raw:
-                psep_handler(
-                    "Replacing \"%s\" with \"%s\""
-                    % (_color(32, raw), _color(34, changed))
+                _change_verbose(
+                    handler=psep_handler,
+                    node=node.parent,
+                    replacement=changed,
+                    skip_lineno=skip_lineno,
                 )
+
                 node.parent.replace(changed)
 
         # Search tree for usages of a QString method. (Good luck with that)
         pass
 
     @staticmethod
-    def _process_qstringlist(red, objects):
+    def _process_qstringlist(red, objects, skip_lineno=False):
         # TODO: find different usage cases of QStringList. Probably just need support for construction and isinstance.
         # Replace each node
         for node in objects:
@@ -65,16 +70,19 @@ class Processes(object):
                 raw
             )
             if changed != raw:
-                psep_handler(
-                    "Replacing \"%s\" with \"%s\""
-                    % (_color(32, raw), _color(34, changed))
+                _change_verbose(
+                    handler=psep_handler,
+                    node=node.parent,
+                    replacement=changed,
+                    skip_lineno=skip_lineno,
                 )
+
                 node.parent.replace(changed)
         # Search tree for usages of a QStringList method. (Good luck with that)
         pass
 
     @staticmethod
-    def _process_qchar(red, objects):
+    def _process_qchar(red, objects, skip_lineno=False):
         # Replace each node
         for node in objects:
             raw = node.parent.dumps()
@@ -84,10 +92,13 @@ class Processes(object):
                 raw
             )
             if changed != raw:
-                psep_handler(
-                    "Replacing \"%s\" with \"%s\""
-                    % (_color(32, raw), _color(34, changed))
+                _change_verbose(
+                    handler=psep_handler,
+                    node=node.parent,
+                    replacement=changed,
+                    skip_lineno=skip_lineno,
                 )
+
                 node.parent.replace(changed)
 
 
@@ -95,53 +106,49 @@ class Processes(object):
         pass
 
     @staticmethod
-    def _process_qsignal(red, objects):
+    def _process_qsignal(red, objects, skip_lineno=False):
         for node in objects:
             raw = node.parent.dumps()
 
             if "disconnect" in raw:
-                replacement = _qsignal.process_disconnect(raw)
-                if replacement != raw:
-                    psep_handler(
-                        "Replacing \"%s\" with \"%s\" at line %d"
-                        % (
-                            _color(32, raw),
-                            _color(34, replacement),
-                            node.absolute_bounding_box.top_left.line - 1
-                        )
+                changed = _qsignal.process_disconnect(raw)
+                if changed != raw:
+                    _change_verbose(
+                        handler=psep_handler,
+                        node=node.parent,
+                        replacement=changed,
+                        skip_lineno=skip_lineno,
                     )
-                    node.parent.replace(replacement)
+
+                    node.parent.replace(changed)
                     continue
             if "connect" in raw:
-                replacement = _qsignal.process_connect(raw)
-                if replacement != raw:
-                    psep_handler(
-                        "Replacing \"%s\" with \"%s\" at line %d"
-                        % (
-                            _color(32, raw),
-                            _color(34, replacement),
-                            node.absolute_bounding_box.top_left.line - 1
-                        )
+                changed = _qsignal.process_connect(raw)
+                if changed != raw:
+                    _change_verbose(
+                        handler=psep_handler,
+                        node=node.parent,
+                        replacement=changed,
+                        skip_lineno=skip_lineno,
                     )
-                    node.parent.replace(replacement)
+                    node.parent.replace(changed)
                     continue
             if "emit" in raw:
-                replacement = _qsignal.process_emit(raw)
-                if replacement != raw:
-                    psep_handler(
-                        "Replacing \"%s\" with \"%s\" at line %d"
-                        % (
-                            _color(32, raw),
-                            _color(34, replacement),
-                            node.absolute_bounding_box.top_left.line - 1
-                        )
+                changed = _qsignal.process_emit(raw)
+                if changed != raw:
+
+                    _change_verbose(
+                        handler=psep_handler,
+                        node=node.parent,
+                        replacement=changed,
+                        skip_lineno=skip_lineno,
                     )
-                    node.parent.replace(replacement)
+                    node.parent.replace(changed)
                     continue
 
 
     @staticmethod
-    def _process_qstringref(red, objects):
+    def _process_qstringref(red, objects, skip_lineno=False):
         # Replace each node
         for node in objects:
             raw = node.parent.dumps()
@@ -151,9 +158,11 @@ class Processes(object):
                 raw
             )
             if changed != raw:
-                psep_handler(
-                    "Replacing \"%s\" with \"%s\""
-                    % (_color(32, raw), _color(34, changed))
+                _change_verbose(
+                    handler=psep_handler,
+                    node=node.parent,
+                    replacement=changed,
+                    skip_lineno=skip_lineno,
                 )
                 node.parent.replace(changed)
 
@@ -211,7 +220,7 @@ def psep_process(store):
     return filter_function
 
 
-def process(red):
+def process(red, skip_lineno=False, **kwargs):
     psep_issues = {
         Processes.QSTRING_PROCESS_STR: set(),
         Processes.QSTRINGLIST_PROCESS_STR: set(),
@@ -224,4 +233,5 @@ def process(red):
     red.find_all("DottedNameNode", value=psep_process(psep_issues))
 
     for issue in psep_issues:
-        getattr(Processes, issue)(red, psep_issues[issue]) if psep_issues[issue] else None
+        if psep_issues[issue]:
+            getattr(Processes, issue)(red, psep_issues[issue], skip_lineno=skip_lineno)
