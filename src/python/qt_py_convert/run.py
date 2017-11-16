@@ -407,7 +407,7 @@ def process_folder(folder, recursive=False, write=False, skip_lineno=False):
     # TODO: Might need to parse the text to remove whitespace at the EOL.
     #       #101 at https://github.com/PyCQA/baron documents this issue.
 
-    for fn in filter(_is_py, os.listdir(folder)):
+    for fn in filter(_is_py, [os.path.join(folder, fp) for fp in os.listdir(folder)]):
         process_file(
             os.path.join(folder, fn), write=write, skip_lineno=skip_lineno
         )
