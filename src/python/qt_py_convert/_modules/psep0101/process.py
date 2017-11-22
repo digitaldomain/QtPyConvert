@@ -7,6 +7,7 @@ import six
 
 from qt_py_convert.general import _color, _change_verbose
 from qt_py_convert._modules.psep0101 import _qsignal
+from qt_py_convert._modules.psep0101 import _conversion_methods
 
 
 def psep_handler(msg):
@@ -109,9 +110,35 @@ class Processes(object):
 
                 node.parent.replace(changed)
 
-
         # Search tree for usages of a QChar method. (Good luck with that)
         pass
+
+    @staticmethod
+    def _process_to_methods(red, objects, skip_lineno=False):
+        """
+        Attempts at fixing the "toString" "toBool" "toPyObject" etc
+        PyQt4-apiv1.0 helper methods.
+
+        :param red: redbaron process. Unused in this method.
+        :type red: redbardon.RedBaron
+        :param objects: List of redbaron nodes that matched for this proc.
+        :type objects: list
+        :param skip_lineno: Global "skip_lineno" flag.
+        :type skip_lineno: bool
+        """
+        for node in objects:
+            raw = node.parent.dumps()
+            changed = _conversion_methods.to_methods(raw)
+            if changed != raw:
+                    _change_verbose(
+                        handler=psep_handler,
+                        node=node.parent,
+                        replacement=changed,
+                        skip_lineno=skip_lineno,
+                    )
+
+                    node.parent.replace(changed)
+                    continue
 
     @staticmethod
     def _process_qsignal(red, objects, skip_lineno=False):
@@ -189,6 +216,8 @@ class Processes(object):
     QSIGNAL_PROCESS = _process_qsignal
     QVARIANT_PROCESS_STR = "QVARIANT_PROCESS"
     QVARIANT_PROCESS = _process_qvariant
+    TOMETHOD_PROCESS_STR = "TOMETHOD_PROCESS"
+    TOMETHOD_PROCESS = _process_to_methods
 
 
 def psep_process(store):
@@ -198,6 +227,7 @@ def psep_process(store):
     _qstringref_expression = re.compile(r"QStringRef(?:[^\w]+(?:.*?))?$")
     _qsignal_expression = re.compile(r"[(?:connect)|(?:disconnect)|(?:emit)].*QtCore\.SIGNAL", re.DOTALL)
     _qvariant_expression = re.compile(r"QVariant(?:[^\w]+(?:.*?))?$")
+    _to_method_expression = re.compile(r"to[A-Z][A-Za-z]+\(\)")
 
     def filter_function(value):
         """
@@ -223,6 +253,9 @@ def psep_process(store):
         if _qvariant_expression.search(value.dumps()):
             store[Processes.QVARIANT_PROCESS_STR].add(value)
             found = True
+        if _to_method_expression.search(value.dumps()):
+            store[Processes.TOMETHOD_PROCESS_STR].add(value)
+            found = True
         if found:
             return True
     return filter_function
@@ -236,6 +269,7 @@ def process(red, skip_lineno=False, **kwargs):
         Processes.QSTRINGREF_PROCESS_STR: set(),
         Processes.QSIGNAL_PROCESS_STR: set(),
         Processes.QVARIANT_PROCESS_STR: set(),
+        Processes.TOMETHOD_PROCESS_STR: set(),
     }
     red.find_all("AtomTrailersNode", value=psep_process(psep_issues))
     red.find_all("DottedNameNode", value=psep_process(psep_issues))
