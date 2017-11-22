@@ -37,10 +37,16 @@ def parse():
         help="Turn off printing the line numbers that things are replaced at. "
              "Ends up being much faster.",
     )
+    parser.add_argument(
+        "--to-method-support",
+        action="store_true",
+        help="Attempt to replace api1.0 style \"toString\" \"toPyObject\" etc "
+             "methods that are unneeded in api2.0.",
+    )
     return parser.parse_args()
 
 
-def main(pathlist, recursive=True, write=False, no_lines=False):
+def main(pathlist, recursive=True, write=False, no_lines=False, tometh_flag=False):
     # process_paths = []
     # for path in pathlist:
     #     if path == "*":
@@ -60,16 +66,24 @@ def main(pathlist, recursive=True, write=False, no_lines=False):
                 path,
                 recursive=recursive,
                 write=write,
-                skip_lineno=no_lines
+                skip_lineno=no_lines,
+                tometh_flag=tometh_flag
             )
         else:
             process_file(
                 path,
                 write=write,
-                skip_lineno=no_lines
+                skip_lineno=no_lines,
+                tometh_flag=tometh_flag
             )
 
 
 if __name__ == "__main__":
     args = parse()
-    main(args.files_or_directories, args.recursive, args.write, args.no_lines)
+    main(
+        args.files_or_directories,
+        args.recursive,
+        args.write,
+        args.no_lines,
+        args.to_method_support,
+    )

@@ -261,7 +261,7 @@ def psep_process(store):
     return filter_function
 
 
-def process(red, skip_lineno=False, **kwargs):
+def process(red, skip_lineno=False, tometh_flag=False,**kwargs):
     psep_issues = {
         Processes.QSTRING_PROCESS_STR: set(),
         Processes.QSTRINGLIST_PROCESS_STR: set(),
@@ -269,8 +269,12 @@ def process(red, skip_lineno=False, **kwargs):
         Processes.QSTRINGREF_PROCESS_STR: set(),
         Processes.QSIGNAL_PROCESS_STR: set(),
         Processes.QVARIANT_PROCESS_STR: set(),
-        Processes.TOMETHOD_PROCESS_STR: set(),
     }
+
+    # Start running the to_method_process if we turn on the flag.
+    if tometh_flag:
+        psep_issues[Processes.TOMETHOD_PROCESS_STR] = set()
+
     red.find_all("AtomTrailersNode", value=psep_process(psep_issues))
     red.find_all("DottedNameNode", value=psep_process(psep_issues))
 

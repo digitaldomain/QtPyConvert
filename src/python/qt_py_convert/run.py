@@ -332,7 +332,7 @@ def misplaced_members(aliases, mappings):
     return aliases, mappings
 
 
-def run(text, skip_lineno=False):
+def run(text, skip_lineno=False, tometh_flag=False):
     AliasDict.clean()
     try:
         red = redbaron.RedBaron(text)
@@ -352,7 +352,7 @@ def run(text, skip_lineno=False):
     mappings = _convert_mappings(aliases, mappings)
 
     # Convert using the psep0101 module.
-    psep0101.process(red, skip_lineno=skip_lineno)
+    psep0101.process(red, skip_lineno=skip_lineno, tometh_flag=tometh_flag)
     _convert_body(red, aliases, mappings, skip_lineno=skip_lineno)
     _convert_root_name_imports(red, aliases, mappings, skip_lineno=skip_lineno)
     _convert_attributes(red, aliases, skip_lineno=skip_lineno)
@@ -376,7 +376,7 @@ def _is_py(path):
     return False
 
 
-def process_file(fp, write=False, skip_lineno=False):
+def process_file(fp, write=False, skip_lineno=False, tometh_flag=False):
     if not _is_py(fp):
         print(
             "\tSkipping \"%s\"... It does not appear to be a python file." % fp
@@ -387,7 +387,11 @@ def process_file(fp, write=False, skip_lineno=False):
 
     print("Processing %s" % fp)
     try:
-        aliases, mappings, modified_code = run(source, skip_lineno=skip_lineno)
+        aliases, mappings, modified_code = run(
+            source,
+            skip_lineno=skip_lineno,
+            tometh_flag=tometh_flag
+        )
         pprint(aliases)
         pprint(mappings)
         if write:
@@ -399,7 +403,7 @@ def process_file(fp, write=False, skip_lineno=False):
         traceback.print_exc()
 
 
-def process_folder(folder, recursive=False, write=False, skip_lineno=False):
+def process_folder(folder, recursive=False, write=False, skip_lineno=False, tometh_flag=False):
 
     def _is_dir(path):
         return True if os.path.isdir(os.path.join(folder, path)) else False
@@ -409,7 +413,10 @@ def process_folder(folder, recursive=False, write=False, skip_lineno=False):
 
     for fn in filter(_is_py, [os.path.join(folder, fp) for fp in os.listdir(folder)]):
         process_file(
-            os.path.join(folder, fn), write=write, skip_lineno=skip_lineno
+            os.path.join(folder, fn),
+            write=write,
+            skip_lineno=skip_lineno,
+            tometh_flag=tometh_flag
         )
         print("-" * 50)
 
@@ -421,7 +428,8 @@ def process_folder(folder, recursive=False, write=False, skip_lineno=False):
             os.path.join(folder, fn),
             recursive=recursive,
             write=write,
-            skip_lineno=skip_lineno
+            skip_lineno=skip_lineno,
+            tometh_flag=tometh_flag
         )
 
 
