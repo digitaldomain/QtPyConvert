@@ -269,7 +269,7 @@ def _convert_body(red, aliases, mappings, skip_lineno=False):
 
 
 def _convert_mappings(aliases, mappings):
-    core_expr, gui_expr, widgets_expr = [
+    expressions = [
         re.compile(
             r"(?P<module>{modules})\.(?P<widget>{widgets})".format(
                 # Regular expression
@@ -281,12 +281,13 @@ def _convert_mappings(aliases, mappings):
                 )
             )
         )
-        for module_name in ["QtCore", "QtGui", "QtWidgets"]
+        for module_name in Qt._common_members.keys()
     ]
     for from_mapping in mappings:
-        for module_name, expression in [("QtCore", core_expr),
-                                        ("QtGui", gui_expr),
-                                        ("QtWidgets", widgets_expr)]:
+        for module_name, expression in zip(Qt._common_members.keys(), expressions):
+        # for module_name, expression in [("QtCore", core_expr),
+        #                                 ("QtGui", gui_expr),
+        #                                 ("QtWidgets", widgets_expr)]:
             modified_mapping = expression.sub(
                 r"{module}.\2".format(module=module_name),
                 mappings[from_mapping]
@@ -438,6 +439,6 @@ if __name__ == "__main__":
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/assetbrowser/trunk/src", recursive=True, write=True)
     # folder = os.path.abspath("../../../../tests/sources")
     # process_folder(folder, recursive=True, write=True)
-    # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/shooter/branches/predefined_notes_branch/src", recursive=True, write=True)
-    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/texturepipeline/trunk/src/python/texturepipeline/utils/level.py", write=False, skip_lineno=True)
+    # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packrat/trunk", recursive=True, write=True, skip_lineno=True)
+    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packrat/trunk/src/python/packrat/gui/documentationview.py", write=True, skip_lineno=True)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ticket/trunk/src/python/ticket/flaregun_ui.py", write=True, fast_exit=False)
