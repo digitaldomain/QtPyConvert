@@ -716,6 +716,7 @@ _misplaced_members = {
         "QtCore.QItemSelection": "QtCore.QItemSelection",
         "QtCore.QItemSelectionModel": "QtCore.QItemSelectionModel",
         "QtUiTools.load_ui": ["QtCompat.loadUi", _loadUi],
+        "QtWidgets.qApp": "QtWidgets.QApplication.instance()"
     },
     "pyqt5": {
         "QtCore.pyqtProperty": "QtCore.Property",
@@ -728,6 +729,7 @@ _misplaced_members = {
         "QtCore.QItemSelectionModel": "QtCore.QItemSelectionModel",
         "uic.loadUi": ["QtCompat.loadUi", _loadUi],
         "QtCore.QString": "str",
+        "QtWidgets.qApp": "QtWidgets.QApplication.instance()"
     },
     "pyside": {
         "QtGui.QAbstractProxyModel": "QtCore.QAbstractProxyModel",
@@ -739,6 +741,7 @@ _misplaced_members = {
         "QtCore.Signal": "QtCore.Signal",
         "QtCore.Slot": "QtCore.Slot",
         "QtUiTools.load_ui": ["QtCompat.loadUi", _loadUi],
+        "QtGui.qApp": "QtWidgets.QApplication.instance()"
 
     },
     "pyqt4": {
@@ -753,6 +756,7 @@ _misplaced_members = {
         "QtCore.pyqtSignature": "QtCore.Slot",
         "uic.loadUi": ["QtCompat.loadUi", _loadUi],
         "QtCore.QString": "str",
+        "QtGui.qApp": "QtWidgets.QApplication.instance()"
     }
 }
 
