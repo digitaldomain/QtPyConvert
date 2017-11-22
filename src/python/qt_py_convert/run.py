@@ -160,8 +160,7 @@ def _convert_attributes(red, aliases, skip_lineno=False):
                     replacement=modified,
                     skip_lineno=skip_lineno,
                 )
-                node.value[0].replace(module_)
-                # node.replace(modified)
+                node.replace(modified)
                 break
         if not added_module:
             aliases["used"].add(orig_node_str.split(".")[0])
