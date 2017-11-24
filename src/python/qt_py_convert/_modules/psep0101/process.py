@@ -253,7 +253,7 @@ def psep_process(store):
         if _qvariant_expression.search(value.dumps()):
             store[Processes.QVARIANT_PROCESS_STR].add(value)
             found = True
-        if _to_method_expression.search(value.dumps()):
+        if Processes.TOMETHOD_PROCESS_STR in store and _to_method_expression.search(value.dumps()):
             store[Processes.TOMETHOD_PROCESS_STR].add(value)
             found = True
         if found:
