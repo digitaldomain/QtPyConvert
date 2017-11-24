@@ -29,7 +29,16 @@ class Processes(object):
         mappings = {}
         if levels is None:
             levels = []
-        _temp = __import__(binding, globals(), locals(), levels)
+        try:
+            _temp = __import__(binding, globals(), locals(), levels)
+        except ImportError as err:
+            strerr = str(err).replace("No module named", "")
+
+            raise ImportError(
+                "Attempting to manually replace a star import from \"{mod}\" "
+                "failed. The following error ocurred while attempting:\n{err}"
+                    .format(mod=strerr, err=str(err))
+            )
         if not levels:
             _module = _temp
             _members(mappings, _module, module_name=binding)
