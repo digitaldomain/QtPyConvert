@@ -371,7 +371,7 @@ def _is_py(path):
         return True
     elif not os.path.splitext(path)[1] and os.path.isfile(path):
         with open(path, "rb") as fh:
-            if "python" in fh.read(1024):
+            if "python" in fh.readline():
                 return True
     return False
 
