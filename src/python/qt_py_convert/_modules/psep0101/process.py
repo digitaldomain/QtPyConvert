@@ -2,12 +2,18 @@ __author__ = 'ahughes'
 # https://github.com/techtonik/pseps
 
 import re
-
-import six
+import sys
 
 from qt_py_convert.general import _color, _change_verbose
 from qt_py_convert._modules.psep0101 import _qsignal
 from qt_py_convert._modules.psep0101 import _conversion_methods
+
+
+# Pulled out of six because I don't want to have to bind this package to DD
+# code to load six.
+# That seems a little insane to me...So because I am only using six.text_type,
+# I am removing the six import and inlining the code.
+text_type = str if sys.version_info[0] == 3 else unicode
 
 
 def psep_handler(msg):
@@ -51,7 +57,7 @@ class Processes(object):
             raw = node.parent.dumps()
             changed = re.sub(
                 r"((?:QtCore\.)?QString(?:\.fromUtf8)?)",
-                six.text_type.__name__,
+                text_type.__name__,
                 raw
             )
             if changed != raw:
@@ -97,7 +103,7 @@ class Processes(object):
             raw = node.parent.dumps()
             changed = re.sub(
                 r"((?:QtCore\.)?QChar)",
-                six.text_type.__name__,
+                text_type.__name__,
                 raw
             )
             if changed != raw:
