@@ -272,6 +272,8 @@ autodoc_default_flags = [
 ]
 
 # autodoc_mock_imports doesn't seem to work (below)
+import dd.runtime.api
+dd.runtime.api.load("mock")
 import mock
 for mod in ["qt_py_convert.external"]:
     sys.modules[mod] = mock.MagicMock()

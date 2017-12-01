@@ -1,3 +1,6 @@
+"""
+general is utility functions for the qt_py_convert library
+"""
 import copy
 import json
 import os
@@ -28,16 +31,44 @@ def supports_color():
         return False
     return True
 
+
 __supports_color = supports_color()
 
 
 def _color(color, text):
+    """
+    _color will print the ansi text coloring code for the text.
+
+    :param color: Ansi color code number.
+    :type color: int
+    :param text: Text that you want colored.
+    :type text: str
+    :return: The colored version of the text
+    :rtype: str
+    """
     if not __supports_color:
         return text
     return "\033[%dm%s\033[0m" % (color, text)
 
 
 def _change_verbose(handler, node, replacement, skip_lineno=False, msg=None):
+    """
+    A helper function to print information about replacing a node.
+
+    :param handler: A handler function, basically something that takes a
+        message.
+    :type handler: callable
+    :param node: Redbaron node that you are going to replace.
+    :type node: redbaron.node
+    :param replacement: Replacement string.
+    :type replacement: str
+    :param skip_lineno: Skip lineno flag.
+    :type skip_lineno: bool
+    :param msg: Optional custom message to write out.
+    :type msg: None|str
+    :return: Returns the result of the handler.
+    :rtype: None
+    """
     if msg is None:
         msg = "Replacing \"{original}\" with \"{replacement}\""
 
@@ -55,26 +86,42 @@ def _change_verbose(handler, node, replacement, skip_lineno=False, msg=None):
     )
 
 
-# Binding support
-__supported_bindings__ = ["PySide2", "PySide", "PyQt5", "PyQt4"]  # , "ddg.gui.qt", "pyqode.qt"]
+# Default binding support out of the box.
+__supported_bindings__ = ["PySide2", "PySide", "PyQt5", "PyQt4"]
+# Adding support for custom bindings.
 _custom_bindings = os.environ.get("QT_CUSTOM_BINDINGS_SUPPORT")
 if _custom_bindings:
-    print("Found Custom Bindings. Adding: %s" % _custom_bindings.split(os.pathsep))
+    print(
+        "Found Custom Bindings. Adding: %s"
+        % _custom_bindings.split(os.pathsep)
+    )
     __supported_bindings__ += _custom_bindings.split(os.pathsep)
 
-# Note: Pattern here is a little more complex than needed to make the print lines optional
+# Note: Pattern here is a little more complex than needed to make the
+#       print lines optional.
 _custom_misplaced_members = {}
 misplaced_members_python_str = os.environ.get("QT_CUSTOM_MISPLACED_MEMBERS")
 if misplaced_members_python_str:
-    print ("QT_CUSTOM_MISPLACED_MEMBERS = {0!r}".format(misplaced_members_python_str))
+    print(
+        "QT_CUSTOM_MISPLACED_MEMBERS = {0!r}".format(
+            misplaced_members_python_str
+        )
+    )
 
     _custom_misplaced_members = json.loads(misplaced_members_python_str)
 
     # Colored green
-    print (_color(32, "Resolved QT_CUSTOM_MISPLACED_MEMBERS to json: {0!r}".format(_custom_misplaced_members)))
+    print(_color(
+        32,
+        "Resolved QT_CUSTOM_MISPLACED_MEMBERS to json: {0!r}".format(
+            _custom_misplaced_members)
+    ))
 
 
 class AliasDictClass(dict):
+    """
+    Global state data store
+    """
     def __init__(self):
         super(AliasDictClass, self).__init__(
             dict([
@@ -95,6 +142,21 @@ AliasDict = AliasDictClass()
 
 
 def merge_dict(lhs, rhs, keys=None, keys_both=False):
+    """
+    Basic merge dictionary function. I assume it works, I haven't looked at
+    it for eons.
+
+    :param lhs: Left dictionary.
+    :type lhs: dict
+    :param rhs: Right dictionary.
+    :type rhs: dict
+    :param keys: Keys to merge.
+    :type keys: None|List[str...]
+    :param keys_both: Use the union of the keys from both?
+    :type keys_both: bool
+    :return: Merged dictionary.
+    :rtype: dict
+    """
     out = {}
     lhs = copy.copy(lhs)
     rhs = copy.copy(rhs)

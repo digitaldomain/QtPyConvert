@@ -222,6 +222,30 @@ def _convert_root_name_imports(red, aliases, mappings, skip_lineno=False):
 
 
 def _convert_body(red, aliases, mappings, skip_lineno=False):
+    """
+    _convert_body is  one of the first conversion functions to run on the
+    redbaron ast.
+    It finds the NameNode's or the AtomTrailersNode+DottedNameNodes and will
+    run them through the filter expressions built off of the values in
+    mappings.
+    If found, it will replace the source value with the destination value in
+    mappings.
+
+    :param red: The redbaron ast.
+    :type red: redbaron.RedBaron
+    :param aliases: Aliases is the replacement information that is build
+        automatically from qt_py_convert.
+    :type aliases: dict
+    :param mappings: Mappings is information about the bindings that are used.
+    :type mappings: dict
+    :param skip_lineno: An optional performance flag. By default, when the
+        script replaces something, it will tell you which line it is
+        replacing on. This can be useful for tracking the places that
+        changes occurred. When you turn this flag on however, it will not
+        show the line numbers. This can give great performance increases
+        because redbaron has trouble calculating the line number sometimes.
+    :type skip_lineno: bool
+    """
     def expression_factory(expr_key):
         regex = re.compile(
             r"{value}(?:[\.\[\(].*)?$".format(value=expr_key),
@@ -246,12 +270,17 @@ def _convert_body(red, aliases, mappings, skip_lineno=False):
         if matches:
             for node in matches:
                 # Dont replace imports, we already did that.
-                if not node.parent_find("ImportNode") and not node.parent_find("FromImportNode"):
-                    # If the node's parent has dot syntax. Make sure we are the first one.
-                    # Reasoning: We are relying on namespacing, so we don't want to turn bob.foo.cat into bob.foo.bear.
-                    #            Because bob.foo.cat might not be equal to the mike.cat that we meant to change.
-                    if node.parent.type == "atomtrailers" and not node.parent.value[0] == node:
-                        continue
+                parent_is_import = node.parent_find("ImportNode")
+                parent_is_fimport = node.parent_find("FromImportNode")
+                if not parent_is_import and not parent_is_fimport:
+                    # If the node's parent has dot syntax. Make sure we are
+                    # the first one. Reasoning: We are relying on namespacing,
+                    # so we don't want to turn bob.foo.cat into bob.foo.bear.
+                    # Because bob.foo.cat might not be equal to the mike.cat
+                    # that we meant to change.
+                    if node.parent.type == "atomtrailers":
+                        if not node.parent.value[0] == node:
+                            continue
 
                     replacement = node.dumps().replace(key, mappings[key])
                     _change_verbose(
@@ -268,6 +297,21 @@ def _convert_body(red, aliases, mappings, skip_lineno=False):
 
 
 def _convert_mappings(aliases, mappings):
+    """
+    _convert_mappings will build a proper mapping dictionary using any
+    aliases that we have discovered previously.
+    It builds regular expressions based off of the Qt._common_members and will
+    replace the mappings that are used with updated ones in Qt.py
+
+    :param aliases: Aliases is the replacement information that is build
+        automatically from qt_py_convert.
+    :type aliases: dict
+    :param mappings: Mappings is information about the bindings that are used.
+    :type mappings: dict
+    :return: _convert_mappings will just return the mappings dict,
+        however it is updating the aliases["used"] set.
+    :rtype: dict
+    """
     expressions = [
         re.compile(
             r"(?P<module>{modules})\.(?P<widget>{widgets})".format(
@@ -276,17 +320,15 @@ def _convert_mappings(aliases, mappings):
                     re.escape(name) for name in Qt._common_members.keys()
                 ),
                 widgets="|".join(
-                    re.escape(widget) for widget in Qt._common_members[module_name]
+                    re.escape(widget) for widget in Qt._common_members[module]
                 )
             )
         )
-        for module_name in Qt._common_members.keys()
+        for module in Qt._common_members.keys()
     ]
     for from_mapping in mappings:
-        for module_name, expression in zip(Qt._common_members.keys(), expressions):
-        # for module_name, expression in [("QtCore", core_expr),
-        #                                 ("QtGui", gui_expr),
-        #                                 ("QtWidgets", widgets_expr)]:
+        iterable = zip(Qt._common_members.keys(), expressions)
+        for module_name, expression in iterable:
             modified_mapping = expression.sub(
                 r"{module}.\2".format(module=module_name),
                 mappings[from_mapping]
@@ -299,6 +341,20 @@ def _convert_mappings(aliases, mappings):
 
 
 def misplaced_members(aliases, mappings):
+    """
+    misplaced_members uses the internal "_misplaced_members" from Qt.py as
+    well as any "_custom_misplaced_members" that you have set to update the
+    detected binding members. The Q.py misplaced memebers aid in updating
+    bindings to Qt5 compatible locations.
+
+    :param aliases: Aliases is the replacement information that is build
+        automatically from qt_py_convert.
+    :type aliases: dict
+    :param mappings: Mappings is information about the bindings that are used.
+    :type mappings: dict
+    :return: A tuple of aliases and mappings that have been updated.
+    :rtype: tuple[dict,dict]
+    """
     members = Qt._misplaced_members.get(Qt.__binding__.lower(), {})
     for binding in aliases["bindings"]:
         if binding.lower() in Qt._misplaced_members:
@@ -333,6 +389,33 @@ def misplaced_members(aliases, mappings):
 
 
 def run(text, skip_lineno=False, tometh_flag=False):
+    """
+    run is the main driver of the file. It takes the text of a file and any
+    flags that you want to set.
+    It does not deal with any file opening or writting, you must have teh raw
+    text already.
+
+    :param text: Text from a python file that you want to process.
+    :type text: str
+    :param skip_lineno: An optional performance flag. By default, when the
+        script replaces something, it will tell you which line it is
+        replacing on. This can be useful for tracking the places that
+        changes occurred. When you turn this flag on however, it will not
+        show the line numbers. This can give great performance increases
+        because redbaron has trouble calculating the line number sometimes.
+    :type skip_lineno: bool
+    :param tometh_flag: tometh_flag is an optional feature flag. Once turned
+        on, it will attempt to replace any QString/QVariant/etc apiv1.0 methods
+        that are being used in your script. It is currently not smart enough to
+        confirm that you don't have any custom objects with the same method
+        signature to PyQt4's apiv1.0 ones.
+    :type tometh_flag: bool
+    :return: run will return a tuple of runtime information. aliases,
+        mappings, and the resulting text. Aliases is the replacement
+        information that it built, mappings is information about the bindings
+        that were used.
+    :rtype: tuple[dict,dict,str]
+    """
     AliasDict.clean()
     try:
         red = redbaron.RedBaron(text)
@@ -367,6 +450,17 @@ def run(text, skip_lineno=False, tometh_flag=False):
 
 
 def _is_py(path):
+    """
+    My helper method for process_folder to decide if a file is a python file
+    or not.
+    It is currently checking the file extension and then falling back to
+    checking the first line of the file.
+
+    :param path: The filepath to the file that we are querying.
+    :type path: str
+    :return: True if it's a python file. False otherwise
+    :rtype: bool
+    """
     if path.endswith(".py"):
         return True
     elif not os.path.splitext(path)[1] and os.path.isfile(path):
@@ -377,6 +471,29 @@ def _is_py(path):
 
 
 def process_file(fp, write=False, skip_lineno=False, tometh_flag=False):
+    """
+    One of the entry-point functions in qt_py_convert.
+    If you are looking to process a single python file, this is your function.
+
+    :param fp: The source file that you want to start processing.
+    :type fp: str
+    :param write: Should we overwrite the files that we process with their
+        fixed versions?
+    :type write: bool
+    :param skip_lineno: An optional performance flag. By default, when the
+        script replaces something, it will tell you which line it is
+        replacing on. This can be useful for tracking the places that
+        changes occurred. When you turn this flag on however, it will not
+        show the line numbers. This can give great performance increases
+        because redbaron has trouble calculating the line number sometimes.
+    :type skip_lineno: bool
+    :param tometh_flag: tometh_flag is an optional feature flag. Once turned
+        on, it will attempt to replace any QString/QVariant/etc apiv1.0 methods
+        that are being used in your script. It is currently not smart enough to
+        confirm that you don't have any custom objects with the same method
+        signature to PyQt4's apiv1.0 ones.
+    :type tometh_flag: bool
+    """
     if not _is_py(fp):
         print(
             "\tSkipping \"%s\"... It does not appear to be a python file." % fp
@@ -404,6 +521,33 @@ def process_file(fp, write=False, skip_lineno=False, tometh_flag=False):
 
 
 def process_folder(folder, recursive=False, write=False, skip_lineno=False, tometh_flag=False):
+    """
+    One of the entry-point functions in qt_py_convert.
+    If you are looking to process every python file in a folder, this is your
+    function.
+
+    :param folder: The source folder that you want to start processing the
+        python files of.
+    :type folder: str
+    :param recursive: Do you want to continue recursing through sub-folders?
+    :type recursive: bool
+    :param write: Should we overwrite the files that we process with their
+        fixed versions?
+    :type write: bool
+    :param skip_lineno: An optional performance flag. By default, when the
+        script replaces something, it will tell you which line it is
+        replacing on. This can be useful for tracking the places that
+        changes occurred. When you turn this flag on however, it will not
+        show the line numbers. This can give great performance increases
+        because redbaron has trouble calculating the line number sometimes.
+    :type skip_lineno: bool
+    :param tometh_flag: tometh_flag is an optional feature flag. Once turned
+        on, it will attempt to replace any QString/QVariant/etc apiv1.0 methods
+        that are being used in your script. It is currently not smart enough to
+        confirm that you don't have any custom objects with the same method
+        signature to PyQt4's apiv1.0 ones.
+    :type tometh_flag: bool
+    """
 
     def _is_dir(path):
         return True if os.path.isdir(os.path.join(folder, path)) else False
