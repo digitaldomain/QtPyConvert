@@ -1,3 +1,9 @@
+"""
+The psep0101 module is designed to make the changes set out in psep0101.
+
+These are the changes that created "api v2.0", which is what PySide uses and
+PyQt4 has the option of.
+"""
 __author__ = 'ahughes'
 # https://github.com/techtonik/pseps
 
@@ -17,6 +23,7 @@ text_type = str if sys.version_info[0] == 3 else unicode
 
 
 def psep_handler(msg):
+    """PSEP0101 handler for the _change_versbose method."""
     print(
         "[%s] %s" % (_color(35, "psep0101"), msg)
     )
@@ -25,6 +32,16 @@ def psep_handler(msg):
 class Processes(object):
     @staticmethod
     def _process_qvariant(red, objects, skip_lineno=False):
+        """
+        _process_qvariant is designed to replace QVariant code.
+
+        :param red: redbaron process. Unused in this method.
+        :type red: redbardon.RedBaron
+        :param objects: List of redbaron nodes that matched for this proc.
+        :type objects: list
+        :param skip_lineno: Global "skip_lineno" flag.
+        :type skip_lineno: bool
+        """
         # Replace each node
         for node in objects:
             raw = node.parent.dumps()
@@ -52,6 +69,16 @@ class Processes(object):
 
     @staticmethod
     def _process_qstring(red, objects, skip_lineno=False):
+        """
+        _process_qstring is designed to replace QString code.
+
+        :param red: redbaron process. Unused in this method.
+        :type red: redbardon.RedBaron
+        :param objects: List of redbaron nodes that matched for this proc.
+        :type objects: list
+        :param skip_lineno: Global "skip_lineno" flag.
+        :type skip_lineno: bool
+        """
         # Replace each node
         for node in objects:
             raw = node.parent.dumps()
@@ -70,12 +97,20 @@ class Processes(object):
 
                 node.parent.replace(changed)
 
-        # Search tree for usages of a QString method. (Good luck with that)
-        pass
-
     @staticmethod
     def _process_qstringlist(red, objects, skip_lineno=False):
-        # TODO: find different usage cases of QStringList. Probably just need support for construction and isinstance.
+        """
+        _process_qstringlist is designed to replace QStringList code.
+
+        :param red: redbaron process. Unused in this method.
+        :type red: redbardon.RedBaron
+        :param objects: List of redbaron nodes that matched for this proc.
+        :type objects: list
+        :param skip_lineno: Global "skip_lineno" flag.
+        :type skip_lineno: bool
+        """
+        # TODO: Find different usage cases of QStringList.
+        #       Probably just need support for construction and isinstance.
         # Replace each node
         for node in objects:
             raw = node.parent.dumps()
@@ -93,11 +128,19 @@ class Processes(object):
                 )
 
                 node.parent.replace(changed)
-        # Search tree for usages of a QStringList method. (Good luck with that)
-        pass
 
     @staticmethod
     def _process_qchar(red, objects, skip_lineno=False):
+        """
+        _process_qchar is designed to replace QChar code.
+
+        :param red: redbaron process. Unused in this method.
+        :type red: redbardon.RedBaron
+        :param objects: List of redbaron nodes that matched for this proc.
+        :type objects: list
+        :param skip_lineno: Global "skip_lineno" flag.
+        :type skip_lineno: bool
+        """
         # Replace each node
         for node in objects:
             raw = node.parent.dumps()
@@ -115,9 +158,6 @@ class Processes(object):
                 )
 
                 node.parent.replace(changed)
-
-        # Search tree for usages of a QChar method. (Good luck with that)
-        pass
 
     @staticmethod
     def _process_to_methods(red, objects, skip_lineno=False):
@@ -148,6 +188,18 @@ class Processes(object):
 
     @staticmethod
     def _process_qsignal(red, objects, skip_lineno=False):
+        """
+        _process_qsignal is designed to replace QSignal code.
+        It calls out to the _qsignal module and can fix disconnects, connects,
+        and emits.
+
+        :param red: redbaron process. Unused in this method.
+        :type red: redbardon.RedBaron
+        :param objects: List of redbaron nodes that matched for this proc.
+        :type objects: list
+        :param skip_lineno: Global "skip_lineno" flag.
+        :type skip_lineno: bool
+        """
         for node in objects:
             raw = node.parent.dumps()
 
@@ -187,9 +239,18 @@ class Processes(object):
                     node.parent.replace(changed)
                     continue
 
-
     @staticmethod
     def _process_qstringref(red, objects, skip_lineno=False):
+        """
+        _process_qstringref is designed to replace QStringRefs
+
+        :param red: redbaron process. Unused in this method.
+        :type red: redbardon.RedBaron
+        :param objects: List of redbaron nodes that matched for this proc.
+        :type objects: list
+        :param skip_lineno: Global "skip_lineno" flag.
+        :type skip_lineno: bool
+        """
         # Replace each node
         for node in objects:
             raw = node.parent.dumps()
@@ -206,9 +267,6 @@ class Processes(object):
                     skip_lineno=skip_lineno,
                 )
                 node.parent.replace(changed)
-
-        # Search tree for usages of a QStringRef method. (Good luck with that)
-        pass
 
     QSTRING_PROCESS_STR = "QSTRING_PROCESS"
     QSTRINGLIST_PROCESS_STR = "QSTRINGLIST_PROCESS"
@@ -227,18 +285,40 @@ class Processes(object):
 
 
 def psep_process(store):
-    _qstring_expression = re.compile(r"QString(?:[^\w]+(?:.*?))?$")
-    _qstringlist_expression = re.compile(r"QStringList(?:[^\w]+(?:.*?))?$")
-    _qchar_expression = re.compile(r"QChar(?:[^\w]+(?:.*?))?$")
-    _qstringref_expression = re.compile(r"QStringRef(?:[^\w]+(?:.*?))?$")
-    _qsignal_expression = re.compile(r"[(?:connect)|(?:disconnect)|(?:emit)].*QtCore\.SIGNAL", re.DOTALL)
-    _qvariant_expression = re.compile(r"QVariant(?:[^\w]+(?:.*?))?$")
-    _to_method_expression = re.compile(r"to[A-Z][A-Za-z]+\(\)")
+    """
+    psep_process is one of the more complex handlers for the _modules.
+
+    :param store: Store is the psep_issues dict defined in "process"
+    :type store: dict
+    :return: The filter_function callable.
+    :rtype: callable
+    """
+    _qstring_expression = re.compile(
+        r"QString(?:[^\w]+(?:.*?))?$"
+    )
+    _qstringlist_expression = re.compile(
+        r"QStringList(?:[^\w]+(?:.*?))?$"
+    )
+    _qchar_expression = re.compile(
+        r"QChar(?:[^\w]+(?:.*?))?$"
+    )
+    _qstringref_expression = re.compile(
+        r"QStringRef(?:[^\w]+(?:.*?))?$"
+    )
+    _qsignal_expression = re.compile(
+        r"[(?:connect)|(?:disconnect)|(?:emit)].*QtCore\.SIGNAL", re.DOTALL
+    )
+    _qvariant_expression = re.compile(
+        r"QVariant(?:[^\w]+(?:.*?))?$"
+    )
+    _to_method_expression = re.compile(
+        r"to[A-Z][A-Za-z]+\(\)"
+    )
 
     def filter_function(value):
         """
-        filter_function takes an AtomTrailersNode or a DottedNameNode and will filter them out if they match something that
-        has changed in psep0101
+        filter_function takes an AtomTrailersNode or a DottedNameNode and will
+        filter them out if they match something that has changed in psep0101.
         """
         found = False
         if _qstring_expression.search(value.dumps()):
@@ -259,15 +339,37 @@ def psep_process(store):
         if _qvariant_expression.search(value.dumps()):
             store[Processes.QVARIANT_PROCESS_STR].add(value)
             found = True
-        if Processes.TOMETHOD_PROCESS_STR in store and _to_method_expression.search(value.dumps()):
-            store[Processes.TOMETHOD_PROCESS_STR].add(value)
-            found = True
+        if Processes.TOMETHOD_PROCESS_STR in store:
+            if _to_method_expression.search(value.dumps()):
+                store[Processes.TOMETHOD_PROCESS_STR].add(value)
+                found = True
         if found:
             return True
     return filter_function
 
 
 def process(red, skip_lineno=False, tometh_flag=False,**kwargs):
+    """
+    process is the main function for the psep0101 process.
+
+    :param red: Redbaron ast.
+    :type red: redbaron.redbaron
+    :param skip_lineno: An optional performance flag. By default, when the
+        script replaces something, it will tell you which line it is
+        replacing on. This can be useful for tracking the places that
+        changes occurred. When you turn this flag on however, it will not
+        show the line numbers. This can give great performance increases
+        because redbaron has trouble calculating the line number sometimes.
+    :type skip_lineno: bool
+    :param tometh_flag: tometh_flag is an optional feature flag. Once turned
+        on, it will attempt to replace any QString/QVariant/etc apiv1.0 methods
+        that are being used in your script. It is currently not smart enough to
+        confirm that you don't have any custom objects with the same method
+        signature to PyQt4's apiv1.0 ones.
+    :type tometh_flag: bool
+    :param kwargs: Any other kwargs will be ignored.
+    :type kwargs: dict
+    """
     psep_issues = {
         Processes.QSTRING_PROCESS_STR: set(),
         Processes.QSTRINGLIST_PROCESS_STR: set(),
@@ -286,4 +388,8 @@ def process(red, skip_lineno=False, tometh_flag=False,**kwargs):
 
     for issue in psep_issues:
         if psep_issues[issue]:
-            getattr(Processes, issue)(red, psep_issues[issue], skip_lineno=skip_lineno)
+            getattr(Processes, issue)(
+                red,
+                psep_issues[issue],
+                skip_lineno=skip_lineno
+            )

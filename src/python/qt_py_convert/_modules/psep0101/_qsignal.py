@@ -1,3 +1,9 @@
+"""
+_qsignal module has helper replacement methods for the psep0101 qsignal
+replacement methods.
+
+It uses _c_args to attempt o parse C style args from api v1.0
+"""
 import re
 
 from qt_py_convert._modules.psep0101._c_args import parse_args

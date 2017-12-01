@@ -1,3 +1,6 @@
+"""
+The imports module is designed to fix the import statements.
+"""
 from qt_py_convert.general import _color, AliasDict
 
 
@@ -50,6 +53,14 @@ class Processes(object):
 
     @classmethod
     def _process_star(cls, red, stars):
+        """
+        _process_star is designed to replace from X import * methods.
+
+        :param red: redbaron process. Unused in this method.
+        :type red: redbardon.RedBaron
+        :param stars: List of redbaron nodes that matched for this proc.
+        :type stars: list
+        """
         mappings = {}
         for star in stars:
             from_import = star.parent
@@ -84,6 +95,14 @@ class Processes(object):
 
 
 def star_process(store):
+    """
+    star_process is one of the more complex handlers for the _modules.
+
+    :param store: Store is the issues dict defined in "process"
+    :type store: dict
+    :return: The filter_function callable.
+    :rtype: callable
+    """
     def filter_function(value):
         for target in value.parent.targets:
             if target.type == "star":
@@ -94,6 +113,21 @@ def star_process(store):
 
 
 def process(red, **kwargs):
+    """
+    process is the main function for the import process.
+
+    :param red: Redbaron ast.
+    :type red: redbaron.redbaron
+    :param skip_lineno: An optional performance flag. By default, when the
+        script replaces something, it will tell you which line it is
+        replacing on. This can be useful for tracking the places that
+        changes occurred. When you turn this flag on however, it will not
+        show the line numbers. This can give great performance increases
+        because redbaron has trouble calculating the line number sometimes.
+    :type skip_lineno: bool
+    :param kwargs: Any other kwargs will be ignored.
+    :type kwargs: dict
+    """
     issues = {
         Processes.EXPAND_STR: set(),
     }
