@@ -118,6 +118,36 @@ if misplaced_members_python_str:
     ))
 
 
+class ErrorClass(object):
+    """
+    ErrorClass is a structured data block that represents a problem with the
+    converted file that cannot be automatically fixed from qy_py_convert.
+
+    It takes a redbaron node and a str to describe why it can't be fixed.
+    """
+    def __init__(self, node, reason):
+        """
+        :param node: Redbaron node that can't be fixed.
+        :type node: redbaron.Node
+        :param reason: Reason that the thing cannot be fixed.
+        :type reason: str
+        """
+        super(ErrorClass, self).__init__()
+        bbox = node.absolute_bounding_box
+
+        self.row = bbox.top_left.line - 1
+        self.row_to = bbox.bottom_right.line - 1
+        self.reason = reason
+        AliasDict["errors"].add(self)
+
+
+class UserInputRequiredException(BaseException):
+    """
+    UserInputRequiredException is an exception that states that the user is
+    required to make the fix. It is used to alert the user to issues.
+    """
+
+
 class AliasDictClass(dict):
     """
     Global state data store
@@ -128,6 +158,8 @@ class AliasDictClass(dict):
                 ("bindings", set()),
                 ("root_aliases", set()),
                 ("used", set()),
+                ("warnings", set()),
+                ("errors", set()),
             ])
         )
 
@@ -136,6 +168,8 @@ class AliasDictClass(dict):
         self["bindings"] = set()
         self["root_aliases"] = set()
         self["used"] = set()
+        self["warnings"] = set()
+        self["errors"] = set()
 
 
 AliasDict = AliasDictClass()
