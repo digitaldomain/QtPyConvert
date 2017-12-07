@@ -11,7 +11,7 @@
 
 This project maintains a [CHANGELOG](CHANGELOG.md).
 
-Developers should read [CONTRIBUTING](CONTRIBUTING.md) to get started.
+Developers should read [CONTRIBUTING](CONTRIBUTING.md) to get started. 
 
 
 ## Some Simple Goals
