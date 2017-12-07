@@ -327,6 +327,7 @@ def test_connect_old_style_pyargs():
         "self.ticket_tool.currentIndexChanged.connect(Flaregun.infoEntered)",
     )
 
+
 def test_connect_old_style_no_owner():
     check_connection(
         """self.__shot_combo.connect(QtCore.SIGNAL("currentIndexChanged(int)"),
