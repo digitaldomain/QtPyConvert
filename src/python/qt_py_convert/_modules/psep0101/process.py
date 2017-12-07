@@ -10,7 +10,7 @@ __author__ = 'ahughes'
 import re
 import sys
 
-from qt_py_convert.general import _color, _change_verbose
+from qt_py_convert.general import _color, _change_verbose, ErrorClass
 from qt_py_convert._modules.psep0101 import _qsignal
 from qt_py_convert._modules.psep0101 import _conversion_methods
 
@@ -42,23 +42,47 @@ class Processes(object):
         :param skip_lineno: Global "skip_lineno" flag.
         :type skip_lineno: bool
         """
+        qvariant_expr = re.compile(
+            r"(?:QtCore\.)?QVariant(?P<is_instance>\((?P<value>.*?)\))?"
+        )
+
         # Replace each node
         for node in objects:
             raw = node.parent.dumps()
-            changed = re.sub(
-                r"(?:QtCore\.)?QVariant\((?P<value>.*)\)",
-                r"\g<value>",
-                raw
-            )
-            if changed != raw:
-                # Some edge case logic here.
-                # Was having issues replacing the following code:
-                # return QtCore.QVariant()
-                # There was no parameter...So now that becomes:
-                # return None
-                if changed == "":
-                    changed = "None"
+            matched = qvariant_expr.search(raw)
+            if matched:
+                if not matched.groupdict()["is_instance"]:
+                    # We have the usage of a QVariant Class object.
+                    # This leads to an invalid statement and cannot be
+                    #   resolved in api 2.0.
+                    # We are adding it to warnings and continuing on.
+                    ErrorClass(
+                        node=node,
+                        reason="""
+As of api v2.0, there is no concept of a "QVariant" object.
+Usage of the class object directly cannot be translated into something that \
+can consistantly be relied on.
 
+You will probably want to remove the usage of this entirely."""
+                        )
+                    continue
+                else:  # If it was used as an instance (most cases).
+                    def replacement(match):
+                        # Some edge case logic here.
+                        # Was having issues replacing the following code:
+                        # return QtCore.QVariant()
+                        # There was no parameter...So now that becomes:
+                        # return None
+                        if not match.groupdict()["value"]:
+                            return "None"
+                        return match.groupdict()["value"]
+
+                    # We have an instance of a QVariant used.
+                    changed = qvariant_expr.sub(
+                        replacement, raw
+                    )
+
+            if changed != raw:
                 _change_verbose(
                     handler=psep_handler,
                     node=node.parent,
@@ -294,22 +318,22 @@ def psep_process(store):
     :rtype: callable
     """
     _qstring_expression = re.compile(
-        r"QString(?:[^\w]+(?:.*?))?$"
+        r"QString(?:[^\w]+(?:.*?))+?$"
     )
     _qstringlist_expression = re.compile(
-        r"QStringList(?:[^\w]+(?:.*?))?$"
+        r"QStringList(?:[^\w]+(?:.*?))+?$"
     )
     _qchar_expression = re.compile(
-        r"QChar(?:[^\w]+(?:.*?))?$"
+        r"QChar(?:[^\w]+(?:.*?))+?$"
     )
     _qstringref_expression = re.compile(
-        r"QStringRef(?:[^\w]+(?:.*?))?$"
+        r"QStringRef(?:[^\w]+(?:.*?))+?$"
     )
     _qsignal_expression = re.compile(
         r"[(?:connect)|(?:disconnect)|(?:emit)].*QtCore\.SIGNAL", re.DOTALL
     )
     _qvariant_expression = re.compile(
-        r"QVariant(?:[^\w]+(?:.*?))?$"
+        r"QVariant(?:[^\w]+(?:.*?))+?$"
     )
     _to_method_expression = re.compile(
         r"to[A-Z][A-Za-z]+\(\)"
@@ -348,7 +372,7 @@ def psep_process(store):
     return filter_function
 
 
-def process(red, skip_lineno=False, tometh_flag=False,**kwargs):
+def process(red, skip_lineno=False, tometh_flag=False, **kwargs):
     """
     process is the main function for the psep0101 process.
 
