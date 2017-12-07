@@ -10,8 +10,8 @@ from qt_py_convert.external import redbaron
 from qt_py_convert._modules import from_imports
 from qt_py_convert._modules import imports
 from qt_py_convert._modules import psep0101
-from qt_py_convert.general import \
-    merge_dict, _custom_misplaced_members, _color, AliasDict, _change_verbose
+from qt_py_convert.general import merge_dict, _custom_misplaced_members, \
+    _color, AliasDict, _change_verbose, UserInputRequiredException
 
 COMMON_MODULES = Qt._common_members.keys() + ["QtCompat"]
 
@@ -470,6 +470,45 @@ def _is_py(path):
     return False
 
 
+def _build_exc(error, line_data):
+    """
+    raises a UserInputRequiredException from an instance of an ErrorClass.
+
+    :param error: The ErrorClass instance that was created somewhere in
+        qt_py_convert.
+    :type error: qt_py_convert.general.ErrorClass
+    :param line_data: List of lines from the file we are working on.
+    :type line_data: List[str...]
+    """
+    line_no_start = error.row
+    line_no_end = error.row_to + 1
+    lines = line_data[line_no_start:line_no_end]
+    line = "".join(line_data[line_no_start:line_no_end])
+
+    line_no = "Line"
+    if len(lines) > 1:
+        line_no += "s "
+        line_no += "%d-%d" % (line_no_start + 1, line_no_end )
+    else:
+        line_no += " %d" % (line_no_start + 1)
+
+    template = """
+{line_no}
+{line}
+{reason}
+"""
+    raise UserInputRequiredException(
+        _color(
+            31,
+            template.format(
+                line_no=line_no,
+                line=_color(37, line.rstrip("\n")),
+                reason=_color(31, error.reason)
+            )
+        )
+    )
+
+
 def process_file(fp, write=False, skip_lineno=False, tometh_flag=False):
     """
     One of the entry-point functions in qt_py_convert.
@@ -500,7 +539,8 @@ def process_file(fp, write=False, skip_lineno=False, tometh_flag=False):
         )
         return
     with open(fp, "rb") as fh:
-        source = fh.read()
+        lines = fh.readlines()
+        source = "".join(lines)
 
     print("Processing %s" % fp)
     try:
@@ -515,9 +555,21 @@ def process_file(fp, write=False, skip_lineno=False, tometh_flag=False):
             print("Writing modified code to %s" % fp)
             with open(fp, "wb") as fh:
                 fh.write(modified_code)
-    except:
+    except BaseException:
         print("ERROR: Error processing file: \"%s\"" % fp)
         traceback.print_exc()
+
+    # Process any errors that may have happened throughout the process.
+    if AliasDict["errors"]:
+        main_handler(_color(
+            31,
+            "The Following errors were recovered while converting %s:\n" % fp
+        ))
+        for error in AliasDict["errors"]:
+            try:
+                _build_exc(error, lines)
+            except UserInputRequiredException as err:
+                main_handler(str(err))
 
 
 def process_folder(folder, recursive=False, write=False, skip_lineno=False, tometh_flag=False):
@@ -590,6 +642,6 @@ if __name__ == "__main__":
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/assetbrowser/trunk/src", recursive=True, write=True)
     # folder = os.path.abspath("../../../../tests/sources")
     # process_folder(folder, recursive=True, write=True)
-    # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packrat/trunk", recursive=True, write=True, skip_lineno=True)
-    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packrat/trunk/src/python/packrat/gui/documentationview.py", write=True, skip_lineno=True)
+    # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/rvplugins/tags/0.19.4/src", recursive=True, write=True, skip_lineno=True, tometh_flag=True)
+    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/rvplugins/tags/0.19.4/src/python/rvplugins/fixRvConf.py", write=True, skip_lineno=False, tometh_flag=True)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ticket/trunk/src/python/ticket/flaregun_ui.py", write=True, fast_exit=False)
