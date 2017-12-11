@@ -154,13 +154,43 @@ def _convert_attributes(red, aliases, skip_lineno=False):
                     print(_color(33, _color(4, "Parsing AtomTrailersNodes")))
                     header_written = True
 
+                # Hacky message creation for better logging.
+                # This allows us to highlight exactly which part of the
+                # statement is being replaced.
+                original_part = _color(1, str(node.value[0]).strip("\n"))
+                original_rest = _color(37, "." + ".".join([
+                        str(n).strip("\n")
+                        for n in node.value[1:]
+                ]))
+                replacement_part = _color(1, module_)
+                replacement_rest = _color(37, "." + ".".join([
+                        str(n).strip("\n")
+                        for n in node.value[1:]
+                    ]))
+                msg = "Replacing \"{original}\" with \"{replacement}\"".format(
+                    original=original_part + original_rest,
+                    replacement=replacement_part + replacement_rest,
+                )
                 _change_verbose(
                     handler=atomtrailers_handler,
-                    node=node,
-                    replacement=modified,
+                    node=node.value[0],
+                    replacement=module_,
                     skip_lineno=skip_lineno,
+                    msg=msg
                 )
-                node.replace(modified)
+                # Only replace the first node part of the statement.
+                # This allows us to keep any child nodes that have already
+                # been gathered attached to the main node tree.
+
+                # This was the cause of a bug in our internal code.
+                # http://dd-git.d2.com/ahughes/qt_py_convert/issues/19
+
+                # A node that had child nodes that needed replacements on the
+                # same line would cause an issue if we replaced the entire
+                # line the first replacement. The other replacements on that
+                # line would not stick because they would be replacing to an
+                # orphaned tree.
+                node.value[0].replace(module_)
                 break
         if not added_module:
             aliases["used"].add(orig_node_str.split(".")[0])
@@ -643,5 +673,5 @@ if __name__ == "__main__":
     # folder = os.path.abspath("../../../../tests/sources")
     # process_folder(folder, recursive=True, write=True)
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/rvplugins/tags/0.19.4/src", recursive=True, write=True, skip_lineno=True, tometh_flag=True)
-    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/rvplugins/tags/0.19.4/src/python/rvplugins/fixRvConf.py", write=True, skip_lineno=False, tometh_flag=True)
+    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/hpublish/trunk/private/build/hpublish/python/hpublish/otlgui/ui/Ui_otl_publisher.py", write=True, skip_lineno=True, tometh_flag=True)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ticket/trunk/src/python/ticket/flaregun_ui.py", write=True, fast_exit=False)
