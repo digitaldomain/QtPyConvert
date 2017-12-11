@@ -69,6 +69,10 @@ def _change_verbose(handler, node, replacement, skip_lineno=False, msg=None):
     :return: Returns the result of the handler.
     :rtype: None
     """
+    failure_message = (
+            _color(31, "ERROR:") +
+            " Could not replace \"{original}\" with \"{replacement}\""
+    )
     if msg is None:
         msg = "Replacing \"{original}\" with \"{replacement}\""
 
@@ -77,13 +81,17 @@ def _change_verbose(handler, node, replacement, skip_lineno=False, msg=None):
     if not skip_lineno:
         msg += " at line {line}"
         if not hasattr(node, "absolute_bounding_box"):
+            msg = failure_message
             line = "N/A"
         else:
             line = node.absolute_bounding_box.top_left.line - 1
 
-    return handler(
-        msg.format(**locals())
-    )
+    result = handler(
+            msg.format(**locals())
+        )
+    if msg == failure_message:
+        result = 1
+    return result
 
 
 # Default binding support out of the box.
