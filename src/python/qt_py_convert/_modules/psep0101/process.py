@@ -280,7 +280,7 @@ You will probably want to remove the usage of this entirely."""
             raw = node.parent.dumps()
             changed = re.sub(
                 r"((?:QtCore\.)?QStringRef)",
-                six.text_type.__name__,
+                text_type.__name__,
                 raw
             )
             if changed != raw:
@@ -333,7 +333,7 @@ def psep_process(store):
         r"[(?:connect)|(?:disconnect)|(?:emit)].*QtCore\.SIGNAL", re.DOTALL
     )
     _qvariant_expression = re.compile(
-        r"QVariant(?:[^\w]+(?:.*?))+?$"
+        r"^QVariant(?:[^\w]+(?:.*?))?$"
     )
     _to_method_expression = re.compile(
         r"to[A-Z][A-Za-z]+\(\)"
@@ -409,6 +409,11 @@ def process(red, skip_lineno=False, tometh_flag=False, **kwargs):
 
     red.find_all("AtomTrailersNode", value=psep_process(psep_issues))
     red.find_all("DottedNameNode", value=psep_process(psep_issues))
+
+    name_nodes = red.find_all("NameNode")
+    filter_function = psep_process(psep_issues)
+    for name in name_nodes:
+        filter_function(name)
 
     for issue in psep_issues:
         if psep_issues[issue]:
