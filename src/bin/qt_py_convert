@@ -46,18 +46,43 @@ def parse():
     return parser.parse_args()
 
 
+def _resolve_stdin(paths):
+    """
+    _resolve_stdin allows us to have "-" in our files_or_directories and have
+        it expand to input from stdin.
+    This allows us to pipe into qt_py_convert.
+
+    :param paths: List of strings. It wll replace any strings matching "-"
+        with sys.stdin.
+    :type paths: list[str...]
+    :return: List that has been modified to include stdin.
+    :rtype: list[str...]
+    """
+    _stdin = None
+    _inserted = 0
+    for index, path in enumerate(paths[:]):
+        if path == "-":  # Insert stdin anytime we see "-"
+            _index = index+_inserted  # Calculated index after insertions.
+            paths.pop(_index)  # Remove the "-"
+            if _stdin is None:  # If we haven't pulled from stdin yet.
+                _stdin = [
+                    x.strip("\n").strip("\r")  # Strip \n and \r
+                    for x in list(sys.stdin)  # Iterate through stdin.
+                ]
+            # Generate a new list.
+            # Basically if I could do an "insert" and an "expand" at once.
+            paths = paths[:_index] + _stdin + paths[_index:]
+            # We have inserted x - 1 because we popped.
+            _inserted += len(_stdin) - 1
+    return paths
+
+
 def main(pathlist, recursive=True, write=False, no_lines=False, tometh_flag=False):
-    # process_paths = []
-    # for path in pathlist:
-    #     if path == "*":
-    #         process_paths.append(
-    #             [
-    #                 os.path.join(os.getcwd(), local_path)
-    #                 for local_path in os.listdir(os.getcwd())
-    #             ]
-    #         )
-    #     else:
-    #         process_paths.append(path)
+    # if len(pathlist) == 1:
+    #     if pathlist[0] == "-":  # Support for piping on unix.
+    #         pathlist = sys.stdin
+
+    pathlist = _resolve_stdin(pathlist)
 
     for path in [os.path.abspath(p) for p in pathlist]:
         # print("Processing %s" % path)
