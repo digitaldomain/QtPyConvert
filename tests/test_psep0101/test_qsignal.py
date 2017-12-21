@@ -25,7 +25,7 @@ def check_disconnect(source, dest):
         raise AssertionError("%s is not %s" % (convert, dest))
 
 
-def test_connection_texturepipeline():
+def test_connection_texturepipeline_whitespace():
     check_connection(
         '''self.seq_combo.connect  (QtCore.SIGNAL("currentIndexChanged(int)"),
                                  self._updateShot)''',
