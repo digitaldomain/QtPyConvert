@@ -192,6 +192,9 @@ def _convert_attributes(red, aliases, skip_lineno=False):
                 # orphaned tree.
                 node.value[0].replace(module_)
                 break
+            else:
+                if orig_node_str.split(".")[0] in COMMON_MODULES:
+                    aliases["used"].add(orig_node_str.split(".")[0])
         if not added_module:
             aliases["used"].add(orig_node_str.split(".")[0])
     return mappings
@@ -312,6 +315,8 @@ def _convert_body(red, aliases, mappings, skip_lineno=False):
                         if not node.parent.value[0] == node:
                             continue
 
+                    if node.dumps().split(".")[0] in COMMON_MODULES:
+                        aliases["used"].add(node.dumps().split(".")[0])
                     replacement = node.dumps().replace(key, mappings[key])
                     _change_verbose(
                         handler=main_handler,
@@ -679,5 +684,5 @@ if __name__ == "__main__":
     # folder = os.path.abspath("../../../../tests/sources")
     # process_folder(folder, recursive=True, write=True)
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/rvplugins/tags/0.19.4/src", recursive=True, write=True, skip_lineno=True, tometh_flag=True)
-    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/texturepipeline/branches/qt_py/src/python/texturepipeline/bakeme/gui.py", write=True, skip_lineno=True, tometh_flag=True)
+    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/texturepipeline/branches/qt_py/src/python/texturepipeline/mari/ddscripts/showHelp.py", write=True, skip_lineno=True, tometh_flag=True)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ticket/trunk/src/python/ticket/flaregun_ui.py", write=True, fast_exit=False)
