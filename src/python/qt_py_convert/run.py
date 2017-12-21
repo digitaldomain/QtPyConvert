@@ -11,7 +11,7 @@ from qt_py_convert._modules import from_imports
 from qt_py_convert._modules import imports
 from qt_py_convert._modules import psep0101
 from qt_py_convert.general import merge_dict, _custom_misplaced_members, \
-    _color, AliasDict, _change_verbose, UserInputRequiredException
+    _color, AliasDict, _change_verbose, UserInputRequiredException, ErrorClass
 
 COMMON_MODULES = Qt._common_members.keys() + ["QtCompat"]
 
@@ -344,7 +344,7 @@ def _convert_mappings(aliases, mappings):
     """
     expressions = [
         re.compile(
-            r"(?P<module>{modules})\.(?P<widget>{widgets})".format(
+            r"(?P<module>{modules})\.(?P<widget>{widgets})$".format(
                 # Regular expression
                 modules="|".join(
                     re.escape(name) for name in Qt._common_members.keys()
@@ -452,6 +452,12 @@ def run(text, skip_lineno=False, tometh_flag=False):
     except Exception as err:
         print(str(err))
         traceback.print_exc()
+
+        d = object()
+        setattr(d, "row", 0)
+        setattr(d, "row_to", 0)
+        setattr(d, "reaspm", traceback.format_exc())
+        AliasDict["errors"].add(d)
         return AliasDict, {}, text
 
     from_a, from_m = from_imports.process(red, skip_lineno=skip_lineno)
@@ -673,5 +679,5 @@ if __name__ == "__main__":
     # folder = os.path.abspath("../../../../tests/sources")
     # process_folder(folder, recursive=True, write=True)
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/rvplugins/tags/0.19.4/src", recursive=True, write=True, skip_lineno=True, tometh_flag=True)
-    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/rvplugins/trunk/src/python/rvplugins/ddqt/ChipsWidget.py", write=True, skip_lineno=True, tometh_flag=True)
+    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/texturepipeline/branches/qt_py/src/python/texturepipeline/bakeme/gui.py", write=True, skip_lineno=True, tometh_flag=True)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ticket/trunk/src/python/ticket/flaregun_ui.py", write=True, fast_exit=False)

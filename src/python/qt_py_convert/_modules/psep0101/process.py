@@ -43,7 +43,7 @@ class Processes(object):
         :type skip_lineno: bool
         """
         qvariant_expr = re.compile(
-            r"(?:QtCore\.)?QVariant(?P<is_instance>\((?P<value>.*?)\))?"
+            r"(?:QtCore\.)?QVariant(?P<is_instance>\((?P<value>.*)\))?"
         )
 
         # Replace each node
@@ -82,14 +82,14 @@ You will probably want to remove the usage of this entirely."""
                         replacement, raw
                     )
 
-            if changed != raw:
-                _change_verbose(
-                    handler=psep_handler,
-                    node=node.parent,
-                    replacement=changed,
-                    skip_lineno=skip_lineno,
-                )
-                node.parent.replace(changed)
+                if changed != raw:
+                    _change_verbose(
+                        handler=psep_handler,
+                        node=node.parent,
+                        replacement=changed,
+                        skip_lineno=skip_lineno,
+                    )
+                    node.parent.replace(changed)
 
     @staticmethod
     def _process_qstring(red, objects, skip_lineno=False):

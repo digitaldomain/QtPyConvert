@@ -10,7 +10,7 @@ def check(source, dest):
     try:
         assert convert == dest
     except AssertionError as err:
-        raise AssertionError("%s is not %s" % (convert, dest))
+        raise AssertionError("\n%s\n!=\n%s" % (convert, dest))
 
 
 def test_qvariant_basic():
@@ -29,8 +29,15 @@ def test_qvariant_list():
 
 def test_qvariant_inside_other():
     check(
-        'ttt = sum([QVariant("[23, 19]").toInt(), 42]) # I should become sum([42, 42])',
-        'ttt = sum(["[23, 19]".toInt(), 42]) # I should become sum([42, 42])'
+        'ttt = sum([QVariant("[23, 19]"), 42]) # I should become sum([42, 42])',
+        'ttt = sum(["[23, 19]", 42]) # I should become sum([42, 42])'
+    )
+
+
+def test_qvariant_potato():
+    check(
+        't = QVariant("foo()")',
+        't = "foo()"'
     )
 
 
