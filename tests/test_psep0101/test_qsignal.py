@@ -25,6 +25,13 @@ def check_disconnect(source, dest):
         raise AssertionError("%s is not %s" % (convert, dest))
 
 
+def test_connection_texturepipeline():
+    check_connection(
+        '''self.seq_combo.connect  (QtCore.SIGNAL("currentIndexChanged(int)"),
+                                 self._updateShot)''',
+        'self.seq_combo.currentIndexChanged.connect(self._updateShot)'
+    )
+
 def test_connection_no_args():
     check_connection(
         'self.connect(self.filterBox, QtCore.SIGNAL("textChanged()"), self.slot_filterBoxEdited)',
