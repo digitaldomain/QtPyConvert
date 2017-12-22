@@ -392,13 +392,13 @@ def misplaced_members(aliases, mappings):
     """
     members = Qt._misplaced_members.get(Qt.__binding__.lower(), {})
     for binding in aliases["bindings"]:
-        if binding.lower() in Qt._misplaced_members:
-            print("Merging %s to bindings" % Qt._misplaced_members.get(binding.lower(), {}))
-            members.update(Qt._misplaced_members.get(binding.lower(), {}))
-        elif binding.lower() in _custom_misplaced_members:
-            members.update(_custom_misplaced_members.get(binding.lower(), {}))
+        if binding in Qt._misplaced_members:
+            print("Merging %s to bindings" % Qt._misplaced_members.get(binding, {}))
+            members.update(Qt._misplaced_members.get(binding, {}))
+        elif binding in _custom_misplaced_members:
+            members.update(_custom_misplaced_members.get(binding, {}))
         else:
-            print("Could not find misplaced members for %s" % binding.lower())
+            print("Could not find misplaced members for %s" % binding)
 
         _msg = "Replacing \"{original}\" with \"{replacement}\" in mappings"
         if members:
@@ -612,7 +612,6 @@ def process_file(fp, write=False, skip_lineno=False, tometh_flag=False):
             except UserInputRequiredException as err:
                 main_handler(str(err))
 
-
 def process_folder(folder, recursive=False, write=False, skip_lineno=False, tometh_flag=False):
     """
     One of the entry-point functions in qt_py_convert.
@@ -684,5 +683,5 @@ if __name__ == "__main__":
     # folder = os.path.abspath("../../../../tests/sources")
     # process_folder(folder, recursive=True, write=True)
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/rvplugins/tags/0.19.4/src", recursive=True, write=True, skip_lineno=True, tometh_flag=True)
-    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/texturepipeline/branches/qt_py/src/python/texturepipeline/mari/ddscripts/showHelp.py", write=True, skip_lineno=True, tometh_flag=True)
+    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/texturepipeline/branches/qt_py/src/python/texturepipeline/maya/scripts/vrayTEST/fromLightpipeline/ddTextureAssignment/util.py", write=True, skip_lineno=True, tometh_flag=True)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ticket/trunk/src/python/ticket/flaregun_ui.py", write=True, fast_exit=False)
