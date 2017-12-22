@@ -667,6 +667,51 @@ _common_members = {
     ]
 }
 
+
+def _wrapinstance(func, ptr, base=None):
+    """Enable implicit cast of pointer to most suitable class
+
+    This behaviour is available in sip per default.
+
+    Based on http://nathanhorne.com/pyqtpyside-wrap-instance
+
+    Usage:
+        This mechanism kicks in under these circumstances.
+        1. Qt.py is using PySide 1 or 2.
+        2. A `base` argument is not provided.
+
+        See :func:`QtCompat.wrapinstance()`
+
+    Arguments:
+        func (function): Original function
+        ptr (long): Pointer to QObject in memory
+        base (QObject, optional): Base class to wrap with. Defaults to QObject,
+            which should handle anything.
+
+    """
+
+    assert isinstance(ptr, long), "Argument 'ptr' must be of type <long>"
+    assert (base is None) or issubclass(base, Qt.QtCore.QObject), (
+        "Argument 'base' must be of type <QObject>")
+
+    if base is None:
+        q_object = func(long(ptr), Qt.QtCore.QObject)
+        meta_object = q_object.metaObject()
+        class_name = meta_object.className()
+        super_class_name = meta_object.superClass().className()
+
+        if hasattr(Qt.QtWidgets, class_name):
+            base = getattr(Qt.QtWidgets, class_name)
+
+        elif hasattr(Qt.QtWidgets, super_class_name):
+            base = getattr(Qt.QtWidgets, super_class_name)
+
+        else:
+            base = Qt.QtCore.QObject
+
+    return func(long(ptr), base)
+
+
 def _loadUi(uifile, baseinstance=None):
     """Dynamically load a user interface from the given `uifile`
 
@@ -783,7 +828,7 @@ _misplaced_members = {
         "QtCore.QItemSelectionRange": "QtCore.QItemSelectionRange",
         # Custom patch
         "QtUiTools.load_ui": ["QtCompat.loadUi", _loadUi],
-        "shiboken2.wrapInstance": ["QtCompat.wrapInstance", _wrapinstance],
+        "shiboken2.wrapinstance": ["QtCompat.wrapinstance", _wrapinstance],
         "QtWidgets.qApp": "QtWidgets.QApplication.instance()"
     },
     "PyQt5": {
@@ -798,6 +843,7 @@ _misplaced_members = {
         "QtCore.QItemSelectionRange": "QtCore.QItemSelectionRange",
         # Custom patch
         "uic.loadUi": ["QtCompat.loadUi", _loadUi],
+        "sip.wrapinstance": ["QtCompat.wrapinstance", _wrapinstance],
         "QtCore.QString": "str",
         "QtWidgets.qApp": "QtWidgets.QApplication.instance()"
     },
@@ -813,6 +859,7 @@ _misplaced_members = {
         "QtGui.QItemSelectionRange": "QtCore.QItemSelectionRange",
         # Custom Patch
         "QtUiTools.load_ui": ["QtCompat.loadUi", _loadUi],
+        "shiboken.wrapinstance": ["QtCompat.wrapinstance", _wrapinstance],
         "QtGui.qApp": "QtWidgets.QApplication.instance()"
     },
     "PyQt4": {
@@ -826,9 +873,9 @@ _misplaced_members = {
         "QtCore.pyqtSlot": "QtCore.Slot",
         "QtGui.QItemSelectionRange": "QtCore.QItemSelectionRange",
         # Custom Patch
-
         "QtCore.pyqtSignature": "QtCore.Slot",
         "uic.loadUi": ["QtCompat.loadUi", _loadUi],
+        "sip.wrapinstance": ["QtCompat.wrapinstance", _wrapinstance],
         "QtCore.QString": "str",
         "QtGui.qApp": "QtWidgets.QApplication.instance()"
     }
@@ -968,50 +1015,6 @@ def _setup(module, extras):
             setattr(Qt, name, _new_module(name))
 
 
-def _wrapinstance(func, ptr, base=None):
-    """Enable implicit cast of pointer to most suitable class
-
-    This behaviour is available in sip per default.
-
-    Based on http://nathanhorne.com/pyqtpyside-wrap-instance
-
-    Usage:
-        This mechanism kicks in under these circumstances.
-        1. Qt.py is using PySide 1 or 2.
-        2. A `base` argument is not provided.
-
-        See :func:`QtCompat.wrapInstance()`
-
-    Arguments:
-        func (function): Original function
-        ptr (long): Pointer to QObject in memory
-        base (QObject, optional): Base class to wrap with. Defaults to QObject,
-            which should handle anything.
-
-    """
-
-    assert isinstance(ptr, long), "Argument 'ptr' must be of type <long>"
-    assert (base is None) or issubclass(base, Qt.QtCore.QObject), (
-        "Argument 'base' must be of type <QObject>")
-
-    if base is None:
-        q_object = func(long(ptr), Qt.QtCore.QObject)
-        meta_object = q_object.metaObject()
-        class_name = meta_object.className()
-        super_class_name = meta_object.superClass().className()
-
-        if hasattr(Qt.QtWidgets, class_name):
-            base = getattr(Qt.QtWidgets, class_name)
-
-        elif hasattr(Qt.QtWidgets, super_class_name):
-            base = getattr(Qt.QtWidgets, super_class_name)
-
-        else:
-            base = Qt.QtCore.QObject
-
-    return func(long(ptr), base)
-
-
 def _reassign_misplaced_members(binding):
     """Apply misplaced members from `binding` to Qt.py
 
@@ -1147,9 +1150,9 @@ def _pyside2():
             # After merge of PySide and shiboken, May 2017
             from PySide2 import shiboken2
 
-        Qt.QtCompat.wrapInstance = (
+        Qt.QtCompat.wrapinstance = (
             lambda ptr, base=None: _wrapinstance(
-                shiboken2.wrapInstance, ptr, base)
+                shiboken2.wrapinstance, ptr, base)
         )
         Qt.QtCompat.getCppPointer = lambda object: \
             shiboken2.getCppPointer(object)[0]
@@ -1189,9 +1192,9 @@ def _pyside():
             # After merge of PySide and shiboken, May 2017
             from PySide import shiboken
 
-        Qt.QtCompat.wrapInstance = (
+        Qt.QtCompat.wrapinstance = (
             lambda ptr, base=None: _wrapinstance(
-                shiboken.wrapInstance, ptr, base)
+                shiboken.wrapinstance, ptr, base)
         )
         Qt.QtCompat.getCppPointer = lambda object: \
             shiboken.getCppPointer(object)[0]
@@ -1238,7 +1241,7 @@ def _pyqt5():
 
     try:
         import sip
-        Qt.QtCompat.wrapInstance = (
+        Qt.QtCompat.wrapinstance = (
             lambda ptr, base=None: _wrapinstance(
                 sip.wrapinstance, ptr, base)
         )
@@ -1307,7 +1310,7 @@ def _pyqt4():
 
     try:
         import sip
-        Qt.QtCompat.wrapInstance = (
+        Qt.QtCompat.wrapinstance = (
             lambda ptr, base=None: _wrapinstance(
                 sip.wrapinstance, ptr, base)
         )
@@ -1392,8 +1395,6 @@ def _none():
 def _log(text):
     if QT_VERBOSE:
         sys.stdout.write(text + "\n")
-
-
 
 
 def _qInstallMessageHandler(handler):
