@@ -19,7 +19,8 @@ def to_methods(function_str):
     String|                                           # toString
     Int|                                              # toInt
     Bool|                                             # toBool
-    PyObject                                          # toPyObject
+    PyObject|                                         # toPyObject
+    Ascii                                             # toAscii
 )\(.*?\)(?P<end>.*)""",
         function_str,
         re.VERBOSE | re.MULTILINE
