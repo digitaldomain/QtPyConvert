@@ -1,0 +1,124 @@
+#!/tools/bin/python
+import contextlib
+from cStringIO import StringIO
+import os
+import subprocess
+import sys
+
+
+import dd.runtime.api
+dd.runtime.api.load("qt_py_convert")
+import qt_py_convert.run
+
+
+if sys.version_info[0] == 2 and sys.version_info[1] < 7:
+    import dd.runtime.api
+    dd.runtime.api.load("argparse")
+import argparse
+
+
+PyUIC4 = "pyuic4"
+PyRCC4 = "pyrcc4"
+PyUIC5 = "pyuic5"
+PyRCC5 = "pyrcc5"
+PySideUIC = "pyside-uic"
+PySideRCC = "pyside-rcc"
+PySide2UIC = "pyside2-uic"
+PySide2RCC = "pyside2-rcc"
+
+
+class UICConversionError(ValueError):
+    """If we were unable to convert the uic into a python file."""
+
+
+def execute_convert(application, path, output=None):
+    command = [application, path]
+    if output:
+        command.extend(["-o", output])
+    proc = subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    out, err = proc.communicate()
+    has_errors = False
+
+    if output:
+        message = output
+    else:
+        message = out
+
+    if proc.returncode:
+        has_errors = True
+        return has_errors, err, message
+    else:
+        return has_errors, None, message
+
+
+@contextlib.contextmanager
+def stdout_redirector():
+    stdout, stderr = sys.stdout, sys.stderr
+    out = StringIO()
+    err = StringIO()
+    sys.stdout = out
+    sys.stderr = err
+    yield
+    sys.stdout = stdout
+    sys.stderr = stderr
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        "qresource_convert"
+    )
+
+    parser.add_argument(
+        "-c", "--convertor",
+        action="store",
+        choices=tuple([
+            PyUIC4, PyRCC4, PyUIC5, PyRCC5,
+            PySideUIC, PySideRCC, PySide2UIC, PySide2RCC,
+        ]),
+        default=PyUIC4,
+        dest="convertor"
+    )
+    parser.add_argument(
+        "file",
+        help="Pass explicit files or a directories to run.",
+    )
+    parser.add_argument(
+        "-o",
+        required=False,
+        help="Filepath to write results to."
+    )
+    args = parser.parse_args()
+    return args
+
+
+def main():
+    args = parse_args()
+    has_errors, errors, message = execute_convert(
+        args.convertor, args.file, output=args.o
+    )
+
+    if has_errors:
+        raise UICConversionError(errors)
+
+    if not args.o:
+        with stdout_redirector():
+            # In memory
+            _, _, output = qt_py_convert.run.run(
+                message, skip_lineno=True, tometh_flag=True
+            )
+    else:
+        with stdout_redirector():
+            qt_py_convert.run.process_file(
+                message, write=True, skip_lineno=True, tometh_flag=True
+            )
+            output = message
+
+    sys.stdout.write(output)
+
+
+if __name__ == "__main__":
+    main()
