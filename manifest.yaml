@@ -13,7 +13,7 @@ Schema: '1.0'
 # established conventions defined for the facility concerning software
 # versioning.
 Name: qt_py_convert
-Version: '0.3.1'
+Version: '0.4.0'
 
 # The type of installation that will be performed for this software.
 # This information MUST be provided.
@@ -55,3 +55,4 @@ Requires:
     - baron
     - appdirs
     - qt_py
+    - argparse
