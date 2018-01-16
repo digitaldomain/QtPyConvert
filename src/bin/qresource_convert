@@ -98,7 +98,7 @@ def parse_args():
         "-c", "--convertor",
         action="store",
         choices=tuple(mappings.keys()),
-        default=PyUIC4,
+        default="pyqt4",
         dest="convertor"
     )
     parser.add_argument(
