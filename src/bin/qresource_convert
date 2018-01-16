@@ -27,12 +27,34 @@ PySide2UIC = "pyside2-uic"
 PySide2RCC = "pyside2-rcc"
 
 
+mappings = {
+    "pyqt4": (PyUIC4, PyRCC4),
+    "pyqt5": (PyUIC5, PyRCC5),
+    "pyside": (PySideUIC, PySideRCC),
+    "pyside2": (PySide2UIC, PySide2RCC),
+}
+
+
+
 class UICConversionError(ValueError):
     """If we were unable to convert the uic into a python file."""
 
 
+def _is_uic(path):
+    if os.path.splitext(path)[-1] in (".ui", ".uic"):
+        return True
+    return False
+
+
 def execute_convert(application, path, output=None):
-    command = [application, path]
+    uic, rcc = mappings[application]
+
+    if _is_uic(path):
+        binary = uic
+    else:
+        binary = rcc
+
+    command = [binary, path]
     if output:
         command.extend(["-o", output])
     proc = subprocess.Popen(
@@ -75,10 +97,7 @@ def parse_args():
     parser.add_argument(
         "-c", "--convertor",
         action="store",
-        choices=tuple([
-            PyUIC4, PyRCC4, PyUIC5, PyRCC5,
-            PySideUIC, PySideRCC, PySide2UIC, PySide2RCC,
-        ]),
+        choices=tuple(mappings.keys()),
         default=PyUIC4,
         dest="convertor"
     )
