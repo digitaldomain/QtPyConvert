@@ -10,6 +10,7 @@ import sys
 
 
 class ANSI(object):
+    """ANSI is a namespace object. Useful for passing values into "_color" """
     class colors(object):
         white = 29
         black = 30
@@ -266,6 +267,7 @@ class AliasDictClass(dict):
         )
 
     def clean(self):
+        """clean will reset the AliasDict global object."""
         print(_color(
             color=ANSI.colors.red, text="Cleaning the global AliasDict"
         ))

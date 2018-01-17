@@ -14,6 +14,7 @@ def import_handler(msg):
 
 
 class Processes(object):
+    """Processes class for import"""
     @staticmethod
     def _build_child_name(child):
         return ".".join([child_part.dumps() for child_part in child.value])
@@ -49,8 +50,8 @@ class Processes(object):
             for child_index, child in enumerate(node):
                 _child_name = cls._build_child_name(child)
                 _child_as_name = child.target
-                if _child_name.split(".")[0] not in __supported_bindings__ and \
-                   _child_as_name not in __supported_bindings__:
+                if _child_name.split(".")[0] not in __supported_bindings__ \
+                        and _child_as_name not in __supported_bindings__:
                     # Only one of our multi import node's children is relevant.
                     continue
 
@@ -82,7 +83,9 @@ class Processes(object):
                         binding_aliases["bindings"].add(binding)
                     continue
 
-                mappings[_child_as_name or _child_name] = ".".join(_child_parts)
+                mappings[_child_as_name or _child_name] = ".".join(
+                    _child_parts
+                )
 
                 _change_verbose(
                     handler=import_handler,

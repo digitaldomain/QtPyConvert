@@ -31,6 +31,7 @@ def psep_handler(msg):
 
 
 class Processes(object):
+    """Processes class for psesp0101"""
     @staticmethod
     def _process_qvariant(red, objects, skip_lineno=False):
         """
@@ -69,6 +70,7 @@ You will probably want to remove the usage of this entirely."""
                     continue
                 else:  # If it was used as an instance (most cases).
                     def replacement(match):
+                        """regex sub function"""
                         # Some edge case logic here.
                         # Was having issues replacing the following code:
                         # return QtCore.QVariant()
@@ -331,6 +333,8 @@ def psep_process(store):
         r"QStringRef(?:[^\w]+(?:.*?))+?$"
     )
     _qsignal_expression = re.compile(
+        # TODO: change to:
+        # (?:connect|disconnect|emit)
         r"[(?:connect)|(?:disconnect)|(?:emit)].*QtCore\.SIGNAL", re.DOTALL
     )
     _qvariant_expression = re.compile(

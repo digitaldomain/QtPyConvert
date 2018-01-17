@@ -17,6 +17,7 @@ COMMON_MODULES = Qt._common_members.keys() + ["QtCompat"]
 
 
 def main_handler(msg):
+    """main_handler is a print handler. It's title is "qt_py_convert" """
     print("[%s] %s" % (
         _color(color=ANSI.colors.purple, text="qt_py_convert"),
         msg
@@ -24,6 +25,7 @@ def main_handler(msg):
 
 
 def atomtrailers_handler(msg):
+    """atomtrailers_handler is a print handler. It's title is "qt4->qt5" """
     print("[%s] %s" % (
         _color(color=ANSI.colors.purple, text="qt4->qt5"),
         msg
@@ -31,6 +33,32 @@ def atomtrailers_handler(msg):
 
 
 def _cleanup_imports(red, aliases, mappings, skip_lineno=False):
+    """
+    _cleanup_imports fixes the imports.
+    Initially changing them as per the following:
+    >>> from PyQt4 import QtGui, QtCore
+    to 
+    >>> from Qt import QtGui, QtCore
+    for each binding.
+    It doesn't have enough knowledge of your script at this point to know if 
+      you need QtWidgets or if the ones you import are all used. 
+    This will get reflected at the end.
+
+    :param red: The redbaron ast.
+    :type red: redbaron.RedBaron
+    :param aliases: Aliases is the replacement information that is build
+        automatically from qt_py_convert.
+    :type aliases: dict
+    :param mappings: Mappings is information about the bindings that are used.
+    :type mappings: dict
+    :param skip_lineno: An optional performance flag. By default, when the
+        script replaces something, it will tell you which line it is
+        replacing on. This can be useful for tracking the places that
+        changes occurred. When you turn this flag on however, it will not
+        show the line numbers. This can give great performance increases
+        because redbaron has trouble calculating the line number sometimes.
+    :type skip_lineno: bool
+    """
     replaced = False
     deletion_index = []
     imps = red.find_all("FromImportNode")
@@ -124,7 +152,38 @@ def _cleanup_imports(red, aliases, mappings, skip_lineno=False):
 
 
 def _convert_attributes(red, aliases, skip_lineno=False):
+    """
+    _convert_attributes converts all AtomTrailersNodes and DottenNameNodes to 
+      the Qt5/PySide2 api matching Qt.py..
+    This means that anything that was using QtGui but is now using QtWidgets 
+      will be updated for example.
+    It does not do any api v1 - api v2 conversion or specific 
+      misplaced_mapping changes.
+
+    :param red: The redbaron ast.
+    :type red: redbaron.RedBaron
+    :param aliases: Aliases is the replacement information that is build
+        automatically from qt_py_convert.
+    :type aliases: dict
+    :param skip_lineno: An optional performance flag. By default, when the
+        script replaces something, it will tell you which line it is
+        replacing on. This can be useful for tracking the places that
+        changes occurred. When you turn this flag on however, it will not
+        show the line numbers. This can give great performance increases
+        because redbaron has trouble calculating the line number sometimes.
+    :type skip_lineno: bool
+    """
     # Compile our expressions
+    # Our expressions are basically as follows:
+    # From:
+    #   <Any Qt SLM>.<any_member of A>
+    # To:
+    #   <A>.<\back reference to the member matched>
+    # Where A is the specific Qt SecondLevelModule that we are building this 
+    #   expression for.
+    # 
+    # Also sorry this is longer than 79 chars..
+    # It gets harder to read the more I try to make it more readable.
     expressions = [
         (
             re.compile(
@@ -140,7 +199,9 @@ def _convert_attributes(red, aliases, skip_lineno=False):
     ]
 
     def finder_function_factory(exprs):
+        """Basic function factory. Used as a find_all delegate for red."""
         def finder_function(value):
+            """The filter for our red.find_all function."""
             return any([
                 expression.match(value.dumps()) for expression, mod in exprs
             ])
@@ -182,33 +243,10 @@ def _convert_attributes(red, aliases, skip_lineno=False):
                     ))
                     header_written = True
 
-                # Hacky message creation for better logging.
-                # This allows us to highlight exactly which part of the
-                # statement is being replaced.
-                original_part = _color(
-                    text=str(node.value[0]).strip("\n"),
-                    style=ANSI.styles.strong
+                repl = str(node).replace(
+                    str(node.value[0]).strip("\n"), 
+                    module_
                 )
-                original_rest = _color(
-                    color=ANSI.colors.gray,
-                    text="." + ".".join([
-                        str(n).strip("\n")
-                        for n in node.value[1:]
-                    ])
-                )
-                replacement_part = _color(
-                    text=module_,
-                    style=ANSI.styles.strong
-                )
-                replacement_rest = _color(
-                    color=ANSI.colors.gray,
-                    text="." + ".".join([
-                        str(n).strip("\n")
-                        for n in node.value[1:]
-                    ])
-                )
-
-                repl = str(node).replace(str(node.value[0]).strip("\n"), module_)
 
                 _change_verbose(
                     handler=atomtrailers_handler,
@@ -238,7 +276,7 @@ def _convert_attributes(red, aliases, skip_lineno=False):
     return mappings
 
 
-def _convert_root_name_imports(red, aliases, mappings, skip_lineno=False):
+def _convert_root_name_imports(red, aliases, skip_lineno=False):
     """
     _convert_root_name_imports is a function that should be used in cases
     where the original code just imported the python binding and did not
@@ -249,20 +287,25 @@ def _convert_root_name_imports(red, aliases, mappings, skip_lineno=False):
     import PySide
 
     ```
-    :param red:
-    :type red:
-    :param aliases:
-    :type aliases:
-    :param mappings:
-    :type mappings:
-    :return:
-    :rtype:
+    :param red: The redbaron ast.
+    :type red: redbaron.RedBaron
+    :param aliases: Aliases is the replacement information that is build
+        automatically from qt_py_convert.
+    :type aliases: dict
+    :param skip_lineno: An optional performance flag. By default, when the
+        script replaces something, it will tell you which line it is
+        replacing on. This can be useful for tracking the places that
+        changes occurred. When you turn this flag on however, it will not
+        show the line numbers. This can give great performance increases
+        because redbaron has trouble calculating the line number sometimes.
+    :type skip_lineno: bool
     """
     def filter_function(value):
+        """A filter delegate for our red.find_all function."""
         return value.dumps().startswith("Qt.")
     matches = red.find_all("AtomTrailersNode", value=filter_function)
     matches += red.find_all("DottedNameNode", value=filter_function)
-    L_STRIP_QT_RE = re.compile(r"^Qt\.",)
+    lstrip_qt_regex = re.compile(r"^Qt\.",)
 
     if matches:
         print(_color(
@@ -276,7 +319,7 @@ def _convert_root_name_imports(red, aliases, mappings, skip_lineno=False):
         ))
 
     for node in matches:
-        name = L_STRIP_QT_RE.sub(
+        name = lstrip_qt_regex.sub(
             "", node.dumps(), count=1
         )
 
@@ -325,12 +368,20 @@ def _convert_body(red, aliases, mappings, skip_lineno=False):
     :type skip_lineno: bool
     """
     def expression_factory(expr_key):
+        """
+        expression_factory is a function factory for building a regex.match
+        function for a specific key that we found in misplaced_mappings
+        """
         regex = re.compile(
             r"{value}(?:[\.\[\(].*)?$".format(value=expr_key),
             re.DOTALL
         )
 
         def expression_filter(value):
+            """
+            Basic filter function matching for red.find_all against a regex
+            previously created from the factory
+            ."""
             return regex.match(value.dumps())
 
         return expression_filter
@@ -530,7 +581,7 @@ def run(text, skip_lineno=False, tometh_flag=False):
     # Convert using the psep0101 module.
     psep0101.process(red, skip_lineno=skip_lineno, tometh_flag=tometh_flag)
     _convert_body(red, aliases, mappings, skip_lineno=skip_lineno)
-    _convert_root_name_imports(red, aliases, mappings, skip_lineno=skip_lineno)
+    _convert_root_name_imports(red, aliases, skip_lineno=skip_lineno)
     _convert_attributes(red, aliases, skip_lineno=skip_lineno)
     if aliases["root_aliases"]:
         _cleanup_imports(red, aliases, mappings, skip_lineno=skip_lineno)
@@ -579,7 +630,7 @@ def _build_exc(error, line_data):
     line_no = "Line"
     if len(lines) > 1:
         line_no += "s "
-        line_no += "%d-%d" % (line_no_start + 1, line_no_end )
+        line_no += "%d-%d" % (line_no_start + 1, line_no_end)
     else:
         line_no += " %d" % (line_no_start + 1)
 

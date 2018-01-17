@@ -15,6 +15,7 @@ def fimport_handler(msg):
 
 
 class Processes(object):
+    """Processes class for from_imports"""
     @staticmethod
     def _get_import_parts(node, binding):
         return node.dumps().replace(binding, "").lstrip(".").split(".")

@@ -69,6 +69,10 @@ def process_connect(function_str):
 
 
 def process_disconnect(function_str):
+    """
+    'self.disconnect(self, QtCore.SIGNAL("textChanged()"), self.slot_textChanged)',
+    "self.textChanged.disconnect(self.slot_textChanged)"
+    """
     SIGNAL_RE = re.compile(
         r"""
 (?P<root>[\w\.]+)?\.disconnect(?:\s+)?\((?:[\s\n]+)?
@@ -83,14 +87,6 @@ def process_disconnect(function_str):
 (?:\s+)?\)""",
         re.VERBOSE
     )
-
-    # SIGN = re.compile(
-    #     r"(?P<root>\w+)?\.disconnect\((?:[\s\n]+)?(?P<owner>.*?),(?:[\s\n]+)?(?:QtCore\.)?SIGNAL\((?:[\s\n]+)?[\'\"](?P<signal>\w+)\((?P)"
-    # )
-    """
-    'self.disconnect(self, QtCore.SIGNAL("textChanged()"), self.slot_textChanged)',
-    "self.textChanged.disconnect(self.slot_textChanged)"
-    """
     replacement_str = SIGNAL_RE.sub(
         _disconnect_repl,
         function_str
