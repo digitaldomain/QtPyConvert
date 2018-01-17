@@ -10,7 +10,7 @@ __author__ = 'ahughes'
 import re
 import sys
 
-from qt_py_convert.general import _color, _change_verbose, ErrorClass
+from qt_py_convert.general import _color, _change_verbose, ErrorClass, ANSI
 from qt_py_convert._modules.psep0101 import _qsignal
 from qt_py_convert._modules.psep0101 import _conversion_methods
 
@@ -24,9 +24,10 @@ text_type = str if sys.version_info[0] == 3 else unicode
 
 def psep_handler(msg):
     """PSEP0101 handler for the _change_versbose method."""
-    print(
-        "[%s] %s" % (_color(35, "psep0101"), msg)
-    )
+    print("[%s] %s" % (
+        _color(color=ANSI.colors.purple, text="psep0101"),
+        msg
+    ))
 
 
 class Processes(object):

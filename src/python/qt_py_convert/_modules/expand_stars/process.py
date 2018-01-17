@@ -1,7 +1,7 @@
 """
 The imports module is designed to fix the import statements.
 """
-from qt_py_convert.general import _color, AliasDict
+from qt_py_convert.general import _color, AliasDict, ANSI
 
 
 class Processes(object):
@@ -79,8 +79,8 @@ class Processes(object):
                 slm=", ".join([name for name in second_level_modules])
             )
             print(_color(
-                31,
-                "Replacing star import \"%s\" with explicit import \"%s\"" % (
+                color=ANSI.colors.red,
+                text="Replacing star import \"%s\" with explicit \"%s\"" % (
                     star.dumps(), text
                 )
             ))
@@ -132,10 +132,12 @@ def process(red, **kwargs):
         Processes.EXPAND_STR: set(),
     }
     print(_color(
-        31, "WARNING: \"import star\" used. We are bootstrapping code!"
+        color=ANSI.colors.red,
+        text="WARNING: \"import star\" used. We are bootstrapping code!"
     ))
     print(_color(
-        31, "This will be very slow. It's your own fault."
+        color=ANSI.colors.red,
+        text="This will be very slow. It's your own fault."
     ))
     values = red.find_all("FromImportNode", value=star_process(issues))
 

@@ -2,12 +2,16 @@
 The from_imports module is designed to fix the from import statements.
 """
 from qt_py_convert._modules.expand_stars import process as stars_process
-from qt_py_convert.general import __supported_bindings__, _color, AliasDict, _change_verbose
+from qt_py_convert.general import __supported_bindings__, _color, AliasDict, \
+    _change_verbose, ANSI
 
 
 def fimport_handler(msg):
     """from import handler for the _change_versbose method."""
-    print("[%s] %s" % (_color(35, "from * import *"), msg))
+    print("[%s] %s" % (
+        _color(color=ANSI.colors.purple, text="from * import *"),
+        msg
+    ))
 
 
 class Processes(object):

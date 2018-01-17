@@ -1,12 +1,16 @@
 """
 The imports module is designed to fix the import statements.
 """
-from qt_py_convert.general import __supported_bindings__, _color, AliasDict, _change_verbose
+from qt_py_convert.general import __supported_bindings__, _color, AliasDict, \
+    _change_verbose, ANSI
 
 
 def import_handler(msg):
     """import handler for the _change_versbose method."""
-    print("[%s] %s" % (_color(35, "import *"), msg))
+    print("[%s] %s" % (
+        _color(color=ANSI.colors.purple, text="import *"),
+        msg
+    ))
 
 
 class Processes(object):
