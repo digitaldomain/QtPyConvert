@@ -1,10 +1,19 @@
 """
 The imports module is designed to fix the import statements.
 """
-from qt_py_convert.general import _color, AliasDict, ANSI
+from qt_py_convert.general import _color, AliasDict, ANSI, _change_verbose
+
+
+def estars_handler(msg):
+    """estars handler for the _change_versbose method."""
+    print("[%s] %s" % (
+        _color(color=ANSI.colors.purple, text="from module import *"),
+        msg
+    ))
 
 
 class Processes(object):
+    """Processes class for expand_stars"""
     @staticmethod
     def _get_children(binding, levels=None):
         """
@@ -40,7 +49,7 @@ class Processes(object):
             raise ImportError(
                 "Attempting to manually replace a star import from \"{mod}\" "
                 "failed. The following error ocurred while attempting:\n{err}"
-                    .format(mod=strerr, err=str(err))
+                .format(mod=strerr, err=str(err))
             )
         if not levels:
             _module = _temp
@@ -52,7 +61,7 @@ class Processes(object):
         return mappings
 
     @classmethod
-    def _process_star(cls, red, stars):
+    def _process_star(cls, red, stars, skip_lineno=False):
         """
         _process_star is designed to replace from X import * methods.
 
@@ -78,12 +87,13 @@ class Processes(object):
                 binding="Qt",
                 slm=", ".join([name for name in second_level_modules])
             )
-            print(_color(
-                color=ANSI.colors.red,
-                text="Replacing star import \"%s\" with explicit \"%s\"" % (
-                    star.dumps(), text
-                )
-            ))
+
+            _change_verbose(
+                handler=estars_handler,
+                node=star,
+                replacement=text,
+                skip_lineno=skip_lineno,
+            )
             mappings.update(children)
             # star.replace(
             #     text
@@ -112,7 +122,7 @@ def star_process(store):
     return filter_function
 
 
-def process(red, **kwargs):
+def process(red, skip_lineno=False, **kwargs):
     """
     process is the main function for the import process.
 
@@ -142,6 +152,6 @@ def process(red, **kwargs):
     values = red.find_all("FromImportNode", value=star_process(issues))
 
     mappings = getattr(Processes, Processes.EXPAND_STR)(
-        red, issues[Processes.EXPAND_STR]
+        red, issues[Processes.EXPAND_STR], skip_lineno=skip_lineno
     )
     return AliasDict, mappings
