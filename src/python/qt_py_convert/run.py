@@ -168,8 +168,8 @@ def _convert_attributes(red, aliases, skip_lineno=False):
                         for n in node.value[1:]
                     ]))
                 msg = "Replacing \"{original}\" with \"{replacement}\"".format(
-                    original=original_part + original_rest,
-                    replacement=replacement_part + replacement_rest,
+                    original=(original_part + original_rest).replace(".(", "("),
+                    replacement=(replacement_part + replacement_rest).replace(".(", "("),
                 )
                 _change_verbose(
                     handler=atomtrailers_handler,
@@ -683,5 +683,5 @@ if __name__ == "__main__":
     # folder = os.path.abspath("../../../../tests/sources")
     # process_folder(folder, recursive=True, write=True)
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/rvplugins/tags/0.19.4/src", recursive=True, write=True, skip_lineno=True, tometh_flag=True)
-    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/texturepipeline/branches/qt_py/src/python/texturepipeline/maya/scripts/vrayTEST/fromLightpipeline/ddTextureAssignment/util.py", write=True, skip_lineno=True, tometh_flag=True)
+    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/mayapipeline/trunk/src/maya/scripts/mayapipeline/image_planes.py", write=False, skip_lineno=True, tometh_flag=True)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ticket/trunk/src/python/ticket/flaregun_ui.py", write=True, fast_exit=False)
