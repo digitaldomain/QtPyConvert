@@ -71,6 +71,9 @@ def lint_directory(dcc_scripts, output, extra_pythonpath=None, fingerprint_all=F
             if basename in ('local', 'utilities'):
                 elides.append(dirname)
                 continue
+        if "external" == dirname:
+            elides.append(dirname)
+            continue
 
         # don't recurse into elided dirs.  think there is a filter arg on walk,
         is_elided = False
