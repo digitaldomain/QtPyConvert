@@ -2,10 +2,31 @@
 general is utility functions for the qt_py_convert library
 """
 import copy
+import difflib
 import json
 import os
 import subprocess
 import sys
+
+
+class ANSI(object):
+    class colors(object):
+        white = 29
+        black = 30
+        red = 31
+        green = 32
+        orange = 33
+        blue = 34
+        purple = 35
+        teal = 36
+        gray = 37
+
+    class styles(object):
+        plain = 0
+        strong = 1
+        underline = 4
+        reversed = 7
+        strike = 9
 
 
 def supports_color():
@@ -35,7 +56,7 @@ def supports_color():
 __supports_color = supports_color()
 
 
-def _color(color, text):
+def _color(color=ANSI.colors.white, text="", style=ANSI.styles.plain):
     """
     _color will print the ansi text coloring code for the text.
 
@@ -48,7 +69,79 @@ def _color(color, text):
     """
     if not __supports_color:
         return text
-    return "\033[%dm%s\033[0m" % (color, text)
+    return "\033[%d;%dm%s\033[0m" % (style, color, text)
+
+
+def _highlight_diffs(start, finish, sep=(".", " ", ",", "(")):
+    if not __supports_color:
+        return start, finish
+
+    slist = start.split(sep[0])
+    flist = finish.split(sep[0])
+    seqm = difflib.SequenceMatcher(a=slist, b=flist)
+    slist_out = []
+    flist_out = []
+    for opcode, a0, a1, b0, b1 in seqm.get_opcodes():
+        if opcode == "replace":
+            slist_intermediate = []
+            flist_intermediate = []
+            for start_part, finish_part in zip(slist[a0:a1],
+                                               flist[b0:b1]):
+                spart_repl, fpart_repl = start_part, finish_part
+                if len(sep) > 1:
+                    spart_repl, fpart_repl = \
+                        _highlight_diffs(start_part, finish_part, sep=sep[1:])
+                if spart_repl != start_part or fpart_repl != finish_part:
+                    slist_intermediate.append(spart_repl)
+                    flist_intermediate.append(fpart_repl)
+                else:
+                    slist_intermediate.append(start_part)
+                    flist_intermediate.append(finish_part)
+
+            for sitem, fitem in zip(slist_intermediate, flist_intermediate):
+                if sitem != fitem:
+                    slist_out.append(_color(
+                        color=ANSI.colors.green,
+                        text=sitem,
+                        style=ANSI.styles.strong
+                    ))
+                    flist_out.append(_color(
+                        color=ANSI.colors.green,
+                        text=fitem,
+                        style=ANSI.styles.strong
+                    ))
+                else:
+                    slist_out.append(sitem)
+                    flist_out.append(fitem)
+        elif opcode == "equal":
+            slist_out.extend(map(
+                lambda x: _color(color=ANSI.colors.gray, text=x),
+                slist[a0:a1]
+            ))
+            flist_out.extend(map(
+                lambda x: _color(color=ANSI.colors.gray, text=x),
+                flist[b0:b1]
+            ))
+        elif opcode == "delete":
+            slist_out.extend(map(
+                lambda x: _color(
+                    color=ANSI.colors.green,
+                    text=x,
+                    style=ANSI.styles.strike
+                ),
+                slist[a0:a1]
+            ))
+            flist_out.extend(map(
+                lambda x: _color(
+                    color=ANSI.colors.green,
+                    text=x,
+                    style=ANSI.styles.strike),
+                flist[b0:b1]
+            ))
+        else:
+            slist_out += slist[a0:a1]
+            flist_out += flist[b0:b1]
+    return sep[0].join(slist_out), sep[0].join(flist_out)
 
 
 def _change_verbose(handler, node, replacement, skip_lineno=False, msg=None):
@@ -70,14 +163,15 @@ def _change_verbose(handler, node, replacement, skip_lineno=False, msg=None):
     :rtype: None
     """
     failure_message = (
-            _color(31, "ERROR:") +
+            _color(color=ANSI.colors.red, text="ERROR:") +
             " Could not replace \"{original}\" with \"{replacement}\""
     )
     if msg is None:
         msg = "Replacing \"{original}\" with \"{replacement}\""
 
-    original = _color(37, str(node).strip("\n"))
-    replacement = _color(37, replacement)
+    _orig = str(node).strip("\n")
+    _repl = replacement
+    original, replacement = _highlight_diffs(_orig, _repl)
     if not skip_lineno:
         msg += " at line {line}"
         if not hasattr(node, "absolute_bounding_box"):
@@ -120,8 +214,8 @@ if misplaced_members_python_str:
 
     # Colored green
     print(_color(
-        32,
-        "Resolved QT_CUSTOM_MISPLACED_MEMBERS to json: {0!r}".format(
+        color=ANSI.colors.green,
+        text="Resolved QT_CUSTOM_MISPLACED_MEMBERS to json: {0!r}".format(
             _custom_misplaced_members)
     ))
 
@@ -172,7 +266,9 @@ class AliasDictClass(dict):
         )
 
     def clean(self):
-        print(_color(31, "Cleaning the global AliasDict"))
+        print(_color(
+            color=ANSI.colors.red, text="Cleaning the global AliasDict"
+        ))
         self["bindings"] = set()
         self["root_aliases"] = set()
         self["used"] = set()
