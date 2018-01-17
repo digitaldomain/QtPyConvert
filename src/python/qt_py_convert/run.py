@@ -11,17 +11,23 @@ from qt_py_convert._modules import from_imports
 from qt_py_convert._modules import imports
 from qt_py_convert._modules import psep0101
 from qt_py_convert.general import merge_dict, _custom_misplaced_members, \
-    _color, AliasDict, _change_verbose, UserInputRequiredException, ErrorClass
+    _color, AliasDict, _change_verbose, UserInputRequiredException, ANSI
 
 COMMON_MODULES = Qt._common_members.keys() + ["QtCompat"]
 
 
 def main_handler(msg):
-    print("[%s] %s" % (_color(35, "qt_py_convert"), msg))
+    print("[%s] %s" % (
+        _color(color=ANSI.colors.purple, text="qt_py_convert"),
+        msg
+    ))
 
 
 def atomtrailers_handler(msg):
-    print("[%s] %s" % (_color(35, "qt4->qt5"), msg))
+    print("[%s] %s" % (
+        _color(color=ANSI.colors.purple, text="qt4->qt5"),
+        msg
+    ))
 
 
 def _cleanup_imports(red, aliases, mappings, skip_lineno=False):
@@ -29,8 +35,15 @@ def _cleanup_imports(red, aliases, mappings, skip_lineno=False):
     deletion_index = []
     imps = red.find_all("FromImportNode")
     imps += red.find_all("ImportNode")
-    print(_color(34, "==========================="))
-    print(_color(34, _color(4, "Consolidating Import lines.")))
+    print(_color(
+        color=ANSI.colors.blue,
+        text="===========================")
+    )
+    print(_color(
+        color=ANSI.colors.blue,
+        text="Consolidating Import lines.",
+        style=ANSI.styles.underline)
+    )
     for child in imps:
         for value in child.value:
             if value.value == "Qt":
@@ -51,14 +64,20 @@ def _cleanup_imports(red, aliases, mappings, skip_lineno=False):
                     if not names:
                         print(
                             "%s: %s" % (
-                                _color(31, "WARNING"),
-                                _color(32, "We have found no usages of Qt in "
-                                           "this script despite you previously"
-                                           " having imported the binding.\nIf "
-                                           "you think this is in error, "
-                                           "please let us know and submit an "
-                                           "issue ticket with the example you "
-                                           "think is wrong.")
+                                _color(
+                                    color=ANSI.colors.red,
+                                    text="WARNING"
+                                ),
+                                _color(
+                                    color=ANSI.colors.green,
+                                    text="We have found no usages of Qt in "
+                                         "this script despite you previously"
+                                         " having imported the binding.\nIf "
+                                         "you think this is in error, "
+                                         "please let us know and submit an "
+                                         "issue ticket with the example you "
+                                         "think is wrong."
+                                )
                             )
                         )
                         child.parent.remove(child)
@@ -70,7 +89,7 @@ def _cleanup_imports(red, aliases, mappings, skip_lineno=False):
 
                     cleaning_message = (
                         "%s imports from: \"{original}\" to \"{replacement}\""
-                        % _color(32, "Cleaning")
+                        % _color(color=ANSI.colors.green, text="Cleaning")
                     )
                     _change_verbose(
                         msg=cleaning_message,
@@ -84,7 +103,9 @@ def _cleanup_imports(red, aliases, mappings, skip_lineno=False):
                     replaced = True
                 else:
                     deleting_message = (
-                        "%s \"{original}\"" % _color(31, "Deleting")
+                        "%s \"{original}\"" % _color(
+                            color=ANSI.colors.red, text="Deleting"
+                        )
                     )
                     _change_verbose(
                         msg=deleting_message,
@@ -150,33 +171,50 @@ def _convert_attributes(red, aliases, skip_lineno=False):
                 aliases["used"].add(module_)
                 added_module = True
                 if not header_written:
-                    print(_color(33, "========================="))
-                    print(_color(33, _color(4, "Parsing AtomTrailersNodes")))
+                    print(_color(
+                        color=ANSI.colors.orange,
+                        text="========================="
+                    ))
+                    print(_color(
+                        color=ANSI.colors.orange,
+                        text="Parsing AtomTrailersNodes",
+                        style=ANSI.styles.underline
+                    ))
                     header_written = True
 
                 # Hacky message creation for better logging.
                 # This allows us to highlight exactly which part of the
                 # statement is being replaced.
-                original_part = _color(1, str(node.value[0]).strip("\n"))
-                original_rest = _color(37, "." + ".".join([
-                        str(n).strip("\n")
-                        for n in node.value[1:]
-                ]))
-                replacement_part = _color(1, module_)
-                replacement_rest = _color(37, "." + ".".join([
-                        str(n).strip("\n")
-                        for n in node.value[1:]
-                    ]))
-                msg = "Replacing \"{original}\" with \"{replacement}\"".format(
-                    original=(original_part + original_rest).replace(".(", "("),
-                    replacement=(replacement_part + replacement_rest).replace(".(", "("),
+                original_part = _color(
+                    text=str(node.value[0]).strip("\n"),
+                    style=ANSI.styles.strong
                 )
+                original_rest = _color(
+                    color=ANSI.colors.gray,
+                    text="." + ".".join([
+                        str(n).strip("\n")
+                        for n in node.value[1:]
+                    ])
+                )
+                replacement_part = _color(
+                    text=module_,
+                    style=ANSI.styles.strong
+                )
+                replacement_rest = _color(
+                    color=ANSI.colors.gray,
+                    text="." + ".".join([
+                        str(n).strip("\n")
+                        for n in node.value[1:]
+                    ])
+                )
+
+                repl = str(node).replace(str(node.value[0]).strip("\n"), module_)
+
                 _change_verbose(
                     handler=atomtrailers_handler,
-                    node=node.value[0],
-                    replacement=module_,
+                    node=node,
+                    replacement=repl,  # replacement_part + replacement_rest,
                     skip_lineno=skip_lineno,
-                    msg=msg
                 )
                 # Only replace the first node part of the statement.
                 # This allows us to keep any child nodes that have already
@@ -227,8 +265,15 @@ def _convert_root_name_imports(red, aliases, mappings, skip_lineno=False):
     L_STRIP_QT_RE = re.compile(r"^Qt\.",)
 
     if matches:
-        print(_color(35, "===================================="))
-        print(_color(35, _color(4, "Replacing top level binding imports.")))
+        print(_color(
+            color=ANSI.colors.purple,
+            text="===================================="
+        ))
+        print(_color(
+            color=ANSI.colors.purple,
+            text="Replacing top level binding imports.",
+            style=ANSI.styles.underline
+        ))
 
     for node in matches:
         name = L_STRIP_QT_RE.sub(
@@ -250,7 +295,7 @@ def _convert_root_name_imports(red, aliases, mappings, skip_lineno=False):
         else:
             print(
                 "Unknown second level module from the Qt package \"%s\""
-                % _color(33, root_name)
+                % _color(color=ANSI.colors.orange, text=root_name)
             )
 
 
@@ -292,8 +337,15 @@ def _convert_body(red, aliases, mappings, skip_lineno=False):
 
     # Body of the function
     for key in sorted(mappings, key=len):
-        print(_color(36, "-"*len(key)))
-        print(_color(36, _color(4, key)))
+        print(_color(
+            color=ANSI.colors.teal,
+            text="-"*len(key)
+        ))
+        print(_color(
+            color=ANSI.colors.teal,
+            text=key,
+            style=ANSI.styles.underline
+        ))
         if "." in key:
             filter_function = expression_factory(key)
             matches = red.find_all("AtomTrailersNode", value=filter_function)
@@ -485,8 +537,6 @@ def run(text, skip_lineno=False, tometh_flag=False):
 
     # Done!
     dumps = red.dumps()
-    # print(_color(32, "The following is the modified script:"))
-    # print(_color(34, dumps))
     return aliases, mappings, dumps
 
 
@@ -540,11 +590,11 @@ def _build_exc(error, line_data):
 """
     raise UserInputRequiredException(
         _color(
-            31,
-            template.format(
+            color=ANSI.colors.red,
+            text=template.format(
                 line_no=line_no,
-                line=_color(37, line.rstrip("\n")),
-                reason=_color(31, error.reason)
+                line=_color(color=ANSI.colors.gray, text=line.rstrip("\n")),
+                reason=_color(color=ANSI.colors.red, text=error.reason)
             )
         )
     )
@@ -603,14 +653,15 @@ def process_file(fp, write=False, skip_lineno=False, tometh_flag=False):
     # Process any errors that may have happened throughout the process.
     if AliasDict["errors"]:
         main_handler(_color(
-            31,
-            "The Following errors were recovered while converting %s:\n" % fp
+            color=ANSI.colors.red,
+            text="The Following errors were recovered from %s:\n" % fp
         ))
         for error in AliasDict["errors"]:
             try:
                 _build_exc(error, lines)
             except UserInputRequiredException as err:
                 main_handler(str(err))
+
 
 def process_folder(folder, recursive=False, write=False, skip_lineno=False, tometh_flag=False):
     """
