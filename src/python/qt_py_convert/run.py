@@ -10,6 +10,7 @@ from qt_py_convert.external import redbaron
 from qt_py_convert._modules import from_imports
 from qt_py_convert._modules import imports
 from qt_py_convert._modules import psep0101
+from qt_py_convert._modules import unsupported
 from qt_py_convert.general import merge_dict, _custom_misplaced_members, \
     _color, AliasDict, _change_verbose, UserInputRequiredException, ANSI
 
@@ -586,6 +587,9 @@ def run(text, skip_lineno=False, tometh_flag=False):
     if aliases["root_aliases"]:
         _cleanup_imports(red, aliases, mappings, skip_lineno=skip_lineno)
 
+    # Build errors from our unsupported module.
+    unsupported.process(red, skip_lineno=skip_lineno)
+
     # Done!
     dumps = red.dumps()
     return aliases, mappings, dumps
@@ -785,5 +789,5 @@ if __name__ == "__main__":
     # folder = os.path.abspath("../../../../tests/sources")
     # process_folder(folder, recursive=True, write=True)
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/rvplugins/tags/0.19.4/src", recursive=True, write=True, skip_lineno=True, tometh_flag=True)
-    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/mayapipeline/trunk/src/maya/scripts/mayapipeline/image_planes.py", write=False, skip_lineno=True, tometh_flag=True)
+    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/mayapipeline/trunk/src/python/mayapipeline/lib/qtutils.py", write=False, skip_lineno=False, tometh_flag=True)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ticket/trunk/src/python/ticket/flaregun_ui.py", write=True, fast_exit=False)
