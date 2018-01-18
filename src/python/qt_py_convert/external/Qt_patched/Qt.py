@@ -43,7 +43,7 @@ import types
 import shutil
 
 
-__version__ = "1.1.0.b9p1"
+__version__ = "1.1.0.b10p1"
 
 # Enable support for `from Qt import *`
 __all__ = []
@@ -680,7 +680,7 @@ def _wrapinstance(func, ptr, base=None):
         1. Qt.py is using PySide 1 or 2.
         2. A `base` argument is not provided.
 
-        See :func:`QtCompat.wrapinstance()`
+        See :func:`QtCompat.wrapInstance()`
 
     Arguments:
         func (function): Original function
@@ -828,7 +828,7 @@ _misplaced_members = {
         "QtCore.QItemSelectionRange": "QtCore.QItemSelectionRange",
         # Custom patch
         "QtUiTools.load_ui": ["QtCompat.loadUi", _loadUi],
-        "shiboken2.wrapinstance": ["QtCompat.wrapinstance", _wrapinstance],
+        "shiboken2.wrapInstance": ["QtCompat.wrapInstance", _wrapinstance],
         "QtWidgets.qApp": "QtWidgets.QApplication.instance()"
     },
     "PyQt5": {
@@ -843,7 +843,7 @@ _misplaced_members = {
         "QtCore.QItemSelectionRange": "QtCore.QItemSelectionRange",
         # Custom patch
         "uic.loadUi": ["QtCompat.loadUi", _loadUi],
-        "sip.wrapinstance": ["QtCompat.wrapinstance", _wrapinstance],
+        "sip.wrapinstance": ["QtCompat.wrapInstance", _wrapinstance],
         "QtCore.QString": "str",
         "QtWidgets.qApp": "QtWidgets.QApplication.instance()"
     },
@@ -859,7 +859,7 @@ _misplaced_members = {
         "QtGui.QItemSelectionRange": "QtCore.QItemSelectionRange",
         # Custom Patch
         "QtUiTools.load_ui": ["QtCompat.loadUi", _loadUi],
-        "shiboken.wrapinstance": ["QtCompat.wrapinstance", _wrapinstance],
+        "shiboken.wrapInstance": ["QtCompat.wrapInstance", _wrapinstance],
         "QtGui.qApp": "QtWidgets.QApplication.instance()"
     },
     "PyQt4": {
@@ -875,7 +875,7 @@ _misplaced_members = {
         # Custom Patch
         "QtCore.pyqtSignature": "QtCore.Slot",
         "uic.loadUi": ["QtCompat.loadUi", _loadUi],
-        "sip.wrapinstance": ["QtCompat.wrapinstance", _wrapinstance],
+        "sip.wrapinstance": ["QtCompat.wrapInstance", _wrapinstance],
         "QtCore.QString": "str",
         "QtGui.qApp": "QtWidgets.QApplication.instance()"
     }
@@ -1150,9 +1150,9 @@ def _pyside2():
             # After merge of PySide and shiboken, May 2017
             from PySide2 import shiboken2
 
-        Qt.QtCompat.wrapinstance = (
+        Qt.QtCompat.wrapInstance = (
             lambda ptr, base=None: _wrapinstance(
-                shiboken2.wrapinstance, ptr, base)
+                shiboken2.wrapInstance, ptr, base)
         )
         Qt.QtCompat.getCppPointer = lambda object: \
             shiboken2.getCppPointer(object)[0]
@@ -1192,9 +1192,9 @@ def _pyside():
             # After merge of PySide and shiboken, May 2017
             from PySide import shiboken
 
-        Qt.QtCompat.wrapinstance = (
+        Qt.QtCompat.wrapInstance = (
             lambda ptr, base=None: _wrapinstance(
-                shiboken.wrapinstance, ptr, base)
+                shiboken.wrapInstance, ptr, base)
         )
         Qt.QtCompat.getCppPointer = lambda object: \
             shiboken.getCppPointer(object)[0]
@@ -1241,7 +1241,7 @@ def _pyqt5():
 
     try:
         import sip
-        Qt.QtCompat.wrapinstance = (
+        Qt.QtCompat.wrapInstance = (
             lambda ptr, base=None: _wrapinstance(
                 sip.wrapinstance, ptr, base)
         )
@@ -1310,7 +1310,7 @@ def _pyqt4():
 
     try:
         import sip
-        Qt.QtCompat.wrapinstance = (
+        Qt.QtCompat.wrapInstance = (
             lambda ptr, base=None: _wrapinstance(
                 sip.wrapinstance, ptr, base)
         )
@@ -1585,6 +1585,9 @@ def _install():
                 continue
 
             setattr(our_submodule, member, their_member)
+
+    # Enable direct import of QtCompat
+    sys.modules['Qt.QtCompat'] = Qt.QtCompat
 
     # Backwards compatibility
     if hasattr(Qt.QtCompat, 'loadUi'):
