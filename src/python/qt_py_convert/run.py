@@ -12,7 +12,8 @@ from qt_py_convert._modules import imports
 from qt_py_convert._modules import psep0101
 from qt_py_convert._modules import unsupported
 from qt_py_convert.general import merge_dict, _custom_misplaced_members, \
-    _color, AliasDict, _change_verbose, UserInputRequiredException, ANSI
+    _color, AliasDict, _change_verbose, UserInputRequiredException, ANSI, \
+    __suplimentary_bindings__
 
 COMMON_MODULES = Qt._common_members.keys() + ["QtCompat"]
 
@@ -75,7 +76,12 @@ def _cleanup_imports(red, aliases, mappings, skip_lineno=False):
     )
     for child in imps:
         for value in child.value:
-            if value.value == "Qt":
+            value_str = value.value
+            try:
+                value_str = value_str.dumps()
+            except AttributeError:
+                pass
+            if value.value == "Qt" or value_str in __suplimentary_bindings__:
                 if not replaced:
                     names = filter(
                         lambda a: True if a in COMMON_MODULES else False,
@@ -135,7 +141,7 @@ def _cleanup_imports(red, aliases, mappings, skip_lineno=False):
                         "%s \"{original}\"" % _color(
                             color=ANSI.colors.red, text="Deleting"
                         )
-                    )
+                    ).format(original=str(child).strip("\n"))
                     _change_verbose(
                         msg=deleting_message,
                         handler=main_handler,
@@ -789,5 +795,5 @@ if __name__ == "__main__":
     # folder = os.path.abspath("../../../../tests/sources")
     # process_folder(folder, recursive=True, write=True)
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/rvplugins/tags/0.19.4/src", recursive=True, write=True, skip_lineno=True, tometh_flag=True)
-    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/mayapipeline/trunk/src/python/mayapipeline/lib/qtutils.py", write=False, skip_lineno=False, tometh_flag=True)
+    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/mayapipeline/trunk/src/python/mayapipeline/anim_visibility/main.py", write=True, skip_lineno=True, tometh_flag=True)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ticket/trunk/src/python/ticket/flaregun_ui.py", write=True, fast_exit=False)

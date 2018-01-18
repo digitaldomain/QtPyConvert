@@ -191,6 +191,7 @@ def _change_verbose(handler, node, replacement, skip_lineno=False, msg=None):
 
 # Default binding support out of the box.
 __supported_bindings__ = ["PySide2", "PySide", "PyQt5", "PyQt4"]
+__suplimentary_bindings__ = ["sip", "shiboken"]
 # Adding support for custom bindings.
 _custom_bindings = os.environ.get("QT_CUSTOM_BINDINGS_SUPPORT")
 if _custom_bindings:
