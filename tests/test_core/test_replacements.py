@@ -1,4 +1,5 @@
 from qt_py_convert.run import run
+from qt_py_convert.general import _highlight_diffs
 
 
 def check(source, dest):
@@ -6,7 +7,9 @@ def check(source, dest):
     try:
         assert dumps == dest
     except AssertionError as err:
-        raise AssertionError("\n\"%s\"\n!=\n\"%s\"\n" % (dumps, dest))
+        raise AssertionError("\n\"%s\"\n!=\n\"%s\"\n" %
+            _highlight_diffs(dumps, dest)
+        )
 
 
 def test_multiple_replacements_one_line():
