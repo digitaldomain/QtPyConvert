@@ -26,6 +26,7 @@ PySideRCC = "pyside-rcc"
 PySide2UIC = "pyside2-uic"
 PySide2RCC = "pyside2-rcc"
 
+QRESOURCE_ENVIRON = "QRESOURCE_CONVERTER_DEFAULT"
 
 mappings = {
     "pyqt4": (PyUIC4, PyRCC4),
@@ -33,7 +34,6 @@ mappings = {
     "pyside": (PySideUIC, PySideRCC),
     "pyside2": (PySide2UIC, PySide2RCC),
 }
-
 
 
 class UICConversionError(ValueError):
@@ -47,6 +47,10 @@ def _is_uic(path):
 
 
 def execute_convert(application, path, output=None):
+    if application is None:
+        # Query Environ.
+        application = os.environ.get(QRESOURCE_ENVIRON, "pyqt4")
+
     uic, rcc = mappings[application]
 
     if _is_uic(path):
@@ -95,11 +99,11 @@ def parse_args():
     )
 
     parser.add_argument(
-        "-c", "--convertor",
+        "-c", "--converter",
         action="store",
         choices=tuple(mappings.keys()),
-        default="pyqt4",
-        dest="convertor"
+        default=None,
+        dest="converter"
     )
     parser.add_argument(
         "file",
@@ -117,7 +121,7 @@ def parse_args():
 def main():
     args = parse_args()
     has_errors, errors, message = execute_convert(
-        args.convertor, args.file, output=args.o
+        args.converter, args.file, output=args.o
     )
 
     if has_errors:
