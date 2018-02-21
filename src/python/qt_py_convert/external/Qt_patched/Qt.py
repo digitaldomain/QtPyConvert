@@ -43,7 +43,7 @@ import types
 import shutil
 
 
-__version__ = "1.1.0.b10p1"
+__version__ = "1.1.0p1"
 
 # Enable support for `from Qt import *`
 __all__ = []
@@ -393,6 +393,16 @@ _common_members = {
         "QGLContext",
         "QGLFormat",
         "QGLWidget"
+    ],
+    "QtPrintSupport": [
+        "QAbstractPrintDialog",
+        "QPageSetupDialog",
+        "QPrintDialog",
+        "QPrintEngine",
+        "QPrintPreviewDialog",
+        "QPrintPreviewWidget",
+        "QPrinter",
+        "QPrinterInfo"
     ],
     "QtSql": [
         "QSql",
@@ -857,6 +867,14 @@ _misplaced_members = {
         "QtCore.Signal": "QtCore.Signal",
         "QtCore.Slot": "QtCore.Slot",
         "QtGui.QItemSelectionRange": "QtCore.QItemSelectionRange",
+        "QtGui.QAbstractPrintDialog": "QtPrintSupport.QAbstractPrintDialog",
+        "QtGui.QPageSetupDialog": "QtPrintSupport.QPageSetupDialog",
+        "QtGui.QPrintDialog": "QtPrintSupport.QPrintDialog",
+        "QtGui.QPrintEngine": "QtPrintSupport.QPrintEngine",
+        "QtGui.QPrintPreviewDialog": "QtPrintSupport.QPrintPreviewDialog",
+        "QtGui.QPrintPreviewWidget": "QtPrintSupport.QPrintPreviewWidget",
+        "QtGui.QPrinter": "QtPrintSupport.QPrinter",
+        "QtGui.QPrinterInfo": "QtPrintSupport.QPrinterInfo",
         # Custom Patch
         "QtUiTools.load_ui": ["QtCompat.loadUi", _loadUi],
         "shiboken.wrapInstance": ["QtCompat.wrapInstance", _wrapinstance],
@@ -872,6 +890,14 @@ _misplaced_members = {
         "QtCore.pyqtSignal": "QtCore.Signal",
         "QtCore.pyqtSlot": "QtCore.Slot",
         "QtGui.QItemSelectionRange": "QtCore.QItemSelectionRange",
+        "QtGui.QAbstractPrintDialog": "QtPrintSupport.QAbstractPrintDialog",
+        "QtGui.QPageSetupDialog": "QtPrintSupport.QPageSetupDialog",
+        "QtGui.QPrintDialog": "QtPrintSupport.QPrintDialog",
+        "QtGui.QPrintEngine": "QtPrintSupport.QPrintEngine",
+        "QtGui.QPrintPreviewDialog": "QtPrintSupport.QPrintPreviewDialog",
+        "QtGui.QPrintPreviewWidget": "QtPrintSupport.QPrintPreviewWidget",
+        "QtGui.QPrinter": "QtPrintSupport.QPrinter",
+        "QtGui.QPrinterInfo": "QtPrintSupport.QPrinterInfo",
         # Custom Patch
         "QtCore.pyqtSignature": "QtCore.Slot",
         "uic.loadUi": ["QtCompat.loadUi", _loadUi],
@@ -1043,14 +1069,34 @@ def _reassign_misplaced_members(binding):
             dst_member = dst_parts[1]
         # End Custom Patch
 
+        # Get the member we want to store in the namesapce.
+        try:
+            dst_value = getattr(getattr(Qt, "_" + src_module), src_member)
+        except AttributeError:
+            # If the member we want to store in the namespace does not exist,
+            # there is no need to continue. This can happen if a request was
+            # made to rename a member that didn't exist, for example
+            # if QtWidgets isn't available on the target platform.
+            _log("Misplaced member has no source: {}".format(src))
+            continue
+
         try:
             src_object = getattr(Qt, dst_module)
         except AttributeError:
-            # Skip reassignment of non-existing members.
-            # This can happen if a request was made to
-            # rename a member that didn't exist, for example
-            # if QtWidgets isn't available on the target platform.
-            continue
+            if dst_module not in _common_members:
+                # Only create the Qt parent module if its listed in
+                # _common_members. Without this check, if you remove QtCore
+                # from _common_members, the default _misplaced_members will add
+                # Qt.QtCore so it can add Signal, Slot, etc.
+                msg = 'Not creating missing member module "{m}" for "{c}"'
+                _log(msg.format(m=dst_module, c=dst_member))
+                continue
+            # If the dst is valid but the Qt parent module does not exist
+            # then go ahead and create a new module to contain the member.
+            setattr(Qt, dst_module, _new_module(dst_module))
+            src_object = getattr(Qt, dst_module)
+            # Enable direct import of the new module
+            sys.modules[__name__ + "." + dst_module] = src_object
 
         # Custom Patch
         if not dst_value:
