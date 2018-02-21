@@ -1,5 +1,4 @@
 import os
-from pprint import pprint
 import re
 import traceback
 
@@ -12,26 +11,16 @@ from qt_py_convert._modules import imports
 from qt_py_convert._modules import psep0101
 from qt_py_convert._modules import unsupported
 from qt_py_convert.general import merge_dict, _custom_misplaced_members, \
-    _color, AliasDict, _change_verbose, UserInputRequiredException, ANSI, \
+    ALIAS_DICT, change, UserInputRequiredException, ANSI,  \
     __suplimentary_bindings__
+from qt_py_convert.color import color_text
+from qt_py_convert.log import get_logger
 
 COMMON_MODULES = Qt._common_members.keys() + ["QtCompat"]
 
 
-def main_handler(msg):
-    """main_handler is a print handler. It's title is "qt_py_convert" """
-    print("[%s] %s" % (
-        _color(color=ANSI.colors.purple, text="qt_py_convert"),
-        msg
-    ))
-
-
-def atomtrailers_handler(msg):
-    """atomtrailers_handler is a print handler. It's title is "qt4->qt5" """
-    print("[%s] %s" % (
-        _color(color=ANSI.colors.purple, text="qt4->qt5"),
-        msg
-    ))
+MAIN_LOG = get_logger("run")
+Qt4_Qt5_LOG = get_logger("qt4->qt5")
 
 
 def _cleanup_imports(red, aliases, mappings, skip_lineno=False):
@@ -65,15 +54,17 @@ def _cleanup_imports(red, aliases, mappings, skip_lineno=False):
     deletion_index = []
     imps = red.find_all("FromImportNode")
     imps += red.find_all("ImportNode")
-    print(_color(
-        color=ANSI.colors.blue,
-        text="===========================")
-    )
-    print(_color(
-        color=ANSI.colors.blue,
+
+    MAIN_LOG.debug(color_text(
+        text="===========================",
+        color=ANSI.colors.blue
+    ))
+    MAIN_LOG.debug(color_text(
         text="Consolidating Import lines.",
-        style=ANSI.styles.underline)
-    )
+        color=ANSI.colors.blue,
+        style=ANSI.styles.underline,
+    ))
+
     for child in imps:
         for value in child.value:
             value_str = value.value
@@ -97,24 +88,16 @@ def _cleanup_imports(red, aliases, mappings, skip_lineno=False):
                             names.append(mappings[member].split(".")[0])
 
                     if not names:
-                        print(
-                            "%s: %s" % (
-                                _color(
-                                    color=ANSI.colors.red,
-                                    text="WARNING"
-                                ),
-                                _color(
-                                    color=ANSI.colors.green,
-                                    text="We have found no usages of Qt in "
-                                         "this script despite you previously"
-                                         " having imported the binding.\nIf "
-                                         "you think this is in error, "
-                                         "please let us know and submit an "
-                                         "issue ticket with the example you "
-                                         "think is wrong."
-                                )
-                            )
-                        )
+                        MAIN_LOG.warning(color_text(
+                            text="We have found no usages of Qt in "
+                                 "this script despite you previously"
+                                 " having imported the binding.\nIf "
+                                 "you think this is in error, "
+                                 "please let us know and submit an "
+                                 "issue ticket with the example you "
+                                 "think is wrong.",
+                            color=ANSI.colors.green
+                        ))
                         child.parent.remove(child)
                         continue
                     # What we want to replace to.
@@ -122,38 +105,39 @@ def _cleanup_imports(red, aliases, mappings, skip_lineno=False):
                         key=", ".join(names)
                     )
 
-                    cleaning_message = (
-                        "%s imports from: \"{original}\" to \"{replacement}\""
-                        % _color(color=ANSI.colors.green, text="Cleaning")
+                    cleaning_message = color_text(
+                        text="Cleaning", color=ANSI.colors.green
                     )
-                    _change_verbose(
+                    cleaning_message += (
+                        " imports from: \"{original}\" to \"{replacement}\""
+                    )
+                    change(
                         msg=cleaning_message,
-                        handler=main_handler,
+                        logger=MAIN_LOG,
                         node=child,
                         replacement=replace_text,
-                        skip_lineno=skip_lineno,
+                        skip_lineno=skip_lineno
                     )
 
                     child.replace(replace_text)
                     replaced = True
                 else:
-                    deleting_message = (
-                        "%s \"{original}\"" % _color(
-                            color=ANSI.colors.red, text="Deleting"
-                        )
-                    ).format(original=str(child).strip("\n"))
-                    _change_verbose(
+                    deleting_message = "{name} \"{orig}\"".format(
+                        orig=str(child).strip("\n"),
+                        name=color_text(text="Deleting", color=ANSI.colors.red)
+                    )
+                    change(
                         msg=deleting_message,
-                        handler=main_handler,
+                        logger=MAIN_LOG,
                         node=child,
                         replacement="",
-                        skip_lineno=skip_lineno,
+                        skip_lineno=skip_lineno
                     )
                     child.parent.remove(child)
             else:
                 pass
     for child in reversed(deletion_index):
-        print("Deleting %s" % child)
+        MAIN_LOG.debug("Deleting {node}".format(node=child))
         child.parent.remove(child)
         # red.remove(child)
 
@@ -194,7 +178,7 @@ def _convert_attributes(red, aliases, skip_lineno=False):
     expressions = [
         (
             re.compile(
-                r"^(?P<module>{modules})\.(?P<widget>(?:{widgets})(?:[\.\[\(].*)?)$".format(             # Regular expression
+                r"^(?P<module>{modules})\.(?P<widget>(?:{widgets})(?:[.\[(].*)?)$".format(             # Regular expression
                     modules="|".join(re.escape(name) for name in Qt._common_members.keys()),
                     widgets="|".join(re.escape(widget) for widget in Qt._common_members[module_name])
                 ),
@@ -239,13 +223,13 @@ def _convert_attributes(red, aliases, skip_lineno=False):
                 aliases["used"].add(module_)
                 added_module = True
                 if not header_written:
-                    print(_color(
+                    MAIN_LOG.debug(color_text(
+                        text="=========================",
                         color=ANSI.colors.orange,
-                        text="========================="
                     ))
-                    print(_color(
-                        color=ANSI.colors.orange,
+                    MAIN_LOG.debug(color_text(
                         text="Parsing AtomTrailersNodes",
+                        color=ANSI.colors.orange,
                         style=ANSI.styles.underline
                     ))
                     header_written = True
@@ -255,11 +239,11 @@ def _convert_attributes(red, aliases, skip_lineno=False):
                     module_
                 )
 
-                _change_verbose(
-                    handler=atomtrailers_handler,
+                change(
+                    logger=Qt4_Qt5_LOG,
                     node=node,
-                    replacement=repl,  # replacement_part + replacement_rest,
-                    skip_lineno=skip_lineno,
+                    replacement=repl,
+                    skip_lineno=skip_lineno
                 )
                 # Only replace the first node part of the statement.
                 # This allows us to keep any child nodes that have already
@@ -315,14 +299,14 @@ def _convert_root_name_imports(red, aliases, skip_lineno=False):
     lstrip_qt_regex = re.compile(r"^Qt\.",)
 
     if matches:
-        print(_color(
+        MAIN_LOG.debug(color_text(
+            text="====================================",
             color=ANSI.colors.purple,
-            text="===================================="
         ))
-        print(_color(
-            color=ANSI.colors.purple,
+        MAIN_LOG.debug(color_text(
             text="Replacing top level binding imports.",
-            style=ANSI.styles.underline
+            color=ANSI.colors.purple,
+            style=ANSI.styles.underline,
         ))
 
     for node in matches:
@@ -335,17 +319,19 @@ def _convert_root_name_imports(red, aliases, skip_lineno=False):
             aliases["root_aliases"].add(
                 root_name
             )
-            _change_verbose(
-                handler=main_handler,
+            change(
+                logger=MAIN_LOG,
                 node=node,
                 replacement=name,
-                skip_lineno=skip_lineno,
+                skip_lineno=skip_lineno
             )
             node.replace(name)
         else:
-            print(
-                "Unknown second level module from the Qt package \"%s\""
-                % _color(color=ANSI.colors.orange, text=root_name)
+            MAIN_LOG.warning(
+                "Unknown second level module from the Qt package \"{}\""
+                .format(
+                    color_text(text=root_name, color=ANSI.colors.orange)
+                )
             )
 
 
@@ -395,14 +381,14 @@ def _convert_body(red, aliases, mappings, skip_lineno=False):
 
     # Body of the function
     for key in sorted(mappings, key=len):
-        print(_color(
+        MAIN_LOG.debug(color_text(
+            text="-"*len(key),
             color=ANSI.colors.teal,
-            text="-"*len(key)
         ))
-        print(_color(
-            color=ANSI.colors.teal,
+        MAIN_LOG.debug(color_text(
             text=key,
-            style=ANSI.styles.underline
+            color=ANSI.colors.teal,
+            style=ANSI.styles.underline,
         ))
         if "." in key:
             filter_function = expression_factory(key)
@@ -428,11 +414,11 @@ def _convert_body(red, aliases, mappings, skip_lineno=False):
                     if node.dumps().split(".")[0] in COMMON_MODULES:
                         aliases["used"].add(node.dumps().split(".")[0])
                     replacement = node.dumps().replace(key, mappings[key])
-                    _change_verbose(
-                        handler=main_handler,
+                    change(
+                        logger=MAIN_LOG,
                         node=node,
                         replacement=replacement,
-                        skip_lineno=skip_lineno,
+                        skip_lineno=skip_lineno
                     )
                     if mappings[key].split(".")[0] in COMMON_MODULES:
                         aliases["used"].add(mappings[key].split(".")[0])
@@ -503,12 +489,16 @@ def misplaced_members(aliases, mappings):
     members = Qt._misplaced_members.get(Qt.__binding__.lower(), {})
     for binding in aliases["bindings"]:
         if binding in Qt._misplaced_members:
-            print("Merging %s to bindings" % Qt._misplaced_members.get(binding, {}))
+            MAIN_LOG.debug("Merging {misplaced} to bindings".format(
+                misplaced=Qt._misplaced_members.get(binding, {})
+            ))
             members.update(Qt._misplaced_members.get(binding, {}))
         elif binding in _custom_misplaced_members:
             members.update(_custom_misplaced_members.get(binding, {}))
         else:
-            print("Could not find misplaced members for %s" % binding)
+            MAIN_LOG.debug("Could not find misplaced members for {}".format(
+                binding
+            ))
 
         _msg = "Replacing \"{original}\" with \"{replacement}\" in mappings"
         if members:
@@ -519,16 +509,18 @@ def misplaced_members(aliases, mappings):
                     dest, _ = members[source]
                 for current_key in mappings:
                     if mappings[current_key] == source:
-                        _change_verbose(
+                        change(
                             msg=_msg,
-                            handler=main_handler,
+                            logger=MAIN_LOG,
                             node=mappings[current_key],
                             replacement=dest,
                         )
                         mappings[current_key] = dest
                         replaced = True
                 if not replaced:
-                    print("Adding %s in mappings" % dest)
+                    MAIN_LOG.debug(
+                        "Adding {bind} in mappings".format(bind=dest)
+                    )
                     mappings[source] = dest
     return aliases, mappings
 
@@ -561,19 +553,19 @@ def run(text, skip_lineno=False, tometh_flag=False):
         that were used.
     :rtype: tuple[dict,dict,str]
     """
-    AliasDict.clean()
+    ALIAS_DICT.clean()
     try:
         red = redbaron.RedBaron(text)
     except Exception as err:
-        print(str(err))
+        MAIN_LOG.critical(str(err))
         traceback.print_exc()
 
         d = object()
         setattr(d, "row", 0)
         setattr(d, "row_to", 0)
         setattr(d, "reaspm", traceback.format_exc())
-        AliasDict["errors"].add(d)
-        return AliasDict, {}, text
+        ALIAS_DICT["errors"].add(d)
+        return ALIAS_DICT, {}, text
 
     from_a, from_m = from_imports.process(red, skip_lineno=skip_lineno)
     import_a, import_m = imports.process(red, skip_lineno=skip_lineno)
@@ -649,16 +641,14 @@ def _build_exc(error, line_data):
 {line}
 {reason}
 """
-    raise UserInputRequiredException(
-        _color(
-            color=ANSI.colors.red,
-            text=template.format(
-                line_no=line_no,
-                line=_color(color=ANSI.colors.gray, text=line.rstrip("\n")),
-                reason=_color(color=ANSI.colors.red, text=error.reason)
-            )
-        )
-    )
+    raise UserInputRequiredException(color_text(
+        text=template.format(
+            line_no=line_no,
+            line=color_text(text=line.rstrip("\n"), color=ANSI.colors.gray),
+            reason=color_text(text=error.reason, color=ANSI.colors.red),
+        ),
+        color=ANSI.colors.red,
+    ))
 
 
 def process_file(fp, write=False, skip_lineno=False, tometh_flag=False):
@@ -686,42 +676,42 @@ def process_file(fp, write=False, skip_lineno=False, tometh_flag=False):
     :type tometh_flag: bool
     """
     if not _is_py(fp):
-        print(
-            "\tSkipping \"%s\"... It does not appear to be a python file." % fp
+        MAIN_LOG.debug(
+            "\tSkipping \"{fp}\"... It does not appear to be a python file."
+            .format(fp=fp)
         )
         return
     with open(fp, "rb") as fh:
         lines = fh.readlines()
         source = "".join(lines)
 
-    print("Processing %s" % fp)
+
+    MAIN_LOG.info("Processing {path}".format(path=fp))
     try:
         aliases, mappings, modified_code = run(
             source,
             skip_lineno=skip_lineno,
             tometh_flag=tometh_flag
         )
-        pprint(aliases)
-        pprint(mappings)
         if write:
-            print("Writing modified code to %s" % fp)
+            MAIN_LOG.info("Writing modifed code to {path}".format(path=fp))
             with open(fp, "wb") as fh:
                 fh.write(modified_code)
     except BaseException:
-        print("ERROR: Error processing file: \"%s\"" % fp)
+        MAIN_LOG.critical("Error processing file: \"{path}\"".format(path=fp))
         traceback.print_exc()
 
     # Process any errors that may have happened throughout the process.
-    if AliasDict["errors"]:
-        main_handler(_color(
+    if ALIAS_DICT["errors"]:
+        MAIN_LOG.error(color_text(
+            text="The following errors were recovered from {}:\n".format(fp),
             color=ANSI.colors.red,
-            text="The Following errors were recovered from %s:\n" % fp
         ))
-        for error in AliasDict["errors"]:
+        for error in ALIAS_DICT["errors"]:
             try:
                 _build_exc(error, lines)
             except UserInputRequiredException as err:
-                main_handler(str(err))
+                MAIN_LOG.info(str(err))
 
 
 def process_folder(folder, recursive=False, write=False, skip_lineno=False, tometh_flag=False):
@@ -766,7 +756,7 @@ def process_folder(folder, recursive=False, write=False, skip_lineno=False, tome
             skip_lineno=skip_lineno,
             tometh_flag=tometh_flag
         )
-        print("-" * 50)
+        MAIN_LOG.debug(color_text(text="-" * 50, color=ANSI.colors.black))
 
     if not recursive:
         return
@@ -791,9 +781,9 @@ if __name__ == "__main__":
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/lightpipeline/trunk/src/python/lightpipeline/ui/errorDialogUI.py", write=True, fast_exit=True)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/lightpipeline/trunk/src/python/lightpipeline/ui/HDRWidgetComponents.py", write=True, fast_exit=True)
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/nukepipeline/branches/nukepipeline_5/src/", recursive=True, write=True, fast_exit=True)
-    # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/assetbrowser/trunk/src", recursive=True, write=True)
+    process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ddqt/trunk/src/python/ddqt", recursive=True, write=False, skip_lineno=True, tometh_flag=True)
     # folder = os.path.abspath("../../../../tests/sources")
     # process_folder(folder, recursive=True, write=True)
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/rvplugins/tags/0.19.4/src", recursive=True, write=True, skip_lineno=True, tometh_flag=True)
-    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/crowdpipeline/trunk/src/python/crowdpipeline/metadata/crowd_metadata_editor/UI.py", write=True, skip_lineno=True, tometh_flag=True)
+    # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/crowdpipeline/trunk/src/python/crowdpipeline/metadata/crowd_metadata_editor/UI.py", write=True, skip_lineno=True, tometh_flag=True)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ticket/trunk/src/python/ticket/flaregun_ui.py", write=True, fast_exit=False)

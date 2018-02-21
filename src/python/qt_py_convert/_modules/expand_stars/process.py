@@ -1,15 +1,12 @@
 """
 The imports module is designed to fix the import statements.
 """
-from qt_py_convert.general import _color, AliasDict, ANSI, _change_verbose
+from qt_py_convert.general import ALIAS_DICT, change
+from qt_py_convert.color import color_text, ANSI
+from qt_py_convert.log import get_logger
 
 
-def estars_handler(msg):
-    """estars handler for the _change_versbose method."""
-    print("[%s] %s" % (
-        _color(color=ANSI.colors.purple, text="from module import *"),
-        msg
-    ))
+EXPAND_STARS_LOG = get_logger("expand_stars")
 
 
 class Processes(object):
@@ -88,11 +85,11 @@ class Processes(object):
                 slm=", ".join([name for name in second_level_modules])
             )
 
-            _change_verbose(
-                handler=estars_handler,
+            change(
+                logger=EXPAND_STARS_LOG,
                 node=star,
                 replacement=text,
-                skip_lineno=skip_lineno,
+                skip_lineno=skip_lineno
             )
             mappings.update(children)
             # star.replace(
@@ -141,17 +138,17 @@ def process(red, skip_lineno=False, **kwargs):
     issues = {
         Processes.EXPAND_STR: set(),
     }
-    print(_color(
+    EXPAND_STARS_LOG.warning(color_text(
+        text="\"import star\" used. We are bootstrapping code!",
         color=ANSI.colors.red,
-        text="WARNING: \"import star\" used. We are bootstrapping code!"
     ))
-    print(_color(
+    EXPAND_STARS_LOG.warning(color_text(
+        text="This will be very slow. It's your own fault.",
         color=ANSI.colors.red,
-        text="This will be very slow. It's your own fault."
     ))
     values = red.find_all("FromImportNode", value=star_process(issues))
 
     mappings = getattr(Processes, Processes.EXPAND_STR)(
         red, issues[Processes.EXPAND_STR], skip_lineno=skip_lineno
     )
-    return AliasDict, mappings
+    return ALIAS_DICT, mappings

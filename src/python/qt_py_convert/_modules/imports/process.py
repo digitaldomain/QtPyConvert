@@ -1,16 +1,10 @@
 """
 The imports module is designed to fix the import statements.
 """
-from qt_py_convert.general import __supported_bindings__, _color, AliasDict, \
-    _change_verbose, ANSI
+from qt_py_convert.general import __supported_bindings__, ALIAS_DICT, change
+from qt_py_convert.log import get_logger
 
-
-def import_handler(msg):
-    """import handler for the _change_versbose method."""
-    print("[%s] %s" % (
-        _color(color=ANSI.colors.purple, text="import *"),
-        msg
-    ))
+IMPORTS_LOG = get_logger("imports")
 
 
 class Processes(object):
@@ -22,11 +16,11 @@ class Processes(object):
     @staticmethod
     def _no_second_level_module(node, _child_parts, skip_lineno=False):
 
-        _change_verbose(
-            handler=import_handler,
+        change(
+            logger=IMPORTS_LOG,
             node=node,
             replacement="import Qt",
-            skip_lineno=skip_lineno,
+            skip_lineno=skip_lineno
         )
         node.replace("import Qt")
 
@@ -42,7 +36,7 @@ class Processes(object):
         :param skip_lineno: Global "skip_lineno" flag.
         :type skip_lineno: bool
         """
-        binding_aliases = AliasDict
+        binding_aliases = ALIAS_DICT
         mappings = {}
 
         # Replace each node
@@ -67,14 +61,17 @@ class Processes(object):
                         cls._no_second_level_module(node.parent, _child_parts)
                     else:
                         # Multiple in the import: "import PySide, os"
-                        node_parent_orig = str(node.parent)
+                        node_parent = node.parent
                         node.pop(child_index)
                         repl = node.parent.dumps() + "\nimport Qt"
-                        print(
-                            "Replacing %s with %s" % (
-                                node_parent_orig, repl
-                            )
+
+                        change(
+                            logger=IMPORTS_LOG,
+                            node=node_parent,
+                            replacement=repl,
+                            skip_lineno=skip_lineno
                         )
+
                         node.parent.replace(repl)
                     if _child_as_name:
                         mappings[_child_as_name] = "Qt"
@@ -87,13 +84,13 @@ class Processes(object):
                     _child_parts
                 )
 
-                _change_verbose(
-                    handler=import_handler,
+                change(
+                    logger=IMPORTS_LOG,
                     node=node.parent,
                     replacement="from Qt import {key}".format(
                         key=second_level_module
                     ),
-                    skip_lineno=skip_lineno,
+                    skip_lineno=skip_lineno
                 )
 
                 node.parent.replace(
@@ -160,4 +157,4 @@ def process(red, skip_lineno=False, **kwargs):
     if issues[key]:
         return getattr(Processes, key)(red, issues[key], skip_lineno=skip_lineno)
     else:
-        return AliasDict, {}
+        return ALIAS_DICT, {}
