@@ -711,7 +711,7 @@ def process_file(fp, write=False, skip_lineno=False, tometh_flag=False):
             try:
                 _build_exc(error, lines)
             except UserInputRequiredException as err:
-                MAIN_LOG.info(str(err))
+                MAIN_LOG.error(str(err))
 
 
 def process_folder(folder, recursive=False, write=False, skip_lineno=False, tometh_flag=False):
@@ -781,9 +781,9 @@ if __name__ == "__main__":
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/lightpipeline/trunk/src/python/lightpipeline/ui/errorDialogUI.py", write=True, fast_exit=True)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/lightpipeline/trunk/src/python/lightpipeline/ui/HDRWidgetComponents.py", write=True, fast_exit=True)
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/nukepipeline/branches/nukepipeline_5/src/", recursive=True, write=True, fast_exit=True)
-    process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ddqt/trunk/src/python/ddqt", recursive=True, write=False, skip_lineno=True, tometh_flag=True)
+    # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ddqt/trunk/src/python/ddqt", recursive=True, write=False, skip_lineno=True, tometh_flag=True)
     # folder = os.path.abspath("../../../../tests/sources")
     # process_folder(folder, recursive=True, write=True)
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/rvplugins/tags/0.19.4/src", recursive=True, write=True, skip_lineno=True, tometh_flag=True)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/crowdpipeline/trunk/src/python/crowdpipeline/metadata/crowd_metadata_editor/UI.py", write=True, skip_lineno=True, tometh_flag=True)
-    # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ticket/trunk/src/python/ticket/flaregun_ui.py", write=True, fast_exit=False)
+    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ddqt/trunk/src/python/ddqt/gui/SnapshotModel.py", write=False, tometh_flag=True)
