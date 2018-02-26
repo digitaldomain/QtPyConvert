@@ -1,33 +1,91 @@
-# The ``qt_py_convert`` package
+# QtPyConvert
+
+An automatic Python Qt binding transpiler to the [Qt.py abstraction layer](https://github.com/mottosso/Qt.py). It aims to help in your modernization of your Python Qt code. QtPyConvert supports the following bindings out of the box:
+  * [PyQt4](https://www.riverbankcomputing.com/software/pyqt/download)
+  * [PySide](http://pyside.github.io/docs/pyside/)
+  * [PyQt5](https://www.riverbankcomputing.com/software/pyqt/download5)
+  * [PySide2](https://wiki.qt.io/PySide2)
+
+It also has experimental support for defining your own bindings.
+> <sub>See [customization](#customization) for more information</sub>
 
 
-**Welcome to ``qt_py_convert``**
+## Project Goals
+Convert any code using any of the four major Qt for Python bindings into the standardized [Qt.py abstraction layer](https://github.com/mottosso/Qt.py).
 
-*A utility for converting python qt binding code to Qt.py.*
+Warn users about incompatibilities or unsupported code. (WIP)
 
-<!--  NO DOCS YET
-[v0.1.0 documentation](http://intranet.d2.com/dd/tools/cent6_64/package/ddg/0.1.0/docs/html/index.html)
--->
+Standardize Qt imports to maintain sanity in code comprehension.
+> <sub>Removing start imports and deep class/module imports</sub>
 
-This project maintains a [CHANGELOG](CHANGELOG.md).
+## Getting Started
 
-Developers should read [CONTRIBUTING](CONTRIBUTING.md) to get started. 
- 
+When using **QtPyConvert**, developers should be aware of any [shortcomings](https://github.com/mottosso/Qt.py/blob/master/CAVEATS.md) of Qt.py or it's [subset](https://github.com/mottosso/Qt.py#subset-or-common-members) of [supported features](https://github.com/mottosso/Qt.py#class-specific-compatibility-objects).
 
-## Some Simple Goals
+Basically read the README in the Qt.py project and be aware of what it does and does not do.
 
-1. Use simple python flow control over complex regular expressions unless readability or performance suffers (usually it is the opposite). This should create easier to maintainable code. 
-2. Use [generator coroutines](http://book.pythontips.com/en/latest/coroutines.html) with a clear single responsibility where ever possible. These are like plugins which handle a specific conversion and but can still have state survive to the next line. This will aid in collaboration and make test-driven development easier.
-3. Use a global dry-run state to, when True, skip editing and display printed reports instead. See this simple [example of the coroutine pattern](/src/python/qt_py_convert/coroutines/example.py).
+### Prerequisites
 
-4. Support all four major bindings as well as attempt to allow "custom" binding support. For example `pyqode.qt`
-5. Develop a robust parsing engine, attempting to use simple python where applicable. Using more complex methods, like ast parsing when needed.
+**QtPyConvert** reads the private values of the [Qt.py project](https://github.com/mottosso/Qt.py) to build it's internal conversion processes. To install this run
+```
+pip install Qt.py
+```
+**QtPyConvert** also uses [RedBaron](https://github.com/PyCQA/Redbaron) as an alternate abstract syntax tree.
+Redbaron allows us to modify the source code and write it back out again, preserving all comments and formatting.
+```
+pip install redbaron
+```
+
+You should also have access to any of your source bindings so that Qy.py can import them freely.
 
 
-### Reference
+### Usage
+```bash
+$ qt_py_convert [-h] [-r --recursive] [-w|-o] [--show-lines] [--to-method-support]
+                files_or_directories [files_or_directories ...]
+```
 
-* [Python generators](http://intermediatepythonista.com/python-generators)
-* [Python Tips #23 Coroutines](http://book.pythontips.com/en/latest/coroutines.html)
-* [A good explaination of a coroutine using generators](https://stackoverflow.com/questions/12637768/python-3-send-method-of-generators/12638313#12638313)
-* [PEP 342 -- Coroutines via Enhanced Generators](https://www.python.org/dev/peps/pep-0342/)
+| Argument				| Description |
+| --------------------- | ------------- |
+| -h,--help				| Show the help message and exit. |
+| files_or_directories	| Pass explicit files or directories to run. <sub>**NOTE:**</sub> If **"-"** is passed instead of files_or_directories, QtPyConvert will attempt to read from stdin instead. <sub>**Useful for pipelining proesses together**</sub> |
+| -r,--recursive		| Recursively search for python files to convert. Only applicable when passing a directory.  |
+| -w, --write			| Optionally pass a root directory to mirror the newly converted source code to.  |
+| -o, --overwrite 		| Overwrite the files in place. **Either "-o" or "-w" must be passed to QtPyConvert.** |
+| --show-lines			| Turn on printing of line numbers while replacing statements. Ends up being much slower. |
+| --to-method--support 	| <sub>**EXPERIMENTAL**</sub>: An attempt to replace all api1.0 style "*toString*", "*toInt*", "*toBool*", "*toPyObject*", "*toAscii*" methods that are unavailable in api2.0. |
 
+
+
+
+
+## Built With
+
+* [Qt.py](https://github.com/mottosso/Qt.py) - The Qt abstraction library that we port code to.
+* [RedBaron](https://github.com/PyCQA/Redbaron) - The alternate Python AST which allows us to modify and preserve comments + formatting.
+* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+
+## Contributing
+
+Please read [CONTRIBUTING.md](https://github.com/DigitalDomain/QtPyConvert/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+
+## Versioning
+
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/DigitalDomain/QtPyConvert/tags).
+
+## Authors
+
+* **Alex Hughes** - Initial work - [Digital Domain](https://digitaldomain.com)
+* **Rafe Sacks**  - Prototyping help - [Digital Domain](https://digitaldomain.com)
+
+See also the list of [contributors](https://github.com/DigitalDomain/QtPyConvert/contributors) who participated in this project.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+
+## Acknowledgments
+
+* [The developers of Qt.py](https://github.com/mottosso/Qt.py/contributors)
+*  [The developers of RedBaron](https://github.com/PyCQA/redbaron/contributors)
+* etc
