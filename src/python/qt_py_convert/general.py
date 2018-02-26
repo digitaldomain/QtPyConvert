@@ -7,6 +7,7 @@ import os
 
 from qt_py_convert.color import ANSI, color_text, highlight_diffs
 from qt_py_convert.log import get_logger
+from qt_py_convert.external import Qt
 
 GENERAL_LOGGER = get_logger("general", name_color=ANSI.colors.green)
 
@@ -55,9 +56,10 @@ def change(logger, node, replacement, skip_lineno=False, msg=None):
 
 
 # Default binding support out of the box.
-__supported_bindings__ = ["PySide2", "PySide", "PyQt5", "PyQt4"]
+__supported_bindings__ = Qt._misplaced_members.keys()
 __suplimentary_bindings__ = ["sip", "shiboken"]
 # Adding support for custom bindings.
+CUSTOM_MISPLACED_MEMBERS = "QT_CUSTOM_MISPLACED_MEMBERS"
 _custom_bindings = os.environ.get("QT_CUSTOM_BINDINGS_SUPPORT")
 if _custom_bindings:
     GENERAL_LOGGER.debug(
@@ -70,11 +72,11 @@ if _custom_bindings:
 # Note: Pattern here is a little more complex than needed to make the
 #       print lines optional.
 _custom_misplaced_members = {}
-misplaced_members_python_str = os.environ.get("QT_CUSTOM_MISPLACED_MEMBERS")
+misplaced_members_python_str = os.environ.get(CUSTOM_MISPLACED_MEMBERS)
 if misplaced_members_python_str:
     GENERAL_LOGGER.debug(
-        "QT_CUSTOM_MISPLACED_MEMBERS = {0!r}".format(
-            misplaced_members_python_str
+        "{} = {0!r}".format(
+            CUSTOM_MISPLACED_MEMBERS, misplaced_members_python_str
         )
     )
 
@@ -82,8 +84,8 @@ if misplaced_members_python_str:
 
     # Colored green
     GENERAL_LOGGER.debug(color_text(
-        text="Resolved QT_CUSTOM_MISPLACED_MEMBERS to json: {0!r}".format(
-            _custom_misplaced_members
+        text="Resolved {} to json: {0!r}".format(
+            CUSTOM_MISPLACED_MEMBERS, _custom_misplaced_members
         ),
         color=ANSI.colors.green
     ))
@@ -123,14 +125,20 @@ class AliasDictClass(dict):
     """
     Global state data store
     """
+    BINDINGS = "bindings"
+    ALIASES = "root_aliases"
+    USED = "used"
+    WARNINGS = "warnings"
+    ERRORS = "errors"
+
     def __init__(self):
         super(AliasDictClass, self).__init__(
             dict([
-                ("bindings", set()),
-                ("root_aliases", set()),
-                ("used", set()),
-                ("warnings", set()),
-                ("errors", set()),
+                (self.BINDINGS, set()),
+                (self.ALIASES, set()),
+                (self.USED, set()),
+                (self.WARNINGS, set()),
+                (self.ERRORS, set()),
             ])
         )
 
@@ -140,11 +148,11 @@ class AliasDictClass(dict):
             text="Cleaning the global AliasDict",
             color=ANSI.colors.red
         ))
-        self["bindings"] = set()
-        self["root_aliases"] = set()
-        self["used"] = set()
-        self["warnings"] = set()
-        self["errors"] = set()
+        self[self.BINDINGS] = set()
+        self[self.ALIASES] = set()
+        self[self.USED] = set()
+        self[self.WARNINGS] = set()
+        self[self.ERRORS] = set()
 
 
 ALIAS_DICT = AliasDictClass()
