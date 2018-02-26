@@ -73,17 +73,16 @@ class Processes(object):
                     value = ".".join(from_import_parts)+"."+_from_as_name.value
                     mappings[key] = value
 
+            replacement = "from Qt import {key}".format(
+                    key=second_level_module
+            )
             change(
                 logger=FROM_IMPORTS_LOG,
                 node=node.parent,
-                replacement="from Qt import {key}".format(
-                    key=second_level_module
-                ),
+                replacement=replacement,
                 skip_lineno=skip_lineno
             )
-            node.parent.replace(
-                "from Qt import {key}".format(key=second_level_module)
-            )
+            node.parent.replace(replacement)
             binding_aliases["bindings"].add(binding)
             for target in node.parent.targets:
                 binding_aliases["root_aliases"].add(target.value)
