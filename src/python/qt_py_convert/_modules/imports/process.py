@@ -15,14 +15,14 @@ class Processes(object):
 
     @staticmethod
     def _no_second_level_module(node, _child_parts, skip_lineno=False):
-
+        replacement = "import Qt"
         change(
             logger=IMPORTS_LOG,
             node=node,
-            replacement="import Qt",
+            replacement=replacement,
             skip_lineno=skip_lineno
         )
-        node.replace("import Qt")
+        node.replace(replacement)
 
     @classmethod
     def _process_import(cls, red, objects, skip_lineno=False):
