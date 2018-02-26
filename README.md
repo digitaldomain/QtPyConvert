@@ -63,7 +63,6 @@ $ qt_py_convert [-h] [-r --recursive] [-w|-o] [--show-lines] [--to-method-suppor
 
 * [Qt.py](https://github.com/mottosso/Qt.py) - The Qt abstraction library that we port code to.
 * [RedBaron](https://github.com/PyCQA/Redbaron) - The alternate Python AST which allows us to modify and preserve comments + formatting.
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
 
 ## Contributing
 
@@ -71,7 +70,7 @@ Please read [CONTRIBUTING.md](https://github.com/DigitalDomain/QtPyConvert/CONTR
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/DigitalDomain/QtPyConvert/tags).
+We use [semantic versioning](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/DigitalDomain/QtPyConvert/tags).
 
 ## Authors
 
@@ -82,7 +81,7 @@ See also the list of [contributors](https://github.com/DigitalDomain/QtPyConvert
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/DigitalDomain/QtPyConvert/LICENSE) file for details
 
 ## Acknowledgments
 
