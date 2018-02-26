@@ -124,7 +124,7 @@ widget.show()
 app.exec_()
 ```
 
-It is bad practice to use star imports and unless you tell it not to, QtPyConvert will resolve your imports and pair them down.
+It is bad practice to use star imports and unless you tell it not to, QtPyConvert will resolve your imports and pare them down.
 
 <br>
 
@@ -146,7 +146,7 @@ Feature requests must include:
 
 1. Goal (what the feature aims to solve)
 2. Motivation (why *you* think this is necessary)
-3. Suggested implementation (psuedocode)
+3. Suggested implementation (pseudocode)
 
 Questions may also be submitted as issues.
 

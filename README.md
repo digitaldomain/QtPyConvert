@@ -20,7 +20,7 @@ Standardize Qt imports to maintain sanity in code comprehension.
 
 ## Getting Started
 
-When using **QtPyConvert**, developers should be aware of any [shortcomings](https://github.com/mottosso/Qt.py/blob/master/CAVEATS.md) of Qt.py or it's [subset](https://github.com/mottosso/Qt.py#subset-or-common-members) of [supported features](https://github.com/mottosso/Qt.py#class-specific-compatibility-objects).
+When using **QtPyConvert**, developers should be aware of any [shortcomings](https://github.com/mottosso/Qt.py/blob/master/CAVEATS.md) of Qt.py or its [subset](https://github.com/mottosso/Qt.py#subset-or-common-members) of [supported features](https://github.com/mottosso/Qt.py#class-specific-compatibility-objects).
 
 Basically read the README in the Qt.py project and be aware of what it does and does not do.
 
