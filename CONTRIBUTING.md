@@ -9,9 +9,10 @@ QtPyConvert was born to help companies with large legacy codebases convert their
 **Table of contents**
 
 - [Development goals](#development-goals)
-  - [Support co-existence](#support-co-existence)
+  - [Converting Binding Support](#converting-binding-support)
+  - [Incompatibility Warnings](#incompatibility-warnings)
   - [Keep it simple](#keep-it-simple)
-  - [No wrappers](#no-wrappers)
+  - [Normalize Imports](#normalize-imports)
 - [How can I contribute?](#how-can-i-contribute)
   - [Reporting Bugs](#reporting-bugs)
   - [Suggesting Enhancements](#suggesting-enhancements)
