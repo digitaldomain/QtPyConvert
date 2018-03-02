@@ -421,7 +421,7 @@ def _convert_body(red, aliases, mappings, skip_lineno=False):
                     # so we don't want to turn bob.foo.cat into bob.foo.bear.
                     # Because bob.foo.cat might not be equal to the mike.cat
                     # that we meant to change.
-                    if node.parent.type == "atomtrailers":
+                    if hasattr(node.parent, "type") and node.parent.type == "atomtrailers":
                         if not node.parent.value[0] == node:
                             continue
 
