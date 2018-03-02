@@ -678,6 +678,42 @@ _common_members = {
 }
 
 
+def _qInstallMessageHandler(handler):
+    """Install a message handler that works in all bindings
+
+    Args:
+        handler: A function that takes 3 arguments, or None
+    """
+    def messageOutputHandler(*args):
+        # In Qt4 bindings, message handlers are passed 2 arguments
+        # In Qt5 bindings, message handlers are passed 3 arguments
+        # The first argument is a QtMsgType
+        # The last argument is the message to be printed
+        # The Middle argument (if passed) is a QMessageLogContext
+        if len(args) == 3:
+            msgType, logContext, msg = args
+        elif len(args) == 2:
+            msgType, msg = args
+            logContext = None
+        else:
+            raise TypeError(
+                "handler expected 2 or 3 arguments, got {0}".format(len(args)))
+
+        if isinstance(msg, bytes):
+            # In python 3, some bindings pass a bytestring, which cannot be
+            # used elsewhere. Decoding a python 2 or 3 bytestring object will
+            # consistently return a unicode object.
+            msg = msg.decode()
+
+        handler(msgType, logContext, msg)
+
+    passObject = messageOutputHandler if handler else handler
+    if Qt.IsPySide or Qt.IsPyQt4:
+        return Qt._QtCore.qInstallMsgHandler(passObject)
+    elif Qt.IsPySide2 or Qt.IsPyQt5:
+        return Qt._QtCore.qInstallMessageHandler(passObject)
+
+
 def _wrapinstance(func, ptr, base=None):
     """Enable implicit cast of pointer to most suitable class
 
@@ -720,6 +756,42 @@ def _wrapinstance(func, ptr, base=None):
             base = Qt.QtCore.QObject
 
     return func(long(ptr), base)
+
+
+def _translate(context, sourceText, *args):
+    # In Qt4 bindings, translate can be passed 2 or 3 arguments
+    # In Qt5 bindings, translate can be passed 2 arguments
+    # The first argument is disambiguation[str]
+    # The last argument is n[int]
+    # The middle argument can be encoding[QtCore.QCoreApplication.Encoding]
+    if len(args) == 3:
+        disambiguation, encoding, n = args
+    elif len(args) == 2:
+        disambiguation, n = args
+        encoding = None
+    else:
+        raise TypeError(
+            "Expected 4 or 5 arguments, got {0}.".format(len(args)+2))
+
+    if hasattr(Qt.QtCore, "QCoreApplication"):
+        app = getattr(Qt.QtCore, "QCoreApplication")
+    else:
+        raise NotImplementedError(
+            "Missing QCoreApplication implementation for {binding}".format(
+                binding=Qt.__binding__,
+            )
+        )
+    if Qt.__binding__ in ("PySide2", "PyQt5"):
+        sanitized_args = [context, sourceText, disambiguation, n]
+    else:
+        sanitized_args = [
+            context,
+            sourceText,
+            disambiguation,
+            encoding or app.CodecForTr,
+            n
+        ]
+    return app.translate(*sanitized_args)
 
 
 def _loadUi(uifile, baseinstance=None):
@@ -839,7 +911,16 @@ _misplaced_members = {
         # Custom patch
         "QtUiTools.load_ui": ["QtCompat.loadUi", _loadUi],
         "shiboken2.wrapInstance": ["QtCompat.wrapInstance", _wrapinstance],
-        "QtWidgets.qApp": "QtWidgets.QApplication.instance()"
+        "QtWidgets.qApp": "QtWidgets.QApplication.instance()",
+        "QtCore.QCoreApplication.translate": [
+            "QtCompat.translate", _translate
+        ],
+        "QtWidgets.QApplication.translate": [
+            "QtCompat.translate", _translate
+        ],
+        "QtCore.qInstallMessageHandler": [
+            "QtCompat.qInstallMessageHandler", _qInstallMessageHandler
+        ],
     },
     "PyQt5": {
         "QtCore.pyqtProperty": "QtCore.Property",
@@ -855,7 +936,16 @@ _misplaced_members = {
         "uic.loadUi": ["QtCompat.loadUi", _loadUi],
         "sip.wrapinstance": ["QtCompat.wrapInstance", _wrapinstance],
         "QtCore.QString": "str",
-        "QtWidgets.qApp": "QtWidgets.QApplication.instance()"
+        "QtWidgets.qApp": "QtWidgets.QApplication.instance()",
+        "QtCore.QCoreApplication.translate": [
+            "QtCompat.translate", _translate
+        ],
+        "QtWidgets.QApplication.translate": [
+            "QtCompat.translate", _translate
+        ],
+        "QtCore.qInstallMessageHandler": [
+            "QtCompat.qInstallMessageHandler", _qInstallMessageHandler
+        ],
     },
     "PySide": {
         "QtGui.QAbstractProxyModel": "QtCore.QAbstractProxyModel",
@@ -878,7 +968,16 @@ _misplaced_members = {
         # Custom Patch
         "QtUiTools.load_ui": ["QtCompat.loadUi", _loadUi],
         "shiboken.wrapInstance": ["QtCompat.wrapInstance", _wrapinstance],
-        "QtGui.qApp": "QtWidgets.QApplication.instance()"
+        "QtGui.qApp": "QtWidgets.QApplication.instance()",
+        "QtCore.QCoreApplication.translate": [
+            "QtCompat.translate", _translate
+        ],
+        "QtGui.QApplication.translate": [
+            "QtCompat.translate", _translate
+        ],
+        "QtCore.qInstallMsgHandler": [
+            "QtCompat.qInstallMessageHandler", _qInstallMessageHandler
+        ],
     },
     "PyQt4": {
         "QtGui.QAbstractProxyModel": "QtCore.QAbstractProxyModel",
@@ -903,7 +1002,16 @@ _misplaced_members = {
         "uic.loadUi": ["QtCompat.loadUi", _loadUi],
         "sip.wrapinstance": ["QtCompat.wrapInstance", _wrapinstance],
         "QtCore.QString": "str",
-        "QtGui.qApp": "QtWidgets.QApplication.instance()"
+        "QtGui.qApp": "QtWidgets.QApplication.instance()",
+        "QtCore.QCoreApplication.translate": [
+            "QtCompat.translate", _translate
+        ],
+        "QtGui.QApplication.translate": [
+            "QtCompat.translate", _translate
+        ],
+        "QtCore.qInstallMsgHandler": [
+            "QtCompat.qInstallMessageHandler", _qInstallMessageHandler
+        ],
     }
 }
 
@@ -1057,7 +1165,7 @@ def _reassign_misplaced_members(binding):
         src_module = src_parts[0]
         src_member = None
         if len(src_parts) > 1:
-            src_member = src_parts[1]
+            src_member = src_parts[1:]
 
         if isinstance(dst, (list, tuple)):
             dst, dst_value = dst
@@ -1071,7 +1179,11 @@ def _reassign_misplaced_members(binding):
 
         # Get the member we want to store in the namesapce.
         try:
-            dst_value = getattr(getattr(Qt, "_" + src_module), src_member)
+            _part = getattr(Qt, "_" + src_module)
+            while src_member:
+                member = src_member.pop(0)
+                _part = getattr(_part, member)
+            dst_value = _part
         except AttributeError:
             # If the member we want to store in the namespace does not exist,
             # there is no need to continue. This can happen if a request was
@@ -1211,8 +1323,8 @@ def _pyside2():
 
     if hasattr(Qt, "_QtCore"):
         Qt.__qt_version__ = Qt._QtCore.qVersion()
-        Qt.QtCompat.qInstallMessageHandler = _qInstallMessageHandler
-        Qt.QtCompat.translate = Qt._QtCore.QCoreApplication.translate
+        # Qt.QtCompat.qInstallMessageHandler = _qInstallMessageHandler
+        # Qt.QtCompat.translate = Qt._QtCore.QCoreApplication.translate
 
     if hasattr(Qt, "_QtWidgets"):
         Qt.QtCompat.setSectionResizeMode = \
@@ -1263,17 +1375,17 @@ def _pyside():
     if hasattr(Qt, "_QtCore"):
         Qt.__qt_version__ = Qt._QtCore.qVersion()
         QCoreApplication = Qt._QtCore.QCoreApplication
-        Qt.QtCompat.qInstallMessageHandler = _qInstallMessageHandler
-        Qt.QtCompat.translate = (
-            lambda context, sourceText, disambiguation, n:
-            QCoreApplication.translate(
-                context,
-                sourceText,
-                disambiguation,
-                QCoreApplication.CodecForTr,
-                n
-            )
-        )
+        # Qt.QtCompat.qInstallMessageHandler = _qInstallMessageHandler
+        # Qt.QtCompat.translate = (
+        #     lambda context, sourceText, disambiguation, n:
+        #     QCoreApplication.translate(
+        #         context,
+        #         sourceText,
+        #         disambiguation,
+        #         QCoreApplication.CodecForTr,
+        #         n
+        #     )
+        # )
 
     _reassign_misplaced_members("PySide")
     _build_compatibility_members("PySide")
@@ -1303,8 +1415,8 @@ def _pyqt5():
     if hasattr(Qt, "_QtCore"):
         Qt.__binding_version__ = Qt._QtCore.PYQT_VERSION_STR
         Qt.__qt_version__ = Qt._QtCore.QT_VERSION_STR
-        Qt.QtCompat.qInstallMessageHandler = _qInstallMessageHandler
-        Qt.QtCompat.translate = Qt._QtCore.QCoreApplication.translate
+        # Qt.QtCompat.qInstallMessageHandler = _qInstallMessageHandler
+        # Qt.QtCompat.translate = Qt._QtCore.QCoreApplication.translate
 
     if hasattr(Qt, "_QtWidgets"):
         Qt.QtCompat.setSectionResizeMode = \
@@ -1382,17 +1494,17 @@ def _pyqt4():
     if hasattr(Qt, "_QtCore"):
         Qt.__binding_version__ = Qt._QtCore.PYQT_VERSION_STR
         Qt.__qt_version__ = Qt._QtCore.QT_VERSION_STR
-        QCoreApplication = Qt._QtCore.QCoreApplication
-        Qt.QtCompat.qInstallMessageHandler = _qInstallMessageHandler
-        Qt.QtCompat.translate = (
-            lambda context, sourceText, disambiguation, n:
-            QCoreApplication.translate(
-                context,
-                sourceText,
-                disambiguation,
-                QCoreApplication.CodecForTr,
-                n)
-        )
+        # QCoreApplication = Qt._QtCore.QCoreApplication
+        # Qt.QtCompat.qInstallMessageHandler = _qInstallMessageHandler
+        # Qt.QtCompat.translate = (
+        #     lambda context, sourceText, disambiguation, n:
+        #     QCoreApplication.translate(
+        #         context,
+        #         sourceText,
+        #         disambiguation,
+        #         QCoreApplication.CodecForTr,
+        #         n)
+        # )
 
     _reassign_misplaced_members("PyQt4")
 
@@ -1441,43 +1553,6 @@ def _none():
 def _log(text):
     if QT_VERBOSE:
         sys.stdout.write(text + "\n")
-
-
-def _qInstallMessageHandler(handler):
-    """Install a message handler that works in all bindings
-
-    Args:
-        handler: A function that takes 3 arguments, or None
-    """
-    def messageOutputHandler(*args):
-        # In Qt4 bindings, message handlers are passed 2 arguments
-        # In Qt5 bindings, message handlers are passed 3 arguments
-        # The first argument is a QtMsgType
-        # The last argument is the message to be printed
-        # The Middle argument (if passed) is a QMessageLogContext
-        if len(args) == 3:
-            msgType, logContext, msg = args
-        elif len(args) == 2:
-            msgType, msg = args
-            logContext = None
-        else:
-            raise TypeError(
-                "handler expected 2 or 3 arguments, got {0}".format(len(args)))
-
-        if isinstance(msg, bytes):
-            # In python 3, some bindings pass a bytestring, which cannot be
-            # used elsewhere. Decoding a python 2 or 3 bytestring object will
-            # consistently return a unicode object.
-            msg = msg.decode()
-
-        handler(msgType, logContext, msg)
-
-    passObject = messageOutputHandler if handler else handler
-    if Qt.IsPySide or Qt.IsPyQt4:
-        return Qt._QtCore.qInstallMsgHandler(passObject)
-    elif Qt.IsPySide2 or Qt.IsPyQt5:
-        return Qt._QtCore.qInstallMessageHandler(passObject)
-
 
 
 def _convert(lines):
@@ -1756,3 +1831,4 @@ if __name__ == "__main__":
 # CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
