@@ -1165,7 +1165,7 @@ def _reassign_misplaced_members(binding):
         src_module = src_parts[0]
         src_member = None
         if len(src_parts) > 1:
-            src_member = src_parts[1]
+            src_member = src_parts[1:]
 
         if isinstance(dst, (list, tuple)):
             dst, dst_value = dst
@@ -1179,7 +1179,11 @@ def _reassign_misplaced_members(binding):
 
         # Get the member we want to store in the namesapce.
         try:
-            dst_value = getattr(getattr(Qt, "_" + src_module), src_member)
+            _part = getattr(Qt, "_" + src_module)
+            while src_member:
+                member = src_member.pop(0)
+                _part = getattr(_part, member)
+            dst_value = _part
         except AttributeError:
             # If the member we want to store in the namespace does not exist,
             # there is no need to continue. This can happen if a request was
@@ -1827,3 +1831,4 @@ if __name__ == "__main__":
 # CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
