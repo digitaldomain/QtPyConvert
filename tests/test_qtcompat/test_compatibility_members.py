@@ -25,6 +25,38 @@ QtCompat.translate(context, text, disambig)
     )
 
 
+def test_qcoreapplication_translate_basic():
+    check(
+        """from PySide import QtCore
+
+QtCore.QCoreApplication.translate(context, text, disambig)
+""",
+        """from Qt import QtCompat
+
+QtCompat.translate(context, text, disambig)
+"""
+    )
+
+
+def test_qinstallmessagehandler_basic():
+    check(
+        """from PySide import QtCore
+
+def handler(*args):
+    pass
+
+QtCore.qInstallMsgHandler(handler)
+""",
+        """from Qt import QtCompat
+
+def handler(*args):
+    pass
+
+QtCompat.qInstallMessageHandler(handler)
+"""
+    )
+
+
 if __name__ == "__main__":
     import traceback
     _tests = filter(
