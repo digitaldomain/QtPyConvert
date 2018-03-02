@@ -1,14 +1,6 @@
 import re
 
-from qt_py_convert.general import _color, AliasDict, ErrorClass, ANSI
-
-
-def unsupported_handler(msg):
-    """Unsupported handler for the _change_versbose method."""
-    print("[%s] %s" % (
-        _color(color=ANSI.colors.purple, text="unsupported"),
-        msg
-    ))
+from qt_py_convert.general import ALIAS_DICT, ErrorClass
 
 
 class Processes(object):
@@ -85,4 +77,4 @@ def process(red, skip_lineno=False, **kwargs):
         return getattr(Processes, key)(red, issues[key],
                                        skip_lineno=skip_lineno)
     else:
-        return AliasDict, {}
+        return ALIAS_DICT, {}

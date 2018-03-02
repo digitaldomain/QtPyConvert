@@ -1,205 +1,228 @@
-Contributing to ``qt_py_convert``
-=================================
+## Contributing to QtPyConvert
 
-The ``qt_py_convert`` package consists of a core ddg api, gui, and a suite of nodes and graphs.
+Thanks for taking the time to contribute!
 
-All features and bugfixes for this package must be accompanied by a test reproducing the bug, or
-describing the intended behavior of the feature.  These tests should generally be coded first, and
-checked in as a separate and prior commit.
+In here you'll find a series of guidelines for how you can make QtPyConvert better suit your needs and the needs of the target audience - film, games and tv.
 
-Development should be done in branches, ideally named with the corresponding bug or feature ticket,
-and be restricted to the scope of that ticket.  The changes should consist of many understandable
-and related commits.
+QtPyConvert was born to help companies with large legacy codebases convert their code in a timely manner and also to help the industry standardize on [Qt.py](https://github.com.mottosso/Qt.py).
 
+**Table of contents**
 
-Checkin style
--------------
+- [Development goals](#development-goals)
+  - [Converting Binding Support](#converting-binding-support)
+  - [Incompatibility Warnings](#incompatibility-warnings)
+  - [Keep it simple](#keep-it-simple)
+  - [Normalize Imports](#normalize-imports)
+- [How can I contribute?](#how-can-i-contribute)
+  - [Reporting Bugs](#reporting-bugs)
+  - [Suggesting Enhancements](#suggesting-enhancements)
+  - [Your First Code Contribution](#your-first-code-contribution)
+  - [Pull Requests](#pull-requests)
+- [Style](#style)
+  - [Commits](#commits)
+  - [Version bumping](#version-bumping)
+  - [Making a release](#making-a-release)
 
-Commit messages must be formatted roughly according to git standards.  In particular, the subject
-line is not to be too long, is to be in the imperative mood and active voice, and is to start with a
-verb and end with no period.  For example::
+<br>
 
-   add test for feature xxx
+### Development Goals
 
-Here is a list of suggested standard verbs for starting off your commit subject line::
+QtPyConvert aims to help in the conversion of old Qt for Python code by automating the large majority of the work for you. It does this efficiently by leaving much of the work up to the Qt.py developers and using the resulting abstraction layer as a guideline and framework. 
 
-   add update repro fix implement remove
 
-Here are the rules for commit messages:
+Convert any code using any of the four major Qt for Python bindings into the standardized [Qt.py abstraction layer](https://github.com/mottosso/Qt.py).  
+  
+Warn users about incompatibilities or unsupported code. (WIP)
 
-   1. Separate subject from body with a blank line
-   2. Limit the subject line to 72 characters
-   3. Do not end the subject line with a period
-   4. Use the imperative mood in the subject line
-   5. Wrap the body at 100 characters
-   6. Use the body to explain *what* and *why* vs. *how*
+Standardize Qt imports to maintain sanity in code comprehension.   
+> <sub>Removing start imports and deep class/module imports</sub>  
 
-Precise and correct spelling, punctuation, and grammar are expected in all code and VCS artifacts.
 
-For further reading about why this is important, see:
+| Goal                       | Description
+|:---------------------------|:---------------
+| [*Convert code from any of the four major bindings.*](#converting-binding-support) | We should support everything that Qt.py does.
+| [*Warn about incompatibilities.*](#incompatibility-warnings)       | If code cannot be converted or functionality is unsupported in Qt.py, we should warn.
+| [*Keep it simple*](#keep-it-simple)       | Limit the heavy lifting, PEP008.
+| [*Normalize import format*](#normalize-imports)          | Imports should be *sane* and normalized..
 
-https://chris.beams.io/posts/git-commit
+Each of these deserve some explanation and rationale.
 
+<br>
 
-Code style
-----------
+##### Converting Binding Support
 
-All ``python`` code must pass the DD lint critical level.  Ensure you check your code before commit
-with:
+Running QtPyConvert should work on any source file, even if it doesn't use any Qt code. It should also have first party support for any bindings that Qt.py supports. Additional support for custom bindings either developed inhouse or online <sub>see pycode.qt</sub>, should have a way to be defined either through environment variables or a supplimentary site package that we look for.
 
-~~~
-make ddlint
-~~~
+<br>
 
+##### Incompatibility Warnings
 
-Developer Cycle
----------------
+Several patterns are unsupported using Qt.py, these include but are not limited to **QVariants**, **QStrings**, and other Api-1.0 code. These should either be automatically converted, or at the  very least, printed out as a warning that the user can look into themselves.  
+Ideally, it would be good to let users know about deprecated Qt code and provide a flag to attempt converting this as well.
 
-After you have a ticket for your work, start from a suitable branch-off point (normally the
-up-to-date ``master`` branch in this package).
+##### Keep it simple
 
-~~~
-# ensure we are up-to-date
-git checkout master
-git pull
+QtPyConvert is mainly a conversion wrapper around Qt.py.  
+It tries to read what Qt.py is doing by looking at it's private values.  
 
-# start a new branch for our development
-git checkout -b ticket_12345
-~~~
+Ideally we don't want QtPyConvert doing much conversion logic related to the actual mapping of methods and classes.    
+Instead, we want to pay attention to api1.0 to api2.0 problems, Qt4  to Qt5 deprecation problems and to a certain extent, the Qt.py QtCompat changes.
 
-You can optionally add a *short* description by seperating the words with ``-``s. For example:
+<br>
 
-~~~
-git checkout -b ticket_12345-fix-foo-bar
-~~~
+##### Normalize Imports
 
+One of the design decisions that was made early on was to normalize all Qt imports.  
+This was partially due to preference and partially to step around the complications that would arise from keeping all of the deep level imports.
 
-Within this branch, stage up commits.  Commit frequently!  Smaller commits with a small subtask
-is good coding practice.
+```python
+# *Wrong*
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QCheckBox as chk
+from PyQt4.QtCore.Qt import Unchecked, Checked
 
-From time-to-time, you may wish to rebase your development against master in order to stay current:
+def click(state):
+   print("Foo!")
 
-~~~
-# ensure your local repo is clean, eg. either commit or stash, then:
-git checkout master
-git pull
+c = chk()
+c.clicked.stateChanged(click, Qt.QueuedConnection)
+c.setCheckState(UnChecked)
+```
+```python
+# *Right*
+from Qt import QtCore, QtWidgets
 
-# go back to our ticket and rebase
-git checkout ticket_12345
-git rebase master
-# at this point, hopefully everything will cleanly reapply, but you may need to resolve some
-# conflicts.  in any case, you will probably immediately wish to rerun your test suites.
-~~~
+def click(state):
+   print("Foo!")
 
-When you are happy with your work and ready to propose merging of it, you should push this branch
-to the origin repository and contact the maintainers with the pull request.
+c = QtWidgets.QCheckBox()
+c.clicked.stateChanged(click, QtCore.Qt.QueuedConnection)
+c.setCheckState(QtCore.Qt.UnChecked)
+```
 
-~~~
-git push origin ticket_12345
-~~~
+This is one of the most notable *opinions* that QtPyConvert will enforce upon your code.
+Another notable one that it will enforce, unless you set the "<sub>**--preserve-star-imports**</sub>" flag is shown below
+```python
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
+from PyQt4.QtCore.Qt import *
 
-Your ticket branch must also update the ``CHANGELOG.md`` in the ``Unreleased`` section at the
-top of that document.
+app = QApplication([])
+app.setLayoutDirection(RightToLeft)
+widget = QWidget()
+widget.show()
+app.exec_()
+```
 
-Please read about the role and format of the CHANGELOG document at:
+```python
+from Qt import QtWidgets, QtCore
 
-http://keepachangelog.com/en/0.3.0
+app = QtWidgets.QApplication([])
+app.setLayoutDirection(QtCore.Qt.RightToLeft)
+widget = QtWidgets.QWidget()
+widget.show()
+app.exec_()
+```
 
+It is bad practice to use star imports and unless you tell it not to, QtPyConvert will resolve your imports and pare them down.
 
-Merging for Maintainers
------------------------
+<br>
 
-A feature branch ready for merging should pass all tests and conformance requirements.  It should
-generally be rebased against the maintenence branch into which it is being merged, so that the
-branch applies cleanly.  You may want to check this in a separate branch with a pattern like:
+## How can I contribute?
 
-~~~
-# checkout candidate branch for merging
-git checkout ticket_12345
+Contribution comes in many flavors, some of which is simply notifying us of problems or successes, so we know what to change and not to change.
 
-# branch off so we can test whether it will apply cleanly
-git checkout -b ticket_12345_merge
+### Reporting bugs
 
-# rebase against maintenance branch (here master, might be another branch):
-git rebase master
+Bug reports must include:
 
-# do clean install and run test suite.
-# if anything fails here, or we have a conflict in the rebase, we probably want to kick this back.
-make clean; make install; make ddtest; make ddlint
-~~~
+1. Description
+2. Expected results
+3. Short reproducible
 
-Merging should be done so to force a merge with the ``--no-ff`` (no fast-forward) option:
+### Suggesting enhancements
 
-~~~
-git merge --no-ff ticket_12345
-~~~
+Feature requests must include:
 
-Only now should the version in the manifest be updated in preparation for release.  For example, if
-we now go to version 1.23.4, we would make the one-line change in the package manifest, then commit
-this change with the commit message of the form ``version 1.23.4``, and tag it in the release
-branch:
+1. Goal (what the feature aims to solve)
+2. Motivation (why *you* think this is necessary)
+3. Suggested implementation (pseudocode)
 
-~~~
-# make edit to version line in manifest:
-vi manifest.yaml
+Questions may also be submitted as issues.
 
-# do commit of this change
-git commit -a -m 'version 1.23.4'
+### Pull requests
 
-# tag
-git tag -a '1.23.4' -m 'version 1.23.4'
-~~~
+Code contributions are made by (1) forking this project and (2) making a modification to it. Ideally we would prefer it preceded by an issue where we discuss the feature or problem on a conceptual level before attempting an implementation of it.
 
-### Interacting with svn ###
+This is where we perform code review - where we take a moment to look through and discuss potential design decisions made towards the goal you aim.
 
-Currently we are transitioning to ``git`` from ``svn``.  Until that transition is complete,
-maintainers are responsible for keeping the two in sync.  This is generally quite easy, and once
-it is going, you really only need to duplicate a bit of add/remove to the svn repo as files in
-the git repo add/remove/change names.
+Your code will be reviewed and merged once it:
 
-We won't attempt to use the git-svn tools here.  Instead, it isn't much work to do the two VCS sync
-manually.  Let's begin with aligning the two repositories initially.
+1. Does something useful
+1. Provides a use case and example
+1. Includes tests to exercise the change
+1. Is up to par with surrounding code
 
-Because ``svn`` tracks files in every subdirectory under the repo, it is easiest to first checkout
-the ``svn`` branch:
+The parent project ever only contains a single branch, a branch containing the latest working version of the project.
 
-~~~
-svn co $DD_SVN_ROOT/software/packages/ddg/trunk ddg
-~~~
+We understand and recognise that "forking" and "pull-requests" can be a daunting aspect for a beginner, so don't hesitate to ask. A pull-request should normally follow an issue where you elaborate on your desires; this is also a good place to ask about these things.
 
-Next, git clone the (presumably synced) repo from origin to a temporary place, eg:
+<br>
 
-~~~
-mkdir /var/tmp/git_temp
-cd /var/tmp/git_temp
-git clone git@dd-git.d2.com:pipeline/ddg.git
-cd /path/to/svn/repository/ddg
-rsync -av /var/tmp/git_temp/ddg/.git .
-~~~
+## Style
 
-At which point (if the svn and git repo are the same branch and have been kept in sync), we should
-have a clean svn repo and a clean git repo in the same place:
+Here's how we expect your code to look and feel like.
 
-~~~
-# should report clean
-svn stat
+### Commits
 
-# should also report clean
-git status
-~~~
+Commits should be well contained, as small as possible (but no smaller) and its messages should be in present-tense, imperative-style.
 
-From now on it is suggested that any time you wish to commit back to svn, you do the merging like
-normal, and then commit back branch merges to svn:
+E.g.
 
-~~~
-# we have just done our due-diligence and have a clean branch for merging:
-git merge --no-ff ticket_12345
+```bash
+# No
+Changed this and did that
 
-# now we keep svn largely in sync on the entire branch
-svn ci -m 'fix the node memory leak on parameter rename (#12345)'
-~~~
+# No
+Changes this and does that
 
-The downside here is that we lose blame history with svn, as well as the individual commits.
-This doesn't seem so bad considering git records all this and is the primary VCS anyway.
+# Yes
+Change this and do that
+```
 
+The reason is that, each commit is like an action. An event. And it is perfectly possible to "cherry-pick" a commit onto any given branch. In this style, it makes more sense what exactly the commit will do to your code.
 
+- Cherry pick "Add this and remove that"
+- Cherry pick "Remove X and replace with Y"
+
+### Version bumping
+
+This project uses [semantic versioning](http://semver.org/) and is updated *after* a new release has been made.
+
+For example, if the project had 100 commits at the time of the latest release and has 103 commits now, then it's time to increment. If however you modify the project and it has not yet been released, then your changes are included in the overall next release.
+
+The goal is to make a new release per increment.
+
+### Making a Release
+
+Once the project has gained features, had bugs sorted out and is in a relatively stable state, it's time to make a new release.
+
+- [https://github.com/DigitalDomain/QtPyConvert/releases](https://github.com/DigitalDomain/QtPyConvert/releases)
+
+Each release should come with:
+
+- An short summary of what has changed.
+- A full changelog, including links to resolved issues.
+ 
+
+
+
+
+<br>
+<br>
+Good luck and see you soon!
+
+
+<br>
+<br>
+<br>

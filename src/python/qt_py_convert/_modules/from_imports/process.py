@@ -2,16 +2,11 @@
 The from_imports module is designed to fix the from import statements.
 """
 from qt_py_convert._modules.expand_stars import process as stars_process
-from qt_py_convert.general import __supported_bindings__, _color, AliasDict, \
-    _change_verbose, ANSI
+from qt_py_convert.general import __supported_bindings__, ALIAS_DICT, change
+from qt_py_convert.log import get_logger
 
 
-def fimport_handler(msg):
-    """from import handler for the _change_versbose method."""
-    print("[%s] %s" % (
-        _color(color=ANSI.colors.purple, text="from * import *"),
-        msg
-    ))
+FROM_IMPORTS_LOG = get_logger("from_imports")
 
 
 class Processes(object):
@@ -26,11 +21,11 @@ class Processes(object):
             key=", ".join([target.value for target in node.targets])
         )
 
-        _change_verbose(
-            handler=fimport_handler,
+        change(
+            logger=FROM_IMPORTS_LOG,
             node=node,
             replacement=text,
-            skip_lineno=skip_lineno,
+            skip_lineno=skip_lineno
         )
 
         node.replace(text)
@@ -47,7 +42,7 @@ class Processes(object):
         :param skip_lineno: Global "skip_lineno" flag.
         :type skip_lineno: bool
         """
-        binding_aliases = AliasDict
+        binding_aliases = ALIAS_DICT
         mappings = {}
 
         # Replace each node
@@ -78,17 +73,16 @@ class Processes(object):
                     value = ".".join(from_import_parts)+"."+_from_as_name.value
                     mappings[key] = value
 
-            _change_verbose(
-                handler=fimport_handler,
-                node=node.parent,
-                replacement="from Qt import {key}".format(
+            replacement = "from Qt import {key}".format(
                     key=second_level_module
-                ),
-                skip_lineno=skip_lineno,
             )
-            node.parent.replace(
-                "from Qt import {key}".format(key=second_level_module)
+            change(
+                logger=FROM_IMPORTS_LOG,
+                node=node.parent,
+                replacement=replacement,
+                skip_lineno=skip_lineno
             )
+            node.parent.replace(replacement)
             binding_aliases["bindings"].add(binding)
             for target in node.parent.targets:
                 binding_aliases["root_aliases"].add(target.value)
@@ -155,4 +149,4 @@ def process(red, skip_lineno=False, **kwargs):
     if issues[key]:
         return getattr(Processes, key)(red, issues[key], skip_lineno=skip_lineno)
     else:
-        return AliasDict, {}
+        return ALIAS_DICT, {}

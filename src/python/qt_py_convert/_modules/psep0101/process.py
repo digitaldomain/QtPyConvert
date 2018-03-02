@@ -10,24 +10,20 @@ __author__ = 'ahughes'
 import re
 import sys
 
-from qt_py_convert.general import _color, _change_verbose, ErrorClass, ANSI
+from qt_py_convert.general import change, ErrorClass
+from qt_py_convert.log import get_logger
 from qt_py_convert._modules.psep0101 import _qsignal
 from qt_py_convert._modules.psep0101 import _conversion_methods
 
+
+PSEP_LOG = get_logger("psep0101")
 
 # Pulled out of six because I don't want to have to bind this package to DD
 # code to load six.
 # That seems a little insane to me...So because I am only using six.text_type,
 # I am removing the six import and inlining the code.
+# TODO: rely on six when this is OSS
 text_type = str if sys.version_info[0] == 3 else unicode
-
-
-def psep_handler(msg):
-    """PSEP0101 handler for the _change_versbose method."""
-    print("[%s] %s" % (
-        _color(color=ANSI.colors.purple, text="psep0101"),
-        msg
-    ))
 
 
 class Processes(object):
@@ -86,8 +82,8 @@ You will probably want to remove the usage of this entirely."""
                     )
 
                 if changed != raw:
-                    _change_verbose(
-                        handler=psep_handler,
+                    change(
+                        logger=PSEP_LOG,
                         node=node.parent,
                         replacement=changed,
                         skip_lineno=skip_lineno,
@@ -115,8 +111,8 @@ You will probably want to remove the usage of this entirely."""
                 raw
             )
             if changed != raw:
-                _change_verbose(
-                    handler=psep_handler,
+                change(
+                    logger=PSEP_LOG,
                     node=node.parent,
                     replacement=changed,
                     skip_lineno=skip_lineno,
@@ -147,8 +143,8 @@ You will probably want to remove the usage of this entirely."""
                 raw
             )
             if changed != raw:
-                _change_verbose(
-                    handler=psep_handler,
+                change(
+                    logger=PSEP_LOG,
                     node=node.parent,
                     replacement=changed,
                     skip_lineno=skip_lineno,
@@ -177,8 +173,8 @@ You will probably want to remove the usage of this entirely."""
                 raw
             )
             if changed != raw:
-                _change_verbose(
-                    handler=psep_handler,
+                change(
+                    logger=PSEP_LOG,
                     node=node.parent,
                     replacement=changed,
                     skip_lineno=skip_lineno,
@@ -203,8 +199,8 @@ You will probably want to remove the usage of this entirely."""
             raw = node.parent.dumps()
             changed = _conversion_methods.to_methods(raw)
             if changed != raw:
-                    _change_verbose(
-                        handler=psep_handler,
+                    change(
+                        logger=PSEP_LOG,
                         node=node.parent,
                         replacement=changed,
                         skip_lineno=skip_lineno,
@@ -233,8 +229,8 @@ You will probably want to remove the usage of this entirely."""
             if "disconnect" in raw:
                 changed = _qsignal.process_disconnect(raw)
                 if changed != raw:
-                    _change_verbose(
-                        handler=psep_handler,
+                    change(
+                        logger=PSEP_LOG,
                         node=node.parent,
                         replacement=changed,
                         skip_lineno=skip_lineno,
@@ -245,8 +241,8 @@ You will probably want to remove the usage of this entirely."""
             if "connect" in raw:
                 changed = _qsignal.process_connect(raw)
                 if changed != raw:
-                    _change_verbose(
-                        handler=psep_handler,
+                    change(
+                        logger=PSEP_LOG,
                         node=node.parent,
                         replacement=changed,
                         skip_lineno=skip_lineno,
@@ -257,8 +253,8 @@ You will probably want to remove the usage of this entirely."""
                 changed = _qsignal.process_emit(raw)
                 if changed != raw:
 
-                    _change_verbose(
-                        handler=psep_handler,
+                    change(
+                        logger=PSEP_LOG,
                         node=node.parent,
                         replacement=changed,
                         skip_lineno=skip_lineno,
@@ -287,8 +283,8 @@ You will probably want to remove the usage of this entirely."""
                 raw
             )
             if changed != raw:
-                _change_verbose(
-                    handler=psep_handler,
+                change(
+                    logger=PSEP_LOG,
                     node=node.parent,
                     replacement=changed,
                     skip_lineno=skip_lineno,
