@@ -758,6 +758,42 @@ def _wrapinstance(func, ptr, base=None):
     return func(long(ptr), base)
 
 
+def _translate(context, sourceText, *args):
+    # In Qt4 bindings, translate can be passed 2 or 3 arguments
+    # In Qt5 bindings, translate can be passed 2 arguments
+    # The first argument is disambiguation[str]
+    # The last argument is n[int]
+    # The middle argument can be encoding[QtCore.QCoreApplication.Encoding]
+    if len(args) == 3:
+        disambiguation, encoding, n = args
+    elif len(args) == 2:
+        disambiguation, n = args
+        encoding = None
+    else:
+        raise TypeError(
+            "Expected 4 or 5 arguments, got {0}.".format(len(args)+2))
+
+    if hasattr(Qt.QtCore, "QCoreApplication"):
+        app = getattr(Qt.QtCore, "QCoreApplication")
+    else:
+        raise NotImplementedError(
+            "Missing QCoreApplication implementation for {binding}".format(
+                binding=Qt.__binding__,
+            )
+        )
+    if Qt.__binding__ in ("PySide2", "PyQt5"):
+        sanitized_args = [context, sourceText, disambiguation, n]
+    else:
+        sanitized_args = [
+            context,
+            sourceText,
+            disambiguation,
+            encoding or app.CodecForTr,
+            n
+        ]
+    return app.translate(*sanitized_args)
+
+
 def _loadUi(uifile, baseinstance=None):
     """Dynamically load a user interface from the given `uifile`
 
