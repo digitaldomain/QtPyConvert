@@ -911,7 +911,16 @@ _misplaced_members = {
         # Custom patch
         "QtUiTools.load_ui": ["QtCompat.loadUi", _loadUi],
         "shiboken2.wrapInstance": ["QtCompat.wrapInstance", _wrapinstance],
-        "QtWidgets.qApp": "QtWidgets.QApplication.instance()"
+        "QtWidgets.qApp": "QtWidgets.QApplication.instance()",
+        "QtCore.QCoreApplication.translate": [
+            "QtCompat.translate", _translate
+        ],
+        "QtWidgets.QApplication.translate": [
+            "QtCompat.translate", _translate
+        ],
+        "QtCore.qInstallMessageHandler": [
+            "QtCompat.qInstallMessageHandler", _qInstallMessageHandler
+        ],
     },
     "PyQt5": {
         "QtCore.pyqtProperty": "QtCore.Property",
@@ -927,7 +936,16 @@ _misplaced_members = {
         "uic.loadUi": ["QtCompat.loadUi", _loadUi],
         "sip.wrapinstance": ["QtCompat.wrapInstance", _wrapinstance],
         "QtCore.QString": "str",
-        "QtWidgets.qApp": "QtWidgets.QApplication.instance()"
+        "QtWidgets.qApp": "QtWidgets.QApplication.instance()",
+        "QtCore.QCoreApplication.translate": [
+            "QtCompat.translate", _translate
+        ],
+        "QtWidgets.QApplication.translate": [
+            "QtCompat.translate", _translate
+        ],
+        "QtCore.qInstallMessageHandler": [
+            "QtCompat.qInstallMessageHandler", _qInstallMessageHandler
+        ],
     },
     "PySide": {
         "QtGui.QAbstractProxyModel": "QtCore.QAbstractProxyModel",
@@ -950,7 +968,16 @@ _misplaced_members = {
         # Custom Patch
         "QtUiTools.load_ui": ["QtCompat.loadUi", _loadUi],
         "shiboken.wrapInstance": ["QtCompat.wrapInstance", _wrapinstance],
-        "QtGui.qApp": "QtWidgets.QApplication.instance()"
+        "QtGui.qApp": "QtWidgets.QApplication.instance()",
+        "QtCore.QCoreApplication.translate": [
+            "QtCompat.translate", _translate
+        ],
+        "QtGui.QApplication.translate": [
+            "QtCompat.translate", _translate
+        ],
+        "QtCore.qInstallMsgHandler": [
+            "QtCompat.qInstallMessageHandler", _qInstallMessageHandler
+        ],
     },
     "PyQt4": {
         "QtGui.QAbstractProxyModel": "QtCore.QAbstractProxyModel",
@@ -975,7 +1002,16 @@ _misplaced_members = {
         "uic.loadUi": ["QtCompat.loadUi", _loadUi],
         "sip.wrapinstance": ["QtCompat.wrapInstance", _wrapinstance],
         "QtCore.QString": "str",
-        "QtGui.qApp": "QtWidgets.QApplication.instance()"
+        "QtGui.qApp": "QtWidgets.QApplication.instance()",
+        "QtCore.QCoreApplication.translate": [
+            "QtCompat.translate", _translate
+        ],
+        "QtGui.QApplication.translate": [
+            "QtCompat.translate", _translate
+        ],
+        "QtCore.qInstallMsgHandler": [
+            "QtCompat.qInstallMessageHandler", _qInstallMessageHandler
+        ],
     }
 }
 
@@ -1283,8 +1319,8 @@ def _pyside2():
 
     if hasattr(Qt, "_QtCore"):
         Qt.__qt_version__ = Qt._QtCore.qVersion()
-        Qt.QtCompat.qInstallMessageHandler = _qInstallMessageHandler
-        Qt.QtCompat.translate = Qt._QtCore.QCoreApplication.translate
+        # Qt.QtCompat.qInstallMessageHandler = _qInstallMessageHandler
+        # Qt.QtCompat.translate = Qt._QtCore.QCoreApplication.translate
 
     if hasattr(Qt, "_QtWidgets"):
         Qt.QtCompat.setSectionResizeMode = \
@@ -1335,17 +1371,17 @@ def _pyside():
     if hasattr(Qt, "_QtCore"):
         Qt.__qt_version__ = Qt._QtCore.qVersion()
         QCoreApplication = Qt._QtCore.QCoreApplication
-        Qt.QtCompat.qInstallMessageHandler = _qInstallMessageHandler
-        Qt.QtCompat.translate = (
-            lambda context, sourceText, disambiguation, n:
-            QCoreApplication.translate(
-                context,
-                sourceText,
-                disambiguation,
-                QCoreApplication.CodecForTr,
-                n
-            )
-        )
+        # Qt.QtCompat.qInstallMessageHandler = _qInstallMessageHandler
+        # Qt.QtCompat.translate = (
+        #     lambda context, sourceText, disambiguation, n:
+        #     QCoreApplication.translate(
+        #         context,
+        #         sourceText,
+        #         disambiguation,
+        #         QCoreApplication.CodecForTr,
+        #         n
+        #     )
+        # )
 
     _reassign_misplaced_members("PySide")
     _build_compatibility_members("PySide")
@@ -1375,8 +1411,8 @@ def _pyqt5():
     if hasattr(Qt, "_QtCore"):
         Qt.__binding_version__ = Qt._QtCore.PYQT_VERSION_STR
         Qt.__qt_version__ = Qt._QtCore.QT_VERSION_STR
-        Qt.QtCompat.qInstallMessageHandler = _qInstallMessageHandler
-        Qt.QtCompat.translate = Qt._QtCore.QCoreApplication.translate
+        # Qt.QtCompat.qInstallMessageHandler = _qInstallMessageHandler
+        # Qt.QtCompat.translate = Qt._QtCore.QCoreApplication.translate
 
     if hasattr(Qt, "_QtWidgets"):
         Qt.QtCompat.setSectionResizeMode = \
@@ -1454,17 +1490,17 @@ def _pyqt4():
     if hasattr(Qt, "_QtCore"):
         Qt.__binding_version__ = Qt._QtCore.PYQT_VERSION_STR
         Qt.__qt_version__ = Qt._QtCore.QT_VERSION_STR
-        QCoreApplication = Qt._QtCore.QCoreApplication
-        Qt.QtCompat.qInstallMessageHandler = _qInstallMessageHandler
-        Qt.QtCompat.translate = (
-            lambda context, sourceText, disambiguation, n:
-            QCoreApplication.translate(
-                context,
-                sourceText,
-                disambiguation,
-                QCoreApplication.CodecForTr,
-                n)
-        )
+        # QCoreApplication = Qt._QtCore.QCoreApplication
+        # Qt.QtCompat.qInstallMessageHandler = _qInstallMessageHandler
+        # Qt.QtCompat.translate = (
+        #     lambda context, sourceText, disambiguation, n:
+        #     QCoreApplication.translate(
+        #         context,
+        #         sourceText,
+        #         disambiguation,
+        #         QCoreApplication.CodecForTr,
+        #         n)
+        # )
 
     _reassign_misplaced_members("PyQt4")
 
