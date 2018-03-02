@@ -1,6 +1,8 @@
 """
 The imports module is designed to fix the import statements.
 """
+import traceback
+
 from qt_py_convert.general import ALIAS_DICT, change
 from qt_py_convert.color import color_text, ANSI
 from qt_py_convert.log import get_logger
@@ -43,11 +45,15 @@ class Processes(object):
         except ImportError as err:
             strerr = str(err).replace("No module named", "")
 
-            raise ImportError(
-                "Attempting to manually replace a star import from \"{mod}\" "
-                "failed. The following error ocurred while attempting:\n{err}"
-                .format(mod=strerr, err=str(err))
-            )
+            msg = (
+                "Attempting to resolve a * import from the {mod} "
+                "module failed.\n"
+                "This is usually because the module could not be imported. "
+                "Please check that this script can import it. The error was:\n"
+                "{err}"
+            ).format(mod=strerr, err=str(err))
+            traceback.print_exc()
+            raise ImportError(msg)
         if not levels:
             _module = _temp
             _members(mappings, _module, module_name=binding)
