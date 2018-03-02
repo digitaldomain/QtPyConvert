@@ -407,23 +407,25 @@ def _convert_body(red, aliases, mappings, skip_lineno=False):
                     # so we don't want to turn bob.foo.cat into bob.foo.bear.
                     # Because bob.foo.cat might not be equal to the mike.cat
                     # that we meant to change.
-                    if node.parent.type == "atomtrailers":
+                    if hasattr(node.parent, "type") and node.parent.type == "atomtrailers":
                         if not node.parent.value[0] == node:
                             continue
 
-                    if node.dumps().split(".")[0] in COMMON_MODULES:
-                        aliases["used"].add(node.dumps().split(".")[0])
-                    replacement = node.dumps().replace(key, mappings[key])
-                    change(
-                        logger=MAIN_LOG,
-                        node=node,
-                        replacement=replacement,
-                        skip_lineno=skip_lineno
-                    )
-                    if mappings[key].split(".")[0] in COMMON_MODULES:
-                        aliases["used"].add(mappings[key].split(".")[0])
+                    if key != mappings[key]:
+                        replacement = node.dumps().replace(key, mappings[key])
+                        change(
+                            logger=MAIN_LOG,
+                            node=node,
+                            replacement=replacement,
+                            skip_lineno=skip_lineno
+                        )
+                        if mappings[key].split(".")[0] in COMMON_MODULES:
+                            aliases["used"].add(mappings[key].split(".")[0])
 
-                    node.replace(replacement)
+                        node.replace(replacement)
+                    else:
+                        if node.dumps().split(".")[0] in COMMON_MODULES:
+                            aliases["used"].add(node.dumps().split(".")[0])
                     # match.replace(mappings[key])
 
 
