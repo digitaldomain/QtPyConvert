@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import traceback
 
 
@@ -12,7 +13,7 @@ from qt_py_convert._modules import psep0101
 from qt_py_convert._modules import unsupported
 from qt_py_convert.general import merge_dict, _custom_misplaced_members, \
     ALIAS_DICT, change, UserInputRequiredException, ANSI,  \
-    __suplimentary_bindings__
+    __suplimentary_bindings__, WriteMode
 from qt_py_convert.color import color_text
 from qt_py_convert.log import get_logger
 
@@ -651,7 +652,7 @@ def _build_exc(error, line_data):
     ))
 
 
-def process_file(fp, write=False, skip_lineno=False, tometh_flag=False):
+def process_file(fp, write_mode=None, write_args=None, skip_lineno=False, tometh_flag=False):
     """
     One of the entry-point functions in qt_py_convert.
     If you are looking to process a single python file, this is your function.
@@ -685,18 +686,33 @@ def process_file(fp, write=False, skip_lineno=False, tometh_flag=False):
         lines = fh.readlines()
         source = "".join(lines)
 
-
-    MAIN_LOG.info("Processing {path}".format(path=fp))
+    MAIN_LOG.info("Processing {path}\n{line}".format(path=fp, line="-"*50))
     try:
         aliases, mappings, modified_code = run(
             source,
             skip_lineno=skip_lineno,
             tometh_flag=tometh_flag
         )
-        if write:
-            MAIN_LOG.info("Writing modifed code to {path}".format(path=fp))
-            with open(fp, "wb") as fh:
-                fh.write(modified_code)
+        if aliases["used"] or modified_code != source:
+            if write_mode == WriteMode.STDOUT:
+                MAIN_LOG.debug("Writing modifed code to {path}".format(path="stdout"))
+                sys.stdout.write(modified_code)
+            elif write_mode == WriteMode.OVERWRITE:
+                MAIN_LOG.info("Writing modifed code to {path}".format(path=fp))
+                with open(fp, "wb") as fh:
+                    fh.write(modified_code)
+            elif write_mode == WriteMode.RELATIVE_ROOT:
+                src_root = write_args["src_root"]
+                dst_root = write_args["dst_root"]
+                root_relative = fp.replace(src_root, "").lstrip("/")
+                dst_path = os.path.join(dst_root, root_relative)
+
+                if not os.path.exists(os.path.dirname(dst_path)):
+                    os.makedirs(os.path.dirname(dst_path))
+                MAIN_LOG.info("Writing modifed code to {path}".format(path=dst_path))
+                with open(dst_path, "wb") as fh:
+                    fh.write(modified_code)
+
     except BaseException:
         MAIN_LOG.critical("Error processing file: \"{path}\"".format(path=fp))
         traceback.print_exc()
@@ -714,7 +730,7 @@ def process_file(fp, write=False, skip_lineno=False, tometh_flag=False):
                 MAIN_LOG.error(str(err))
 
 
-def process_folder(folder, recursive=False, write=False, skip_lineno=False, tometh_flag=False):
+def process_folder(folder, recursive=False, write_mode=None, write_args=None, skip_lineno=False, tometh_flag=False):
     """
     One of the entry-point functions in qt_py_convert.
     If you are looking to process every python file in a folder, this is your
@@ -752,7 +768,8 @@ def process_folder(folder, recursive=False, write=False, skip_lineno=False, tome
     for fn in filter(_is_py, [os.path.join(folder, fp) for fp in os.listdir(folder)]):
         process_file(
             os.path.join(folder, fn),
-            write=write,
+            write_mode=write_mode,
+            write_args=write_args,
             skip_lineno=skip_lineno,
             tometh_flag=tometh_flag
         )
@@ -765,7 +782,8 @@ def process_folder(folder, recursive=False, write=False, skip_lineno=False, tome
         process_folder(
             os.path.join(folder, fn),
             recursive=recursive,
-            write=write,
+            write_mode=write_mode,
+            write_args=write_args,
             skip_lineno=skip_lineno,
             tometh_flag=tometh_flag
         )

@@ -8,6 +8,7 @@ if sys.version_info[0] == 2 and sys.version_info[1] < 7:
 import argparse
 
 from qt_py_convert.run import process_file, process_folder
+from qt_py_convert.general import WriteMode
 
 
 def parse():
@@ -31,6 +32,10 @@ def parse():
     )
     parser.add_argument(
         "-w", "--write",
+        help="Write the resulting file relative to the passed root folder.",
+    )
+    parser.add_argument(
+        "-o", "--overwrite",
         action="store_true",
         help="Overwrite the file in place.",
     )
@@ -81,27 +86,42 @@ def _resolve_stdin(paths):
     return paths
 
 
-def main(pathlist, recursive=True, write=False, show_lines=True, tometh=False):
+def main(pathlist, recursive=True, write=False, overwrite=False, show_lines=True, tometh=False):
     # if len(pathlist) == 1:
     #     if pathlist[0] == "-":  # Support for piping on unix.
     #         pathlist = sys.stdin
 
     pathlist = _resolve_stdin(pathlist)
 
-    for path in [os.path.abspath(p) for p in pathlist]:
+    output = WriteMode.STDOUT
+    write_args = None
+    if write:
+        output = WriteMode.RELATIVE_ROOT
+        write_args = {
+            "dst_root": write
+        }
+    elif overwrite:
+        output = WriteMode.OVERWRITE
+
+    for path in pathlist:
         # print("Processing %s" % path)
-        if os.path.isdir(path):
+        abs_path = os.path.abspath(path)
+        if write:
+            write_args["src_root"] = os.path.dirname(abs_path)
+        if os.path.isdir(abs_path):
             process_folder(
                 path,
                 recursive=recursive,
-                write=write,
+                write_mode=output,
+                write_args=write_args,
                 skip_lineno=not show_lines,
                 tometh_flag=tometh
             )
         else:
             process_file(
                 path,
-                write=write,
+                write_mode=output,
+                write_args=write_args,
                 skip_lineno=not show_lines,
                 tometh_flag=tometh
             )
@@ -113,6 +133,7 @@ if __name__ == "__main__":
         args.files_or_directories,
         args.recursive,
         args.write,
+        args.overwrite,
         args.show_lines,
         args.to_method_support,
     )

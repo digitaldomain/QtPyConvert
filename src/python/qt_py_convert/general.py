@@ -12,6 +12,12 @@ from qt_py_convert.external import Qt
 GENERAL_LOGGER = get_logger("general", name_color=ANSI.colors.green)
 
 
+class WriteMode(object):
+    STDOUT = 1
+    RELATIVE_ROOT = 2
+    OVERWRITE = 3
+
+
 def change(logger, node, replacement, skip_lineno=False, msg=None):
     """
     A helper function to print information about replacing a node.
