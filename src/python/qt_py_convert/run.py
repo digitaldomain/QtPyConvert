@@ -700,6 +700,15 @@ def process_file(fp, write_mode=None, write_args=None, skip_lineno=False, tometh
                 MAIN_LOG.debug("Writing modifed code to {path}".format(path="stdout"))
                 sys.stdout.write(modified_code)
             elif write_mode == WriteMode.OVERWRITE:
+                bak_path = os.path.join(
+                    os.path.dirname(fp),
+                    "." + os.path.basename(fp) + ".bak"
+                )
+                MAIN_LOG.info(
+                    "Backing up original code to {path}".format(path=bak_path)
+                )
+                with open(bak_path, "wb") as fh:
+                    fh.write(source)
                 MAIN_LOG.info("Writing modifed code to {path}".format(path=fp))
                 with open(fp, "wb") as fh:
                     fh.write(modified_code)
