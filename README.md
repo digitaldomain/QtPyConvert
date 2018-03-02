@@ -51,12 +51,24 @@ $ qt_py_convert [-h] [-r --recursive] [-w|-o] [--show-lines] [--to-method-suppor
 | files_or_directories	| Pass explicit files or directories to run. <sub>**NOTE:**</sub> If **"-"** is passed instead of files_or_directories, QtPyConvert will attempt to read from stdin instead. <sub>**Useful for pipelining proesses together**</sub> |
 | -r,--recursive		| Recursively search for python files to convert. Only applicable when passing a directory.  |
 | -w, --write			| Optionally pass a root directory to mirror the newly converted source code to.  |
-| -o, --overwrite 		| Overwrite the files in place. **Either "-o" or "-w" must be passed to QtPyConvert.** |
+| -o, --overwrite 		| Overwrite the files in place. **Either "-o" or "-w" must be passed to QtPyConvert if you want files to be written to disk.** |
 | --show-lines			| Turn on printing of line numbers while replacing statements. Ends up being much slower. |
 | --to-method--support 	| <sub>**EXPERIMENTAL**</sub>: An attempt to replace all api1.0 style "*toString*", "*toInt*", "*toBool*", "*toPyObject*", "*toAscii*" methods that are unavailable in api2.0. |
 
+*If you don't pass "-o" or "-w <path>" to QtPyConvert, it will write to stdout.*
 
 
+### Customization
+
+QtPyConvert supports some custom bindings if you are willing to do a little bit of work.  
+
+This is done through environment variables:
+| Key                           | Value                                                                          | Description |
+| ----------------------------- | ------------------------------------------------------------------------------ | ----------- |
+| QT_CUSTOM_BINDINGS_SUPPORT    | The names of custom abstraction layers or bindings separated by **os.pathsep** | This can be used if you have code that was already doing it's own abstraction and you want to move to the Qt.py layer. |
+| CUSTOM_MISPLACED_MEMBERS      | This is a json dictionary that you have saved into your environment variables. | This json dictionary should look similar to the Qt.py _misplaced_members dictionary but instead of mapping to Qt.py it maps the source bindings to your abstraction layer. |
+
+> **Note** This feature is *experimental* and has only been used internally a few times. Support for this feature will probably be slower than support for the core functionality of QyPyConvert.
 
 
 ## Built With
