@@ -478,7 +478,7 @@ def misplaced_members(aliases, mappings):
     """
     misplaced_members uses the internal "_misplaced_members" from Qt.py as
     well as any "_custom_misplaced_members" that you have set to update the
-    detected binding members. The Q.py misplaced memebers aid in updating
+    detected binding members. The Qt.py misplaced members aid in updating
     bindings to Qt5 compatible locations.
 
     :param aliases: Aliases is the replacement information that is build
