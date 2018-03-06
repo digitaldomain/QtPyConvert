@@ -20,7 +20,7 @@ import argparse
 
 PYQT4 = "PyQt4"
 PYQt5 = "PyQt5"
-PYSIDE = "Pyside"
+PYSIDE = "PySide"
 PYSIDE2 = "PySide2"
 PyUIC4 = "pyuic4"
 PyRCC4 = "pyrcc4"
