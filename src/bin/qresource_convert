@@ -9,6 +9,7 @@ import sys
 import dd.runtime.api
 dd.runtime.api.load("qt_py_convert")
 import qt_py_convert.run
+import qt_py_convert.general
 
 
 if sys.version_info[0] == 2 and sys.version_info[1] < 7:
@@ -17,6 +18,10 @@ if sys.version_info[0] == 2 and sys.version_info[1] < 7:
 import argparse
 
 
+PYQT4 = "PyQt4"
+PYQt5 = "PyQt5"
+PYSIDE = "Pyside"
+PYSIDE2 = "PySide2"
 PyUIC4 = "pyuic4"
 PyRCC4 = "pyrcc4"
 PyUIC5 = "pyuic5"
@@ -29,10 +34,10 @@ PySide2RCC = "pyside2-rcc"
 QRESOURCE_ENVIRON = "QRESOURCE_CONVERTER_DEFAULT"
 
 mappings = {
-    "pyqt4": (PyUIC4, PyRCC4),
-    "pyqt5": (PyUIC5, PyRCC5),
-    "pyside": (PySideUIC, PySideRCC),
-    "pyside2": (PySide2UIC, PySide2RCC),
+    PYQT4: (PyUIC4, PyRCC4),
+    PYQt5: (PyUIC5, PyRCC5),
+    PYSIDE: (PySideUIC, PySideRCC),
+    PYSIDE2: (PySide2UIC, PySide2RCC),
 }
 
 
@@ -49,7 +54,7 @@ def _is_uic(path):
 def execute_convert(application, path, output=None):
     if application is None:
         # Query Environ.
-        application = os.environ.get(QRESOURCE_ENVIRON, "pyqt4")
+        application = os.environ.get(QRESOURCE_ENVIRON, PYQT4)
 
     uic, rcc = mappings[application]
 
@@ -136,7 +141,10 @@ def main():
     else:
         with stdout_redirector():
             qt_py_convert.run.process_file(
-                message, write=True, skip_lineno=True, tometh_flag=True
+                message,
+                write_mode=qt_py_convert.general.WriteMode.OVERWRITE,
+                skip_lineno=True,
+                tometh_flag=True
             )
             output = message
 
