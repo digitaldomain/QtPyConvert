@@ -678,18 +678,17 @@ def process_file(fp, write_mode=None, write_args=None, skip_lineno=False, tometh
         signature to PyQt4's apiv1.0 ones.
     :type tometh_flag: bool
     """
-    path = os.path.abspath(fp)
-    if not _is_py(path):
+    if not _is_py(fp):
         MAIN_LOG.debug(
             "\tSkipping \"{fp}\"... It does not appear to be a python file."
-            .format(fp=path)
+            .format(fp=fp)
         )
         return
-    with open(path, "rb") as fh:
+    with open(fp, "rb") as fh:
         lines = fh.readlines()
         source = "".join(lines)
 
-    MAIN_LOG.info("Processing {path}\n{line}".format(path=path, line="-"*50))
+    MAIN_LOG.info("Processing {path}\n{line}".format(path=fp, line="-"*50))
     try:
         aliases, mappings, modified_code = run(
             source,
@@ -702,8 +701,8 @@ def process_file(fp, write_mode=None, write_args=None, skip_lineno=False, tometh
                 sys.stdout.write(modified_code)
             elif write_mode == WriteMode.OVERWRITE:
                 bak_path = os.path.join(
-                    os.path.dirname(path),
-                    "." + os.path.basename(path) + ".bak"
+                    os.path.dirname(fp),
+                    "." + os.path.basename(fp) + ".bak"
                 )
                 MAIN_LOG.info(
                     "Backing up original code to {path}".format(path=bak_path)
@@ -711,12 +710,12 @@ def process_file(fp, write_mode=None, write_args=None, skip_lineno=False, tometh
                 with open(bak_path, "wb") as fh:
                     fh.write(source)
                 MAIN_LOG.info("Writing modifed code to {path}".format(path=fp))
-                with open(path, "wb") as fh:
+                with open(fp, "wb") as fh:
                     fh.write(modified_code)
             elif write_mode == WriteMode.RELATIVE_ROOT:
                 src_root = write_args["src_root"]
                 dst_root = write_args["dst_root"]
-                root_relative = path.replace(src_root, "").lstrip("/")
+                root_relative = fp.replace(src_root, "").lstrip("/")
                 dst_path = os.path.join(dst_root, root_relative)
 
                 if not os.path.exists(os.path.dirname(dst_path)):
