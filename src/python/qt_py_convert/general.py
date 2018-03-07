@@ -216,4 +216,6 @@ def supported_binding(binding_str):
         ),
         binding_str
     )
-    return match.groupdict().get("binding")
+    if match:
+        return match.groupdict().get("binding")
+    return None
