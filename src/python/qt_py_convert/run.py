@@ -779,7 +779,7 @@ def process_folder(folder, recursive=False, write_mode=None, write_args=None, sk
 
     for fn in filter(_is_py, [os.path.join(folder, fp) for fp in os.listdir(folder)]):
         process_file(
-            os.path.join(folder, fn),
+            fn,
             write_mode=write_mode,
             write_args=write_args,
             skip_lineno=skip_lineno,
