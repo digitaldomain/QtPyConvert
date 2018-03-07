@@ -4,6 +4,7 @@ general is utility functions for the qt_py_convert library
 import copy
 import json
 import os
+import re
 
 from qt_py_convert.color import ANSI, color_text, highlight_diffs
 from qt_py_convert.log import get_logger
@@ -202,3 +203,17 @@ def merge_dict(lhs, rhs, keys=None, keys_both=False):
             out[key] = getattr(lhs[key], op)(rhs[key])
         # out[key] = lhs[key].union(rhs[key])
     return out
+
+
+def supported_binding(binding_str):
+    bindings_by_length = [
+        re.escape(binding)
+        for binding in sorted(__supported_bindings__, reverse=True)
+    ]
+    match = re.match(
+        r"^(?P<binding>{bindings})(:?\..*)?".format(
+            bindings="|".join(bindings_by_length)
+        ),
+        binding_str
+    )
+    return match.groupdict().get("binding")
