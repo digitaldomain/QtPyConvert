@@ -1,7 +1,8 @@
 """
 The imports module is designed to fix the import statements.
 """
-from qt_py_convert.general import __supported_bindings__, ALIAS_DICT, change
+from qt_py_convert.general import __supported_bindings__, ALIAS_DICT, change, \
+    supported_binding
 from qt_py_convert.log import get_logger
 
 IMPORTS_LOG = get_logger("imports")
@@ -123,12 +124,12 @@ def import_process(store):
         """
         _raw_module = value.dumps().split(".")[0]
         # See if that import is in our __supported_bindings__
-        for supported_binding in __supported_bindings__:
-            if _raw_module.startswith(supported_binding):
-                store[Processes.IMPORT_STR].add(
-                    (value, supported_binding)
-                )
-                return True
+        matched_binding = supported_binding(_raw_module)
+        if matched_binding:
+            store[Processes.IMPORT_STR].add(
+                    (value, matched_binding)
+            )
+            return True
     return filter_function
 
 
