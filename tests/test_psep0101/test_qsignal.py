@@ -25,6 +25,13 @@ def check_disconnect(source, dest):
         raise AssertionError("%s is not %s" % (convert, dest))
 
 
+def test_connection_ddqt_1():
+    check_connection(
+        '''QtCore.QObject.connect(self, QtCore.SIGNAL("clicked()"), self, QtCore.SLOT("handle_click()"))''',
+        '''self.clicked.connect(self.handle_click)'''
+    )
+
+
 def test_connection_texturepipeline_whitespace():
     check_connection(
         '''self.seq_combo.connect  (QtCore.SIGNAL("currentIndexChanged(int)"),
