@@ -13,8 +13,10 @@ def _connect_repl(match_obj):
     template = r"{owner}.{signal}.connect({slot})"
     groups = match_obj.groupdict()
     if "strslot" in groups and groups["strslot"]:
-        template = template.replace("{slot}", "{root}.{strslot}")
+        template = template.replace("{slot}", "{slot_owner}.{strslot}")
 
+    if "slot_owner" not in groups or not groups["slot_owner"]:
+        template = template.replace("{slot_owner}", "{root}")
     if "owner" not in groups or not groups["owner"]:
         template = template.replace("{owner}", "{root}")
 
@@ -52,7 +54,7 @@ def process_connect(function_str):
 
   # Either QtCore.SLOT("thing()") or an actual callable in scope.
   # If it is the former, we are assuming that the str name is owned by root.
-    (?:(?:(?:QtCore\.)?SLOT(?:\s+)?\((?:[\s\n]+)?(?:_fromUtf8(?:\s+)?\()?(?:[\s\n]+)?[\'\"](?P<strslot>.*?)(?:\s+)?\((?P<slot_args>.*?)\)[\'\"](?:[\s\n]+)?\)?(?:[\s\n]+)?\))
+    (?:(?:(?P<slot_owner>.*>?),(?:[\s\n]+)?)?(?:(?:QtCore\.)?SLOT(?:\s+)?\((?:[\s\n]+)?(?:_fromUtf8(?:\s+)?\()?(?:[\s\n]+)?[\'\"](?P<strslot>.*?)(?:\s+)?\((?P<slot_args>.*?)\)[\'\"](?:[\s\n]+)?\)?(?:[\s\n]+)?\))
   |
     (?:(?:[\s\n]+)?(?P<slot>.*?)(?:[\s\n]+)?))
 \)""",
@@ -81,7 +83,7 @@ def process_disconnect(function_str):
 
   # Either QtCore.SLOT("thing()") or an actual callable in scope.
   # If it is the former, we are assuming that the str name is owned by root.
-    (?:(?:(?:QtCore\.)?SLOT(?:\s+)?\((?:[\s\n]+)?(?:_fromUtf8(?:\s+)?\()?(?:[\s\n]+)?[\'\"](?P<strslot>.*?)(?:\s+)?\((?P<slot_args>.*?)(?:\s+)?\)[\'\"](?:[\s\n]+)?\)?(?:[\s\n]+)?\))
+    (?:(?:(?P<slot_owner>.*>?),(?:[\s\n]+)?)?(?:(?:QtCore\.)?SLOT(?:\s+)?\((?:[\s\n]+)?(?:_fromUtf8(?:\s+)?\()?(?:[\s\n]+)?[\'\"](?P<strslot>.*?)(?:\s+)?\((?P<slot_args>.*?)(?:\s+)?\)[\'\"](?:[\s\n]+)?\)?(?:[\s\n]+)?\))
   |
     (?:(?:[\s\n]+)?(?P<slot>.*?)(?:[\s\n]+)?))
 (?:\s+)?\)""",
