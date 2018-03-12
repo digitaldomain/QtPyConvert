@@ -26,11 +26,16 @@ class Processes(object):
         But I don't know what the heck you used in the *
         So I am just getting everything bootstrapped in. Sorry-not-sorry
         """
+        def _module_filtering(key):
+            import __builtin__
+            if key.startswith("__"):
+                return False
+            elif key in dir(__builtin__):
+                return False
+            return True
+
         def _members(_mappings, _module_, module_name):
-            members = filter(
-                lambda m: True if not m.startswith("__") else False,
-                dir(_module)
-            )
+            members = filter(_module_filtering, dir(_module))
             for member in members:
                 mappings[member] = "{mod}.{member}".format(
                     mod=module_name,
