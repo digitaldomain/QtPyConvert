@@ -469,7 +469,10 @@ def _convert_mappings(aliases, mappings):
             )
             if modified_mapping != mappings[from_mapping]:
                 # Mapping changed
-                aliases["used"].add(module_name)
+                # _---------------------------_ #
+                # We shouldn't be adding it here.
+                # We don't know if it's used yet.
+                #       aliases["used"].add(module_name)
                 mappings[from_mapping] = modified_mapping
     return mappings
 
@@ -815,4 +818,5 @@ if __name__ == "__main__":
     # process_folder(folder, recursive=True, write=True)
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/rvplugins/tags/0.19.4/src", recursive=True, write=True, skip_lineno=True, tometh_flag=True)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/crowdpipeline/trunk/src/python/crowdpipeline/metadata/crowd_metadata_editor/UI.py", write=True, skip_lineno=True, tometh_flag=True)
-    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ddqt/trunk/src/python/ddqt/gui/SnapshotModel.py", write=False, tometh_flag=True)
+    process_file("/dd/home/ahughes/qt_crap/packrat_app.py", write_mode=WriteMode.OVERWRITE, tometh_flag=True)
+    # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ddqt/trunk/src/python/ddqt/gui/SnapshotModel.py", write=False, tometh_flag=True)
