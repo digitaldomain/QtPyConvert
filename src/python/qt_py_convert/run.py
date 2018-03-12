@@ -515,11 +515,11 @@ def misplaced_members(aliases, mappings):
                     dest, _ = members[source]
                 for current_key in mappings:
                     if mappings[current_key] == source:
-                        change(
-                            msg=_msg,
-                            logger=MAIN_LOG,
-                            node=mappings[current_key],
-                            replacement=dest,
+                        MAIN_LOG.debug(
+                            _msg.format(
+                                original=mappings[current_key],
+                                replacement=dest
+                            )
                         )
                         mappings[current_key] = dest
                         replaced = True
