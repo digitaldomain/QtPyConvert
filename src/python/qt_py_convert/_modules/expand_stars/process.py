@@ -46,7 +46,7 @@ class Processes(object):
         if levels is None:
             levels = []
         try:
-            _temp = __import__(binding, globals(), locals(), levels)
+            _temp = __import__(binding, fromlist=levels)
         except ImportError as err:
             strerr = str(err).replace("No module named", "")
 
