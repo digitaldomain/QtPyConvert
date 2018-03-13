@@ -65,7 +65,7 @@ def color_text(color=ANSI.colors.white, text="", style=ANSI.styles.plain):
     """
     if not SUPPORTS_COLOR:
         return text
-    return "\033[{style};{color}m{message}\033[0m".format(
+    return "\033[{color};{style}m{message}\033[0m".format(
         style=style, color=color, message=text
     )
 
