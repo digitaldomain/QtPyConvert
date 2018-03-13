@@ -98,7 +98,7 @@ class Processes(object):
 
             change(
                 logger=EXPAND_STARS_LOG,
-                node=star,
+                node=star.parent,
                 replacement=text,
                 skip_lineno=skip_lineno
             )
