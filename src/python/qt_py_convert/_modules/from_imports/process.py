@@ -8,6 +8,7 @@ from qt_py_convert.log import get_logger
 
 
 FROM_IMPORTS_LOG = get_logger("from_imports")
+IGNORED_IMPORT_TARGETS = ("right_parenthesis", "left_parenthesis")
 
 
 class Processes(object):
@@ -63,6 +64,8 @@ class Processes(object):
                 continue
 
             for _from_as_name in node.parent.targets:
+                if _from_as_name.type in IGNORED_IMPORT_TARGETS:
+                    continue
                 if _from_as_name.type == "star":
                     # TODO: Make this a flag and make use the expand module.
                     _, star_mappings = stars_process(
