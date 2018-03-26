@@ -41,7 +41,7 @@ def chunk_str(msg, sep=(" ", ".", ",", "(")):
     parts = [(part, sep[0]) for part in msg.split(sep[0])]
     out = []
     if len(sep) <= 1:
-        return parts
+        return [Chunk(p[0], p[1]) for p in parts]
     for part, prev_split in parts:
         resulting_parts = chunk_str(part, sep=sep[1:])
         if len(resulting_parts) == 1:
@@ -89,12 +89,16 @@ def _equalize(first, second, sep=(" ", ".", ",", "(")):
                     second_chunk_list.insert(
                         second_loc - 1, Chunk("", "")
                     )
+            while len(second_chunk_list) < len(first_chunk_list):
+                second_chunk_list.append(Chunk("", ""))
         else:
             for first_loc, second_loc in matches:
                 for _ in range(second_loc - first_loc):
                     first_chunk_list.insert(
                         first_loc - 1, Chunk("", "")
                     )
+            while len(first_chunk_list) < len(second_chunk_list):
+                first_chunk_list.append(Chunk("", ""))
     else:
         if not len(first_chunk_list) == len(second_chunk_list):
             if len(first_chunk_list) > len(second_chunk_list):
