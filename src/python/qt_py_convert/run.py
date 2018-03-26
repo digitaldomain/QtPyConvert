@@ -13,7 +13,7 @@ from qt_py_convert._modules import psep0101
 from qt_py_convert._modules import unsupported
 from qt_py_convert.general import merge_dict, _custom_misplaced_members, \
     ALIAS_DICT, change, UserInputRequiredException, ANSI,  \
-    __suplimentary_bindings__, WriteMode
+    __suplimentary_bindings__, WriteMode, is_py, build_exc
 from qt_py_convert.color import color_text
 from qt_py_convert.log import get_logger
 
@@ -599,64 +599,6 @@ def run(text, skip_lineno=False, tometh_flag=False):
     return aliases, mappings, dumps
 
 
-def _is_py(path):
-    """
-    My helper method for process_folder to decide if a file is a python file
-    or not.
-    It is currently checking the file extension and then falling back to
-    checking the first line of the file.
-
-    :param path: The filepath to the file that we are querying.
-    :type path: str
-    :return: True if it's a python file. False otherwise
-    :rtype: bool
-    """
-    if path.endswith(".py"):
-        return True
-    elif not os.path.splitext(path)[1] and os.path.isfile(path):
-        with open(path, "rb") as fh:
-            if "python" in fh.readline():
-                return True
-    return False
-
-
-def _build_exc(error, line_data):
-    """
-    raises a UserInputRequiredException from an instance of an ErrorClass.
-
-    :param error: The ErrorClass instance that was created somewhere in
-        qt_py_convert.
-    :type error: qt_py_convert.general.ErrorClass
-    :param line_data: List of lines from the file we are working on.
-    :type line_data: List[str...]
-    """
-    line_no_start = error.row
-    line_no_end = error.row_to + 1
-    lines = line_data[line_no_start:line_no_end]
-    line = "".join(line_data[line_no_start:line_no_end])
-
-    line_no = "Line"
-    if len(lines) > 1:
-        line_no += "s "
-        line_no += "%d-%d" % (line_no_start + 1, line_no_end)
-    else:
-        line_no += " %d" % (line_no_start + 1)
-
-    template = """
-{line_no}
-{line}
-{reason}
-"""
-    raise UserInputRequiredException(color_text(
-        text=template.format(
-            line_no=line_no,
-            line=color_text(text=line.rstrip("\n"), color=ANSI.colors.gray),
-            reason=color_text(text=error.reason, color=ANSI.colors.red),
-        ),
-        color=ANSI.colors.red,
-    ))
-
-
 def process_file(fp, write_mode=None, write_args=None, skip_lineno=False, tometh_flag=False):
     """
     One of the entry-point functions in qt_py_convert.
@@ -681,7 +623,7 @@ def process_file(fp, write_mode=None, write_args=None, skip_lineno=False, tometh
         signature to PyQt4's apiv1.0 ones.
     :type tometh_flag: bool
     """
-    if not _is_py(fp):
+    if not is_py(fp):
         MAIN_LOG.debug(
             "\tSkipping \"{fp}\"... It does not appear to be a python file."
             .format(fp=fp)
@@ -739,7 +681,7 @@ def process_file(fp, write_mode=None, write_args=None, skip_lineno=False, tometh
         ))
         for error in ALIAS_DICT["errors"]:
             try:
-                _build_exc(error, lines)
+                build_exc(error, lines)
             except UserInputRequiredException as err:
                 MAIN_LOG.error(str(err))
 
@@ -818,5 +760,5 @@ if __name__ == "__main__":
     # process_folder(folder, recursive=True, write=True)
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/rvplugins/tags/0.19.4/src", recursive=True, write=True, skip_lineno=True, tometh_flag=True)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/crowdpipeline/trunk/src/python/crowdpipeline/metadata/crowd_metadata_editor/UI.py", write=True, skip_lineno=True, tometh_flag=True)
-    process_file("/dd/home/ahughes/qt_crap/packrat_app.py", write_mode=WriteMode.OVERWRITE, tometh_flag=True)
+    process_file("/dd/home/ahughes/qt_crap/textureView.py", write_mode=WriteMode.OVERWRITE, tometh_flag=True)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ddqt/trunk/src/python/ddqt/gui/SnapshotModel.py", write=False, tometh_flag=True)
