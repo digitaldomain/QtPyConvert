@@ -1,5 +1,5 @@
 from qt_py_convert.run import run
-from qt_py_convert.general import _highlight_diffs
+from qt_py_convert.general import highlight_diffs
 
 
 def check(source, dest):
@@ -8,8 +8,30 @@ def check(source, dest):
         assert dumps == dest
     except AssertionError as err:
         raise AssertionError("\n\"%s\"\n!=\n\"%s\"\n" %
-            _highlight_diffs(dumps, dest)
+            highlight_diffs(dumps, dest)
         )
+
+
+def test_wrapInstance_call_pyqt4():
+    check(
+        """from PyQt4 import QtGui
+import sip
+self.maya_view_widget = sip.wrapinstance(long(self.maya_view.widget()), QtGui.QWidget)""",
+        """from Qt import QtCompat, QtWidgets
+self.maya_view_widget = QtCompat.wrapInstance(long(self.maya_view.widget()), QtWidgets.QWidget)
+"""
+    )
+
+
+def test_wrapInstance_call_pyside():
+    check(
+        """from PySide import QtGui
+import shiboken
+self.maya_view_widget = shiboken.wrapInstance(long(self.maya_view.widget()), QtGui.QWidget)""",
+        """from Qt import QtCompat, QtWidgets
+self.maya_view_widget = QtCompat.wrapInstance(long(self.maya_view.widget()), QtWidgets.QWidget)
+"""
+    )
 
 
 def test_qapplication_translate_basic():
