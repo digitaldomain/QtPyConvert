@@ -359,6 +359,20 @@ def test_connect_old_style_no_owner():
     )
 
 
+def test_connect_for_refchef():
+    check_connection(
+        """self.connect(self.thumbs_panel, QtCore.SIGNAL('loadImage'), self.preview_panel.loadImage)""",
+        """self.thumbs_panel.loadImage.connect(self.preview_panel.loadImage)"""
+    )
+
+
+def test_connect_for_refchef2():
+    check_connection(
+        """self.connect(self.dir_panel, QtCore.SIGNAL("dirClicked(unicode, bool)"), self.thumbs_panel.loadFromDir)""",
+        """self.dir_panel.dirClicked.connect(self.thumbs_panel.loadFromDir)"""
+    )
+
+
 if __name__ == "__main__":
     import traceback
     _tests = filter(
