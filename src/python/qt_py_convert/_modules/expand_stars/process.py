@@ -3,7 +3,7 @@ The imports module is designed to fix the import statements.
 """
 import traceback
 
-from qt_py_convert.general import ALIAS_DICT, change
+from qt_py_convert.general import ALIAS_DICT, change, supported_binding
 from qt_py_convert.color import color_text, ANSI
 from qt_py_convert.log import get_logger
 
@@ -123,7 +123,7 @@ def star_process(store):
     """
     def filter_function(value):
         for target in value.parent.targets:
-            if target.type == "star":
+            if target.type == "star" and supported_binding(value.dumps()):
                 store[Processes.EXPAND_STR].add(value)
                 return True
 
