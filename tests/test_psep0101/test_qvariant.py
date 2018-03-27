@@ -1,6 +1,6 @@
 from qt_py_convert._modules.psep0101 import process
 from qt_py_convert.external.redbaron import redbaron
-from qt_py_convert.general import AliasDict
+from qt_py_convert.general import ALIAS_DICT
 
 
 def check(source, dest):
@@ -51,8 +51,8 @@ def test_qvariant_error_basic():
         s,
         s,
     )
-    assert len(AliasDict["errors"]) == 1,\
-        "There are %d errors, there should be 1" % len(AliasDict["errors"])
+    assert len(ALIAS_DICT["errors"]) == 1,\
+        "There are %d errors, there should be 1" % len(ALIAS_DICT["errors"])
 
 
 if __name__ == "__main__":
