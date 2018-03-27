@@ -1,5 +1,5 @@
 from qt_py_convert.run import run
-from qt_py_convert.general import _highlight_diffs
+from qt_py_convert.diff import highlight_diffs
 
 
 def check(source, dest):
@@ -8,7 +8,7 @@ def check(source, dest):
         assert dumps == dest
     except AssertionError as err:
         raise AssertionError("\n\"%s\"\n!=\n\"%s\"\n" %
-            _highlight_diffs(dumps, dest)
+            highlight_diffs(dumps, dest)
         )
 
 
@@ -38,6 +38,23 @@ x = 42""",
 
 l = QtWidgets.QLineEdit()
 x = 42"""
+    )
+
+
+def test_refchef_bug_replacement():
+    check(
+        """from PyQt4.QtCore import *
+
+QCoreApplication.setOrganizationName("Digital Domain")
+self.connect(self.thumbs_panel, SIGNAL('loadImage'), self.preview_panel.loadImage)
+self.connect(self.dir_panel, SIGNAL("dirClicked(QString, bool)"), self.thumbs_panel.loadFromDir)
+""",
+        """from Qt import QtCore
+
+QtCore.QCoreApplication.setOrganizationName("Digital Domain")
+self.thumbs_panel.loadImage.connect(self.preview_panel.loadImage)
+self.dir_panel.dirClicked.connect(self.thumbs_panel.loadFromDir)
+"""
     )
 
 
