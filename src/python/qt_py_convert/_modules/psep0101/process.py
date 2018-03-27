@@ -329,7 +329,7 @@ def psep_process(store):
         r"QStringRef(?:[^\w]+(?:.*?))+?$"
     )
     _qsignal_expression = re.compile(
-        r"(?:connect|disconnect|emit).*QtCore\.SIGNAL", re.DOTALL
+        r"(?:connect|disconnect|emit).*(QtCore\.)?SIGNAL", re.DOTALL
     )
     _qvariant_expression = re.compile(
         r"^QVariant(?:[^\w]+(?:.*?))?$"
