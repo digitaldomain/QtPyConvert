@@ -533,7 +533,7 @@ def process_file(fp, write_mode=None, write_args=None, skip_lineno=False, tometh
         lines = fh.readlines()
         source = "".join(lines)
 
-    MAIN_LOG.info("Processing {path}\n{line}".format(path=fp, line="-"*50))
+    MAIN_LOG.info("{line}\nProcessing {path}".format(path=fp, line="-"*50))
     try:
         aliases, mappings, modified_code = run(
             source,
@@ -659,6 +659,6 @@ if __name__ == "__main__":
     # folder = os.path.abspath("../../../../tests/sources")
     # process_folder(folder, recursive=True, write=True)
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/rvplugins/tags/0.19.4/src", recursive=True, write=True, skip_lineno=True, tometh_flag=True)
-    # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/crowdpipeline/trunk/src/python/crowdpipeline/metadata/crowd_metadata_editor/UI.py", write=True, skip_lineno=True, tometh_flag=True)
-    process_file("/dd/home/ahughes/qt_crap/textureView.py", write_mode=WriteMode.OVERWRITE, tometh_flag=True)
+    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/refchef/branches/qt_compat/src/python/refchef/RCGui/thumbmodel.py", write_mode=WriteMode.OVERWRITE, tometh_flag=True)
+    # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/refchef/branches/qt_compat/src/", write_mode=WriteMode.OVERWRITE, tometh_flag=True, recursive=True)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ddqt/trunk/src/python/ddqt/gui/SnapshotModel.py", write=False, tometh_flag=True)
