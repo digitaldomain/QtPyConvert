@@ -1,24 +1,24 @@
 from qt_py_convert._modules.psep0101 import _qsignal
 
 
-def check_connection(source, dest):
-    convert = _qsignal.process_connect(source)
+def check_connection(source, dest, explicit=False):
+    convert = _qsignal.process_connect(source, explicit=explicit)
     try:
         assert convert == dest
     except AssertionError as err:
         raise AssertionError("%s is not %s" % (convert, dest))
 
 
-def check_emit(source, dest):
-    convert = _qsignal.process_emit(source)
+def check_emit(source, dest, explicit=False):
+    convert = _qsignal.process_emit(source, explicit=explicit)
     try:
         assert convert == dest
     except AssertionError as err:
         raise AssertionError("%s is not %s" % (convert, dest))
 
 
-def check_disconnect(source, dest):
-    convert = _qsignal.process_disconnect(source)
+def check_disconnect(source, dest, explicit=False):
+    convert = _qsignal.process_disconnect(source, explicit=explicit)
     try:
         assert convert == dest
     except AssertionError as err:
@@ -405,6 +405,117 @@ def test_emit_for_refchef5():
     check_emit(
         """QObject.emit(self, SIGNAL("dataChanged(const QModelIndex&, const QModelIndex &)"), index, index)""",
         """self.dataChanged.emit(index, index)"""
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Explicit signal testing
+# --------------------------------------------------------------------------- #
+def test_emit_for_refchef5_EXPLICIT():
+    check_emit(
+        """QObject.emit(self, SIGNAL("dataChanged(const QModelIndex&, const QModelIndex &)"), index, index)""",
+        """self.dataChanged[QModelIndex, QModelIndex].emit(index, index)""",
+        explicit=True
+    )
+
+
+def test_connect_for_refchef2_EXPLICIT():
+    check_connection(
+        """self.connect(self.dir_panel, QtCore.SIGNAL("dirClicked(unicode, bool)"), self.thumbs_panel.loadFromDir)""",
+        """self.dir_panel.dirClicked[unicode, bool].connect(self.thumbs_panel.loadFromDir)""",
+        explicit=True
+    )
+
+
+def test_connect_old_style_no_owner_EXPLICIT():
+    check_connection(
+        """self.__shot_combo.connect(QtCore.SIGNAL("currentIndexChanged(int)"),
+                              self.__updateLinkVersionLabel)""",
+        """self.__shot_combo.currentIndexChanged[int].connect(self.__updateLinkVersionLabel)""",
+        explicit=True
+    )
+    check_connection(
+        """action.connect(QtCore.SIGNAL("triggered()"), self.selectPatches)""",
+        """action.triggered.connect(self.selectPatches)""",
+        explicit=True
+    )
+    check_connection(
+        """channel_all_check.connect(QtCore.SIGNAL("stateChanged(int)"),
+                              self.__updateChannelStates)""",
+        """channel_all_check.stateChanged[int].connect(self.__updateChannelStates)""",
+        explicit=True
+    )
+
+
+def test_connection_single_arg_ref_EXPLICIT():
+    check_connection(
+        'self.connect(self.filterBox, QtCore.SIGNAL("textChanged(QString &)"), self.slot_filterBoxEdited)',
+        "self.filterBox.textChanged[str].connect(self.slot_filterBoxEdited)",
+        explicit=True
+    )
+
+
+def test_connection_single_arg_const_EXPLICIT():
+    check_connection(
+        'self.connect(self.filterBox, QtCore.SIGNAL("textChanged(const QString)"), self.slot_filterBoxEdited)',
+        "self.filterBox.textChanged[str].connect(self.slot_filterBoxEdited)",
+        explicit=True
+    )
+
+
+def test_connection_single_arg_EXPLICIT():
+    check_connection(
+        'self.connect(self.filterBox, QtCore.SIGNAL("textChanged(QString)"), self.slot_filterBoxEdited)',
+        "self.filterBox.textChanged[str].connect(self.slot_filterBoxEdited)",
+        explicit=True
+    )
+
+
+def test_connection_texturepipeline_whitespace_EXPLICIT():
+    check_connection(
+        '''self.seq_combo.connect  (QtCore.SIGNAL("currentIndexChanged(int)"),
+                                 self._updateShot)''',
+        'self.seq_combo.currentIndexChanged[int].connect(self._updateShot)',
+        explicit=True
+    )
+
+
+def test_connection_multi_arg_EXPLICIT():
+    check_connection(
+        'self.connect(self.filterBox, QtCore.SIGNAL("textChanged(const QString &, QVariant &)"), self.slot_filterBoxEdited)',
+        "self.filterBox.textChanged[str, object].connect(self.slot_filterBoxEdited)",
+        explicit=True
+    )
+
+def test_connection_multi_arg_alt_EXPLICIT():
+    check_connection(
+        'self.connect(self.filterBox, QtCore.SIGNAL("textChanged(const QStringList &, QVariant &)"), self.slot_filterBoxEdited)',
+        "self.filterBox.textChanged[list, object].connect(self.slot_filterBoxEdited)",
+        explicit=True
+    )
+
+
+def test_connection_qobject5_EXPLICIT():
+    check_connection(
+        "QtCore.QObject.connect(self.ui.treeView.selectionModel(), QtCore.SIGNAL('selectionChanged(QItemSelection, QItemSelection)'), self.setViewerLayer)",
+        "self.ui.treeView.selectionModel().selectionChanged[QItemSelection, QItemSelection].connect(self.setViewerLayer)",
+        explicit=True
+    )
+
+
+def test_connection_qobject7_EXPLICIT():
+    check_connection(
+        "QtCore.QObject.connect(self.ui.checkBox_inViewer, QtCore.SIGNAL('stateChanged(int)'), self.setViewerLayer)",
+        "self.ui.checkBox_inViewer.stateChanged[int].connect(self.setViewerLayer)",
+        explicit=True
+    )
+
+
+def test_connection_qobject8_EXPLICIT():
+    check_connection(
+        "QtCore.QObject.connect(self.ui.checkBox_addWrites, QtCore.SIGNAL('stateChanged(int)'), self.togglePath)",
+        "self.ui.checkBox_addWrites.stateChanged[int].connect(self.togglePath)",
+        explicit=True
     )
 
 
