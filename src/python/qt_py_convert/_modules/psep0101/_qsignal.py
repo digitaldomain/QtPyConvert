@@ -37,7 +37,11 @@ def _disconnect_repl(match_obj):
 def _emit_repl(match_obj):
     template = r"{owner}.{signal}.emit({args})"
     groups = match_obj.groupdict()
-    # groups["args"] = parse_args(groups["args"])
+
+    if "owner" not in groups or not groups["owner"]:
+        template = template.replace("{owner}", "{root}")
+
+    groups["args"] = groups["args"] or ""
     return template.format(**groups)
 
 
@@ -100,9 +104,16 @@ def process_disconnect(function_str):
 
 def process_emit(function_str):
     SIGNAL_RE = re.compile(
-        r"(?P<owner>[\w\.]+)?\.emit(?:\s+)?\((?:[\s\n]+)?(?:QtCore\.)?SIGNAL(?:\s+)?\((?:[\s\n]+)?[\"\'](?P<signal>\w+)(?:\s+)?\((?P<arg_types>.*?)(?:\s+)?\)[\"\'](?:[\s\n]+)?\)(?:[\s\n]+)?(?:,(?:[\s\n]+)?)?(?P<args>.*?)(?:\s+)?\)"
+        r"""
+(?P<root>[\w\.]+)?\.emit(?:\s+)?\((?:[\s\n]+)?
+(?:(?P<owner>.*>?),(?:[\s\n]+)?)?
+(?:QtCore\.)?SIGNAL(?:\s+)?(?:\s+)?\((?:[\s\n]+)?(?:_fromUtf8(?:\s+)?\()?(?:[\s\n]+)?[\'\"](?P<signal>\w+)(?:(?:\s+)?\((?P<signal_args>.*?)\))?[\'\"](?:[\s\n]+)?\)?(?:[\s\n]+)?\)
+
+  # Getting the args.
+(?:,(?:[\s\n]+)?(?:[\s\n]+)?(?P<args>.*)
+(?:\s+)?)?(?:[\s\n]+)?(?:\s+)?\)""",
+        re.VERBOSE
     )
-    match = SIGNAL_RE.search(function_str)
     replacement_str = SIGNAL_RE.sub(
         _emit_repl,
         function_str

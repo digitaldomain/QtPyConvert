@@ -373,6 +373,41 @@ def test_connect_for_refchef2():
     )
 
 
+def test_emit_for_refchef():
+    check_emit(
+        """self.emit(SIGNAL('imageLoadInterrupted'))""",
+        """self.imageLoadInterrupted.emit()"""
+    )
+
+
+def test_emit_for_refchef2():
+    check_emit(
+        """self.emit(SIGNAL('imageLoaded'), self.image, self.is_linear, self.is_float)""",
+        """self.imageLoaded.emit(self.image, self.is_linear, self.is_float)"""
+    )
+
+
+def test_emit_for_refchef3():
+    check_emit(
+        """self.emit(SIGNAL('loadFromData'), data)""",
+        """self.loadFromData.emit(data)"""
+    )
+
+
+def test_emit_for_refchef4():
+    check_emit(
+        """self.emit(SIGNAL('itemClicked'), self.model().at(index.row()))""",
+        """self.itemClicked.emit(self.model().at(index.row()))"""
+    )
+
+
+def test_emit_for_refchef5():
+    check_emit(
+        """QObject.emit(self, SIGNAL("dataChanged(const QModelIndex&, const QModelIndex &)"), index, index)""",
+        """self.dataChanged.emit(index, index)"""
+    )
+
+
 if __name__ == "__main__":
     import traceback
     _tests = filter(
