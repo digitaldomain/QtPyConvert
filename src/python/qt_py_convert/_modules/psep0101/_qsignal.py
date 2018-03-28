@@ -9,7 +9,7 @@ import re
 from qt_py_convert._modules.psep0101._c_args import parse_args
 
 
-def _connect_repl(match_obj):
+def _connect_repl(match_obj, explicit=False):
     template = r"{owner}.{signal}.connect({slot})"
     groups = match_obj.groupdict()
     if "strslot" in groups and groups["strslot"]:
@@ -20,32 +20,42 @@ def _connect_repl(match_obj):
     if "owner" not in groups or not groups["owner"]:
         template = template.replace("{owner}", "{root}")
 
-    groups["args"] = parse_args(groups["args"] or "")
+    if "signal_args" in groups and groups["signal_args"]:
+        groups["signal_args"] = parse_args(groups["signal_args"] or "")
+        if explicit:
+            template = template.replace("{signal}", "{signal}[{signal_args}]")
     return template.format(**groups)
 
 
-def _disconnect_repl(match_obj):
+def _disconnect_repl(match_obj, explicit=False):
     template = r"{owner}.{signal}.disconnect({slot})"
     groups = match_obj.groupdict()
     if "strslot" in groups and groups["strslot"]:
         template = template.replace("{slot}", "{root}.{strslot}")
 
-    groups["args"] = parse_args(groups["args"] or "")
+    if "signal_args" in groups and groups["signal_args"]:
+        groups["signal_args"] = parse_args(groups["signal_args"] or "")
+        if explicit:
+            template = template.replace("{signal}", "{signal}[{signal_args}]")
     return template.format(**groups)
 
 
-def _emit_repl(match_obj):
+def _emit_repl(match_obj, explicit=False):
     template = r"{owner}.{signal}.emit({args})"
     groups = match_obj.groupdict()
 
     if "owner" not in groups or not groups["owner"]:
         template = template.replace("{owner}", "{root}")
 
+    if groups["signal_args"] and explicit:
+        groups["signal_args"] = parse_args(groups["signal_args"])
+        template = template.replace("{signal}", "{signal}[{signal_args}]")
+
     groups["args"] = groups["args"] or ""
     return template.format(**groups)
 
 
-def process_connect(function_str):
+def process_connect(function_str, explicit=False):
     SIGNAL_RE = re.compile(
         r"""
 (?P<root>[\w\.]+)?\.connect(?:\s+)?\((?:[\s\n]+)?
@@ -54,7 +64,7 @@ def process_connect(function_str):
 # _connect_repl has been updated to use root if owner is missing.
 (?:(?P<owner>.*?),(?:[\s\n]+)?)?   
 
-(?:QtCore\.)?SIGNAL(?:\s+)?(?:\s+)?\((?:[\s\n]+)?(?:_fromUtf8(?:\s+)?\()?(?:[\s\n]+)?[\'\"](?P<signal>\w+)(?:(?:\s+)?\((?P<args>.*?)\))?[\'\"](?:[\s\n]+)?\)?(?:[\s\n]+)?\),(?:[\s\n]+)?
+(?:QtCore\.)?SIGNAL(?:\s+)?(?:\s+)?\((?:[\s\n]+)?(?:_fromUtf8(?:\s+)?\()?(?:[\s\n]+)?[\'\"](?P<signal>\w+)(?:(?:\s+)?\((?P<signal_args>.*?)\))?[\'\"](?:[\s\n]+)?\)?(?:[\s\n]+)?\),(?:[\s\n]+)?
 
   # Either QtCore.SLOT("thing()") or an actual callable in scope.
   # If it is the former, we are assuming that the str name is owned by root.
@@ -66,7 +76,7 @@ def process_connect(function_str):
     )
     # match = SIGNAL_RE.search(function_str)
     replacement_str = SIGNAL_RE.sub(
-        _connect_repl,
+        lambda match: _connect_repl(match, explicit=explicit),
         function_str
     )
     if replacement_str != function_str:
@@ -74,7 +84,7 @@ def process_connect(function_str):
     return function_str
 
 
-def process_disconnect(function_str):
+def process_disconnect(function_str, explicit=False):
     """
     'self.disconnect(self, QtCore.SIGNAL("textChanged()"), self.slot_textChanged)',
     "self.textChanged.disconnect(self.slot_textChanged)"
@@ -83,7 +93,7 @@ def process_disconnect(function_str):
         r"""
 (?P<root>[\w\.]+)?\.disconnect(?:\s+)?\((?:[\s\n]+)?
 (?P<owner>.*?),(?:[\s\n]+)?
-(?:QtCore\.)?SIGNAL(?:\s+)?\((?:[\s\n]+)?(?:_fromUtf8(?:\s+)?(?:\s+)?\()?(?:[\s\n]+)?[\'\"](?P<signal>\w+)(?:\s+)?\((?P<args>.*?)(?:\s+)?\)[\'\"](?:[\s\n]+)?\)?(?:[\s\n]+)?\),(?:[\s\n]+)?
+(?:QtCore\.)?SIGNAL(?:\s+)?\((?:[\s\n]+)?(?:_fromUtf8(?:\s+)?(?:\s+)?\()?(?:[\s\n]+)?[\'\"](?P<signal>\w+)(?:\s+)?\((?P<signal_args>.*?)(?:\s+)?\)[\'\"](?:[\s\n]+)?\)?(?:[\s\n]+)?\),(?:[\s\n]+)?
 
   # Either QtCore.SLOT("thing()") or an actual callable in scope.
   # If it is the former, we are assuming that the str name is owned by root.
@@ -94,7 +104,7 @@ def process_disconnect(function_str):
         re.VERBOSE
     )
     replacement_str = SIGNAL_RE.sub(
-        _disconnect_repl,
+        lambda match: _disconnect_repl(match, explicit=explicit),
         function_str
     )
     if replacement_str != function_str:
@@ -102,7 +112,7 @@ def process_disconnect(function_str):
     return function_str
 
 
-def process_emit(function_str):
+def process_emit(function_str, explicit=False):
     SIGNAL_RE = re.compile(
         r"""
 (?P<root>[\w\.]+)?\.emit(?:\s+)?\((?:[\s\n]+)?
@@ -115,7 +125,7 @@ def process_emit(function_str):
         re.VERBOSE
     )
     replacement_str = SIGNAL_RE.sub(
-        _emit_repl,
+        lambda match: _emit_repl(match, explicit=explicit),
         function_str
     )
     if replacement_str != function_str:
