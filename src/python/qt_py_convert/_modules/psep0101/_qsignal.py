@@ -52,7 +52,7 @@ def process_connect(function_str):
 
 # Making the owner optional. 
 # _connect_repl has been updated to use root if owner is missing.
-(?:(?P<owner>.*>?),(?:[\s\n]+)?)?   
+(?:(?P<owner>.*?),(?:[\s\n]+)?)?   
 
 (?:QtCore\.)?SIGNAL(?:\s+)?(?:\s+)?\((?:[\s\n]+)?(?:_fromUtf8(?:\s+)?\()?(?:[\s\n]+)?[\'\"](?P<signal>\w+)(?:(?:\s+)?\((?P<args>.*?)\))?[\'\"](?:[\s\n]+)?\)?(?:[\s\n]+)?\),(?:[\s\n]+)?
 
@@ -82,7 +82,7 @@ def process_disconnect(function_str):
     SIGNAL_RE = re.compile(
         r"""
 (?P<root>[\w\.]+)?\.disconnect(?:\s+)?\((?:[\s\n]+)?
-(?P<owner>.*>?),(?:[\s\n]+)?
+(?P<owner>.*?),(?:[\s\n]+)?
 (?:QtCore\.)?SIGNAL(?:\s+)?\((?:[\s\n]+)?(?:_fromUtf8(?:\s+)?(?:\s+)?\()?(?:[\s\n]+)?[\'\"](?P<signal>\w+)(?:\s+)?\((?P<args>.*?)(?:\s+)?\)[\'\"](?:[\s\n]+)?\)?(?:[\s\n]+)?\),(?:[\s\n]+)?
 
   # Either QtCore.SLOT("thing()") or an actual callable in scope.
@@ -106,7 +106,7 @@ def process_emit(function_str):
     SIGNAL_RE = re.compile(
         r"""
 (?P<root>[\w\.]+)?\.emit(?:\s+)?\((?:[\s\n]+)?
-(?:(?P<owner>.*>?),(?:[\s\n]+)?)?
+(?:(?P<owner>.*?),(?:[\s\n]+)?)?
 (?:QtCore\.)?SIGNAL(?:\s+)?(?:\s+)?\((?:[\s\n]+)?(?:_fromUtf8(?:\s+)?\()?(?:[\s\n]+)?[\'\"](?P<signal>\w+)(?:(?:\s+)?\((?P<signal_args>.*?)\))?[\'\"](?:[\s\n]+)?\)?(?:[\s\n]+)?\)
 
   # Getting the args.
