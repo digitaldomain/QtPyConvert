@@ -1,8 +1,19 @@
+try:
+    import __builtin__ as builtins
+except ImportError:
+    import builtins
+
 def pythonize_arg(arg):
-    if "[" in arg or "list" in arg.lower():
+    if arg in dir(builtins):
+        return arg
+    elif "[" in arg or "list" in arg.lower():
         return "list"
     elif arg == "QString":
         return "str"
+    elif arg == "QVariant":
+        return "object"
+    elif arg.startswith("Q"):
+        return arg
     else:
         return "object"
 
