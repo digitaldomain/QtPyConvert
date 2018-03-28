@@ -29,7 +29,7 @@ text_type = str if sys.version_info[0] == 3 else unicode
 class Processes(object):
     """Processes class for psesp0101"""
     @staticmethod
-    def _process_qvariant(red, objects, skip_lineno=False):
+    def _process_qvariant(red, objects, skip_lineno=False, **kwargs):
         """
         _process_qvariant is designed to replace QVariant code.
 
@@ -91,7 +91,7 @@ You will probably want to remove the usage of this entirely."""
                     node.parent.replace(changed.strip(" "))
 
     @staticmethod
-    def _process_qstring(red, objects, skip_lineno=False):
+    def _process_qstring(red, objects, skip_lineno=False, **kwargs):
         """
         _process_qstring is designed to replace QString code.
 
@@ -121,7 +121,7 @@ You will probably want to remove the usage of this entirely."""
                 node.parent.replace(changed)
 
     @staticmethod
-    def _process_qstringlist(red, objects, skip_lineno=False):
+    def _process_qstringlist(red, objects, skip_lineno=False, **kwargs):
         """
         _process_qstringlist is designed to replace QStringList code.
 
@@ -153,7 +153,7 @@ You will probably want to remove the usage of this entirely."""
                 node.parent.replace(changed)
 
     @staticmethod
-    def _process_qchar(red, objects, skip_lineno=False):
+    def _process_qchar(red, objects, skip_lineno=False, **kwargs):
         """
         _process_qchar is designed to replace QChar code.
 
@@ -183,7 +183,7 @@ You will probably want to remove the usage of this entirely."""
                 node.parent.replace(changed)
 
     @staticmethod
-    def _process_to_methods(red, objects, skip_lineno=False):
+    def _process_to_methods(red, objects, skip_lineno=False, **kwargs):
         """
         Attempts at fixing the "toString" "toBool" "toPyObject" etc
         PyQt4-apiv1.0 helper methods.
@@ -210,7 +210,7 @@ You will probably want to remove the usage of this entirely."""
                     continue
 
     @staticmethod
-    def _process_qsignal(red, objects, skip_lineno=False):
+    def _process_qsignal(red, objects, skip_lineno=False, explicit_signals_flag=False):
         """
         _process_qsignal is designed to replace QSignal code.
         It calls out to the _qsignal module and can fix disconnects, connects,
@@ -227,7 +227,7 @@ You will probably want to remove the usage of this entirely."""
             raw = node.parent.dumps()
 
             if "disconnect" in raw:
-                changed = _qsignal.process_disconnect(raw)
+                changed = _qsignal.process_disconnect(raw, explicit=explicit_signals_flag)
                 if changed != raw:
                     change(
                         logger=PSEP_LOG,
@@ -239,7 +239,7 @@ You will probably want to remove the usage of this entirely."""
                     node.parent.replace(changed)
                     continue
             if "connect" in raw:
-                changed = _qsignal.process_connect(raw)
+                changed = _qsignal.process_connect(raw, explicit=explicit_signals_flag)
                 if changed != raw:
                     change(
                         logger=PSEP_LOG,
@@ -250,7 +250,7 @@ You will probably want to remove the usage of this entirely."""
                     node.parent.replace(changed)
                     continue
             if "emit" in raw:
-                changed = _qsignal.process_emit(raw)
+                changed = _qsignal.process_emit(raw, explicit=explicit_signals_flag)
                 if changed != raw:
 
                     change(
@@ -263,7 +263,7 @@ You will probably want to remove the usage of this entirely."""
                     continue
 
     @staticmethod
-    def _process_qstringref(red, objects, skip_lineno=False):
+    def _process_qstringref(red, objects, skip_lineno=False, **kwargs):
         """
         _process_qstringref is designed to replace QStringRefs
 
@@ -371,7 +371,7 @@ def psep_process(store):
     return filter_function
 
 
-def process(red, skip_lineno=False, tometh_flag=False, **kwargs):
+def process(red, skip_lineno=False, tometh_flag=False, explicit_signals_flag=False, **kwargs):
     """
     process is the main function for the psep0101 process.
 
@@ -419,5 +419,6 @@ def process(red, skip_lineno=False, tometh_flag=False, **kwargs):
             getattr(Processes, issue)(
                 red,
                 psep_issues[issue],
-                skip_lineno=skip_lineno
+                skip_lineno=skip_lineno,
+                explicit_signals_flag=explicit_signals_flag
             )
