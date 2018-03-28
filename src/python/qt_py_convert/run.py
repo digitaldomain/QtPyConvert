@@ -431,7 +431,7 @@ def _convert_body(red, aliases, mappings, skip_lineno=False):
                     # match.replace(mappings[key])
 
 
-def run(text, skip_lineno=False, tometh_flag=False):
+def run(text, skip_lineno=False, tometh_flag=False, explicit_signals_flag=False):
     """
     run is the main driver of the file. It takes the text of a file and any
     flags that you want to set.
@@ -484,7 +484,12 @@ def run(text, skip_lineno=False, tometh_flag=False):
     mappings = convert_mappings(aliases, mappings)
 
     # Convert using the psep0101 module.
-    psep0101.process(red, skip_lineno=skip_lineno, tometh_flag=tometh_flag)
+    psep0101.process(
+        red,
+        skip_lineno=skip_lineno,
+        tometh_flag=tometh_flag,
+        explicit_signals_flag=explicit_signals_flag
+    )
     _convert_body(red, aliases, mappings, skip_lineno=skip_lineno)
     _convert_root_name_imports(red, aliases, skip_lineno=skip_lineno)
     _convert_attributes(red, aliases, skip_lineno=skip_lineno)
@@ -499,7 +504,7 @@ def run(text, skip_lineno=False, tometh_flag=False):
     return aliases, mappings, dumps
 
 
-def process_file(fp, write_mode=None, write_args=None, skip_lineno=False, tometh_flag=False):
+def process_file(fp, write_mode=None, write_args=None, skip_lineno=False, tometh_flag=False, explicit_signals_flag=False):
     """
     One of the entry-point functions in qt_py_convert.
     If you are looking to process a single python file, this is your function.
@@ -538,7 +543,8 @@ def process_file(fp, write_mode=None, write_args=None, skip_lineno=False, tometh
         aliases, mappings, modified_code = run(
             source,
             skip_lineno=skip_lineno,
-            tometh_flag=tometh_flag
+            tometh_flag=tometh_flag,
+            explicit_signals_flag=explicit_signals_flag
         )
         if aliases["used"] or modified_code != source:
             if write_mode == WriteMode.STDOUT:
@@ -586,7 +592,7 @@ def process_file(fp, write_mode=None, write_args=None, skip_lineno=False, tometh
                 MAIN_LOG.error(str(err))
 
 
-def process_folder(folder, recursive=False, write_mode=None, write_args=None, skip_lineno=False, tometh_flag=False):
+def process_folder(folder, recursive=False, write_mode=None, write_args=None, skip_lineno=False, tometh_flag=False, explicit_signals_flag=False):
     """
     One of the entry-point functions in qt_py_convert.
     If you are looking to process every python file in a folder, this is your
@@ -627,7 +633,8 @@ def process_folder(folder, recursive=False, write_mode=None, write_args=None, sk
             write_mode=write_mode,
             write_args=write_args,
             skip_lineno=skip_lineno,
-            tometh_flag=tometh_flag
+            tometh_flag=tometh_flag,
+            explicit_signals_flag=explicit_signals_flag
         )
         MAIN_LOG.debug(color_text(text="-" * 50, color=ANSI.colors.black))
 
@@ -641,7 +648,8 @@ def process_folder(folder, recursive=False, write_mode=None, write_args=None, sk
             write_mode=write_mode,
             write_args=write_args,
             skip_lineno=skip_lineno,
-            tometh_flag=tometh_flag
+            tometh_flag=tometh_flag,
+            explicit_signals_flag=explicit_signals_flag
         )
 
 
@@ -659,6 +667,6 @@ if __name__ == "__main__":
     # folder = os.path.abspath("../../../../tests/sources")
     # process_folder(folder, recursive=True, write=True)
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/rvplugins/tags/0.19.4/src", recursive=True, write=True, skip_lineno=True, tometh_flag=True)
-    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/refchef/branches/qt_compat/src/python/refchef/RCGui/thumbmodel.py", write_mode=WriteMode.OVERWRITE, tometh_flag=True)
+    process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/refchef/branches/qt_compat/src/python/refchef/tagspanel.py", write_mode=WriteMode.OVERWRITE, tometh_flag=True, explicit_signals_flag=False)
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/refchef/branches/qt_compat/src/", write_mode=WriteMode.OVERWRITE, tometh_flag=True, recursive=True)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ddqt/trunk/src/python/ddqt/gui/SnapshotModel.py", write=False, tometh_flag=True)
