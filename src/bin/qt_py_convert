@@ -52,6 +52,17 @@ def parse():
              "\"toString\", \"toInt\", \"toBool\", \"toPyObject\", \"toAscii\""
              "methods that are unavailable in api2.0.",
     )
+    parser.add_argument(
+        "--explicit-signals-flag",
+        action="store_true",
+        help="EXPERIMENTAL: Modification on the api1.0 style signal conversion"
+             " logic. It will explicitly slice into the QtCore.Signal object "
+             "to find the signal with the matching signature.\n"
+             "This is a fairly unknown feature of PySide/PyQt and is usually "
+             "worked around by the developer. However, this should be safe to "
+             "turn on whichever the case.",
+    )
+
     return parser.parse_args()
 
 
