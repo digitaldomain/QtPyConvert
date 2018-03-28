@@ -85,10 +85,10 @@ You will probably want to remove the usage of this entirely."""
                     change(
                         logger=PSEP_LOG,
                         node=node.parent,
-                        replacement=changed,
+                        replacement=changed.strip(" "),
                         skip_lineno=skip_lineno,
                     )
-                    node.parent.replace(changed)
+                    node.parent.replace(changed.strip(" "))
 
     @staticmethod
     def _process_qstring(red, objects, skip_lineno=False):
