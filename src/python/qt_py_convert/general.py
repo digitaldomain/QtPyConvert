@@ -38,7 +38,7 @@ def change(logger, node, replacement, skip_lineno=False, msg=None):
     :rtype: None
     """
     failure_message = (
-            color_text(color=ANSI.colors.red, text="ERROR:") +
+            color_text(color=ANSI.colors.orange, text="WARNING:") +
             " Could not replace \"{original}\" with \"{replacement}\""
     )
     if msg is None:
