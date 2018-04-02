@@ -70,7 +70,7 @@ def process_connect(function_str, explicit=False):
   # If it is the former, we are assuming that the str name is owned by root.
     (?:(?:(?P<slot_owner>.*>?),(?:[\s\n]+)?)?(?:(?:QtCore\.)?SLOT(?:\s+)?\((?:[\s\n]+)?(?:_fromUtf8(?:\s+)?\()?(?:[\s\n]+)?[\'\"](?P<strslot>.*?)(?:\s+)?\((?P<slot_args>.*?)\)[\'\"](?:[\s\n]+)?\)?(?:[\s\n]+)?\))
   |
-    (?:(?:[\s\n]+)?(?P<slot>.*?)(?:[\s\n]+)?))
+    (?:(?:[\s\n]+)?(?P<slot>.*?)(?:,)?(?:[\s\n]+)?))
 \)""",
         re.VERBOSE | re.MULTILINE
     )
@@ -99,7 +99,7 @@ def process_disconnect(function_str, explicit=False):
   # If it is the former, we are assuming that the str name is owned by root.
     (?:(?:(?P<slot_owner>.*>?),(?:[\s\n]+)?)?(?:(?:QtCore\.)?SLOT(?:\s+)?\((?:[\s\n]+)?(?:_fromUtf8(?:\s+)?\()?(?:[\s\n]+)?[\'\"](?P<strslot>.*?)(?:\s+)?\((?P<slot_args>.*?)(?:\s+)?\)[\'\"](?:[\s\n]+)?\)?(?:[\s\n]+)?\))
   |
-    (?:(?:[\s\n]+)?(?P<slot>.*?)(?:[\s\n]+)?))
+    (?:(?:[\s\n]+)?(?P<slot>.*?)(?:,)?(?:[\s\n]+)?))
 (?:\s+)?\)""",
         re.VERBOSE
     )
