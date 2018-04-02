@@ -519,6 +519,50 @@ def test_connection_qobject8_EXPLICIT():
     )
 
 
+def test_connect_jstemplate_explorer_EXTRA_COMMA():
+    check_connection(
+        """self.connect(
+    self.__window.main_widget.template_widget.showBox,
+    QtCore.SIGNAL("currentIndexChanged(int)"),
+    self.__controller.loadTemplate,
+)""",
+        """self.__window.main_widget.template_widget.showBox.currentIndexChanged.connect(self.__controller.loadTemplate)"""
+    )
+
+
+def test_connect_jstemplate_explorer_EXTRA_COMMA2():
+    check_connection(
+        """self.connect(
+    self.__window.main_widget.template_widget.templateTree,
+    QtCore.SIGNAL("customContextMenuRequested(QPoint)"),
+    self.__controller.doContextMenu,
+)""",
+        """self.__window.main_widget.template_widget.templateTree.customContextMenuRequested.connect(self.__controller.doContextMenu)"""
+    )
+
+
+def test_connect_jstemplate_explorer_EXTRA_COMMA3():
+    check_connection(
+        """self.connect(
+    self.__window.main_widget.template_widget.fileSelection_PushButton,
+    QtCore.SIGNAL("clicked()"),
+    self.__controller.getFilePath,
+)""",
+        """self.__window.main_widget.template_widget.fileSelection_PushButton.clicked.connect(self.__controller.getFilePath)"""
+    )
+
+
+def test_connect_jstemplate_explorer_EXTRA_COMMA4():
+    check_connection(
+        """self.connect(
+    self.__window.main_widget.refresh_Shortcut,
+    QtCore.SIGNAL("activated()"),
+    self.__controller.refresh,
+)""",
+        """self.__window.main_widget.refresh_Shortcut.activated.connect(self.__controller.refresh)"""
+    )
+
+
 if __name__ == "__main__":
     import traceback
     _tests = filter(
