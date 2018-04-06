@@ -23,9 +23,6 @@
 import os
 import sys
 
-if sys.version_info[0] == 2 and sys.version_info[1] < 7:
-    import dd.runtime.api
-    dd.runtime.api.load("argparse")
 import argparse
 
 from qt_py_convert.run import process_file, process_folder

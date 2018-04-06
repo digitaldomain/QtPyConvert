@@ -58,8 +58,6 @@ except ImportError:  # Backwards compatible for python 2.5
     # end _relpath
 # end try
 
-import dd.runtime.api
-
 #
 # force use of our local package for sphinx grokking, otherwise we get whatever package the
 # current environment resolves, which is completely de-synced from ddautoapi on local package.
@@ -70,7 +68,6 @@ import qt_py_convert
 
 # Load the facility's extensions and themes. This offer to the user a
 # bunch of themes and extensions maintained for the studio.
-dd.runtime.api.load("sphinx_extensions")
 import sphinx_extensions
 
 SPHINX_EXTENSIONS_THEMES_PATH = os.path.abspath(sphinx_extensions.getThemesPath())
@@ -272,8 +269,6 @@ autodoc_default_flags = [
 ]
 
 # autodoc_mock_imports doesn't seem to work (below)
-import dd.runtime.api
-dd.runtime.api.load("mock")
 import mock
 for mod in ["qt_py_convert.external"]:
     sys.modules[mod] = mock.MagicMock()
@@ -287,12 +282,6 @@ for mod in ["qt_py_convert.external"]:
 #     "hou",
 # ]
 ## sphinx.ext.intersphinx --------------------------------------------------
-
-# print "Loading packages..."
-#
-# print "  - dd.runtime.api.load('qt_py_convert')..."
-# dd.runtime.api.load('qt_py_convert')
-# import qt_py_convert
 
 
 #

@@ -6,11 +6,7 @@ import os
 import sys
 import StringIO
 
-# dd
-import dd.runtime.api
-
 # pylint
-dd.runtime.api.load("pylint", "1.5.6")
 from pylint import lint as linter
 from pylint.reporters.text import TextReporter
 

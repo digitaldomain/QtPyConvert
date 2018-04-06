@@ -20,6 +20,7 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 # KIND, either express or implied. See the Apache License for the specific
 # language governing permissions and limitations under the Apache License.
+import argparse
 import contextlib
 from cStringIO import StringIO
 import os
@@ -27,16 +28,8 @@ import subprocess
 import sys
 
 
-import dd.runtime.api
-dd.runtime.api.load("qt_py_convert")
 import qt_py_convert.run
 import qt_py_convert.general
-
-
-if sys.version_info[0] == 2 and sys.version_info[1] < 7:
-    import dd.runtime.api
-    dd.runtime.api.load("argparse")
-import argparse
 
 
 PYQT4 = "PyQt4"
