@@ -1,5 +1,5 @@
 
-# ![Digital Domain Logo](_resources/logo.gif "Digital Domain Logo")  QtPyConvert
+# QtPyConvert<br><img src="_resources/logo.gif" width="64">
 
 * [Project Goals](#project-goals)
 * [Getting Started](#getting-started)  
