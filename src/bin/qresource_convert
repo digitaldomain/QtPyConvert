@@ -156,7 +156,7 @@ def main():
         with stdout_redirector():
             qt_py_convert.run.process_file(
                 message,
-                write_mode=qt_py_convert.general.WriteMode.OVERWRITE,
+                write_mode=qt_py_convert.general.WriteFlag.WRITE_TO_FILE,
                 skip_lineno=True,
                 tometh_flag=True
             )

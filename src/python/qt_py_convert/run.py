@@ -34,7 +34,7 @@ from qt_py_convert._modules import psep0101
 from qt_py_convert._modules import unsupported
 from qt_py_convert.general import merge_dict, _custom_misplaced_members, \
     ALIAS_DICT, change, UserInputRequiredException, ANSI,  \
-    __suplimentary_bindings__, WriteMode, is_py, build_exc
+    __suplimentary_bindings__, is_py, build_exc, WriteFlag
 from qt_py_convert.color import color_text
 from qt_py_convert.mappings import convert_mappings, misplaced_members
 from qt_py_convert.log import get_logger
@@ -525,16 +525,21 @@ def run(text, skip_lineno=False, tometh_flag=False, explicit_signals_flag=False)
     return aliases, mappings, dumps
 
 
-def process_file(fp, write_mode=None, write_args=None, skip_lineno=False, tometh_flag=False, explicit_signals_flag=False):
+def process_file(fp, write_mode=None, path=None, backup=False, skip_lineno=False, tometh_flag=False, explicit_signals_flag=False):
     """
     One of the entry-point functions in qt_py_convert.
     If you are looking to process a single python file, this is your function.
 
     :param fp: The source file that you want to start processing.
     :type fp: str
-    :param write: Should we overwrite the files that we process with their
-        fixed versions?
-    :type write: bool
+    :param write_mode: The type of writing that we are doing.
+    :type write_mode: int
+    :param path: If passed, it will signify that we are not overwriting.
+        It will be a tuple of (src_root, dst_roo)
+    :type path: tuple[str,str]
+    :param backup: If passed we will create a ".bak" file beside the newly
+        created file. The .bak will contain the original source code.
+    :type path: bool
     :param skip_lineno: An optional performance flag. By default, when the
         script replaces something, it will tell you which line it is
         replacing on. This can be useful for tracking the places that
@@ -568,32 +573,34 @@ def process_file(fp, write_mode=None, write_args=None, skip_lineno=False, tometh
             explicit_signals_flag=explicit_signals_flag
         )
         if aliases["used"] or modified_code != source:
-            if write_mode == WriteMode.STDOUT:
-                MAIN_LOG.debug("Writing modifed code to {path}".format(path="stdout"))
+            write_path = fp
+            if write_mode & WriteFlag.WRITE_TO_STDOUT:
                 sys.stdout.write(modified_code)
-            elif write_mode == WriteMode.OVERWRITE:
-                bak_path = os.path.join(
-                    os.path.dirname(fp),
-                    "." + os.path.basename(fp) + ".bak"
-                )
-                MAIN_LOG.info(
-                    "Backing up original code to {path}".format(path=bak_path)
-                )
-                with open(bak_path, "wb") as fh:
-                    fh.write(source)
-                MAIN_LOG.info("Writing modifed code to {path}".format(path=fp))
-                with open(fp, "wb") as fh:
-                    fh.write(modified_code)
-            elif write_mode == WriteMode.RELATIVE_ROOT:
-                src_root = write_args["src_root"]
-                dst_root = write_args["dst_root"]
-                root_relative = fp.replace(src_root, "").lstrip("/")
-                dst_path = os.path.join(dst_root, root_relative)
+            else:
+                if path:  # We are writing elsewhere than the source.
+                    src_root, dst_root = path
+                    root_relative = fp.replace(src_root, "").lstrip("/")
+                    write_path = os.path.join(dst_root, root_relative)
 
-                if not os.path.exists(os.path.dirname(dst_path)):
-                    os.makedirs(os.path.dirname(dst_path))
-                MAIN_LOG.info("Writing modifed code to {path}".format(path=dst_path))
-                with open(dst_path, "wb") as fh:
+                if backup:  # We are creating a source backup beside the output
+                    bak_path = os.path.join(
+                        os.path.dirname(write_path),
+                        "." + os.path.basename(write_path) + ".bak"
+                    )
+                    MAIN_LOG.info("Backing up original code to {path}".format(
+                        path=bak_path
+                    ))
+                    with open(bak_path, "wb") as fh:
+                        fh.write(source)
+
+                # Write to file. If path is None, we are overwriting.
+                MAIN_LOG.info("Writing modifed code to {path}".format(
+                    path=write_path)
+                )
+
+                if not os.path.exists(os.path.dirname(write_path)):
+                    os.makedirs(os.path.dirname(write_path))
+                with open(write_path, "wb") as fh:
                     fh.write(modified_code)
 
     except BaseException:
@@ -613,7 +620,7 @@ def process_file(fp, write_mode=None, write_args=None, skip_lineno=False, tometh
                 MAIN_LOG.error(str(err))
 
 
-def process_folder(folder, recursive=False, write_mode=None, write_args=None, skip_lineno=False, tometh_flag=False, explicit_signals_flag=False):
+def process_folder(folder, recursive=False, write_mode=None, path=None, backup=False, skip_lineno=False, tometh_flag=False, explicit_signals_flag=False):
     """
     One of the entry-point functions in qt_py_convert.
     If you are looking to process every python file in a folder, this is your
@@ -624,9 +631,14 @@ def process_folder(folder, recursive=False, write_mode=None, write_args=None, sk
     :type folder: str
     :param recursive: Do you want to continue recursing through sub-folders?
     :type recursive: bool
-    :param write: Should we overwrite the files that we process with their
-        fixed versions?
-    :type write: bool
+    :param write_mode: The type of writing that we are doing.
+    :type write_mode: int
+    :param path: If passed, it will signify that we are not overwriting.
+        It will be a tuple of (src_root, dst_roo)
+    :type path: tuple[str,str]
+    :param backup: If passed we will create a ".bak" file beside the newly
+        created file. The .bak will contain the original source code.
+    :type path: bool
     :param skip_lineno: An optional performance flag. By default, when the
         script replaces something, it will tell you which line it is
         replacing on. This can be useful for tracking the places that
@@ -652,7 +664,8 @@ def process_folder(folder, recursive=False, write_mode=None, write_args=None, sk
         process_file(
             fn,
             write_mode=write_mode,
-            write_args=write_args,
+            path=path,
+            backup=backup,
             skip_lineno=skip_lineno,
             tometh_flag=tometh_flag,
             explicit_signals_flag=explicit_signals_flag
@@ -667,7 +680,8 @@ def process_folder(folder, recursive=False, write_mode=None, write_args=None, sk
             os.path.join(folder, fn),
             recursive=recursive,
             write_mode=write_mode,
-            write_args=write_args,
+            path=path,
+            backup=backup,
             skip_lineno=skip_lineno,
             tometh_flag=tometh_flag,
             explicit_signals_flag=explicit_signals_flag
@@ -687,7 +701,7 @@ if __name__ == "__main__":
     # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ddqt/trunk/src/python/ddqt", recursive=True, write=False, skip_lineno=True, tometh_flag=True)
     # folder = os.path.abspath("../../../../tests/sources")
     # process_folder(folder, recursive=True, write=True)
-    process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/jstemplate_explorer/branches/qt_compat/src/bin", recursive=True, write_mode=WriteMode.OVERWRITE, skip_lineno=True, tometh_flag=True)
-    # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/refchef/branches/qt_compat/src/python/refchef/tagspanel.py", write_mode=WriteMode.OVERWRITE, tometh_flag=True, explicit_signals_flag=False)
-    # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/refchef/branches/qt_compat/src/", write_mode=WriteMode.OVERWRITE, tometh_flag=True, recursive=True)
+    process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/jstemplate_explorer/branches/qt_compat/src/bin", recursive=True, write_mode=WriteFlag.WRITE_TO_FILE, skip_lineno=True, tometh_flag=True)
+    # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/refchef/branches/qt_compat/src/python/refchef/tagspanel.py", write_mode=WriteFlag.WRITE_TO_FILE, tometh_flag=True, explicit_signals_flag=False)
+    # process_folder("/dd/shows/DEVTD/user/work.ahughes/svn/packages/refchef/branches/qt_compat/src/", write_mode=WriteFlag.WRITE_TO_FILE, tometh_flag=True, recursive=True)
     # process_file("/dd/shows/DEVTD/user/work.ahughes/svn/packages/ddqt/trunk/src/python/ddqt/gui/SnapshotModel.py", write=False, tometh_flag=True)

@@ -68,8 +68,9 @@ $ qt_py_convert [-h] [-r --recursive] [-w|-o] [--show-lines] [--to-method-suppor
 | -h,--help					| Show the help message and exit. |
 | files_or_directories		| Pass explicit files or directories to run. <sub>**NOTE:**</sub> If **"-"** is passed instead of files_or_directories, QtPyConvert will attempt to read from stdin instead. <sub>**Useful for pipelining proesses together**</sub> |
 | -r,--recursive			| Recursively search for python files to convert. Only applicable when passing a directory.  |
-| -w, --write				| Optionally pass a root directory to mirror the newly converted source code to.  |
-| -o, --overwrite 			| Overwrite the files in place. **Either "-o" or "-w" must be passed to QtPyConvert if you want files to be written to disk.** |
+| --stdout					| Boolean flag which will write the resulting file to stdout instead of on disk. |
+| --write-path				| If provided, QtPyConvert will treat "--write-path" as a relative root and write modified files from there. |
+| --backup					| Create a hidden backup of the original source code beside the newly converted file. |
 | --show-lines				| Turn on printing of line numbers while replacing statements. Ends up being much slower. |
 | --to-method-support 		| <sub>**EXPERIMENTAL**</sub>: An attempt to replace all api1.0 style "*toString*", "*toInt*", "*toBool*", "*toPyObject*", "*toAscii*" methods that are unavailable in api2.0. |
 | --explicit-signals-flag 	| <sub>**EXPERIMENTAL**</sub>: Modification on the api1.0 style signal conversion logic. It will explicitly slice into the QtCore.Signal object to find the signal with the matching signature.<br> This is a fairly unknown feature of PySide/PyQt and is usually worked around by the developer. However, this should be safe to turn on whichever the case. |

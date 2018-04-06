@@ -26,7 +26,7 @@ import sys
 import argparse
 
 from qt_py_convert.run import process_file, process_folder
-from qt_py_convert.general import WriteMode
+from qt_py_convert.general import WriteFlag
 
 
 def parse():
@@ -49,13 +49,23 @@ def parse():
              "Only applicable when passing a directory.",
     )
     parser.add_argument(
-        "-w", "--write",
-        help="Write the resulting file relative to the passed root folder.",
+        "--stdout",
+        action="store_true",
+        help="Boolean flag which will write the resulting file to stdout "
+             "instead of on disk."
     )
     parser.add_argument(
-        "-o", "--overwrite",
+        "--write-path",
+        required=False,
+        default=None,
+        help="If provided, QtPyConvert will treat \"--write-path\" as a "
+             "relative root and write modified files from there."
+    )
+    parser.add_argument(
+        "--backup",
         action="store_true",
-        help="Overwrite the file in place.",
+        help="When combined with the \"--stdout\" flag it will not produce "
+             "\"*.bak\" files for converted files.",
     )
     parser.add_argument(
         "--show-lines",
@@ -115,42 +125,38 @@ def _resolve_stdin(paths):
     return paths
 
 
-def main(pathlist, recursive=True, write=False, overwrite=False, show_lines=True, tometh=False):
+def main(pathlist, recursive=True, path=None, no_write=False, backup=False, stdout=False, show_lines=True, tometh=False):
     # if len(pathlist) == 1:
     #     if pathlist[0] == "-":  # Support for piping on unix.
     #         pathlist = sys.stdin
 
     pathlist = _resolve_stdin(pathlist)
 
-    output = WriteMode.STDOUT
-    write_args = None
-    if write:
-        output = WriteMode.RELATIVE_ROOT
-        write_args = {
-            "dst_root": write
-        }
-    elif overwrite:
-        output = WriteMode.OVERWRITE
+    output = 0
+    if stdout:
+        output |= WriteFlag.WRITE_TO_STDOUT
+    else:
+        output |= WriteFlag.WRITE_TO_FILE
 
-    for path in pathlist:
+    for src_path in pathlist:
         # print("Processing %s" % path)
-        abs_path = os.path.abspath(path)
-        if write:
-            write_args["src_root"] = os.path.dirname(abs_path)
+        abs_path = os.path.abspath(src_path)
         if os.path.isdir(abs_path):
             process_folder(
-                path,
+                src_path,
                 recursive=recursive,
                 write_mode=output,
-                write_args=write_args,
+                path=(path, abs_path),
+                backup=backup,
                 skip_lineno=not show_lines,
                 tometh_flag=tometh
             )
         else:
             process_file(
-                path,
+                src_path,
                 write_mode=output,
-                write_args=write_args,
+                path=(path, abs_path),
+                backup=backup,
                 skip_lineno=not show_lines,
                 tometh_flag=tometh
             )
@@ -159,10 +165,11 @@ def main(pathlist, recursive=True, write=False, overwrite=False, show_lines=True
 if __name__ == "__main__":
     args = parse()
     main(
-        args.files_or_directories,
-        args.recursive,
-        args.write,
-        args.overwrite,
-        args.show_lines,
-        args.to_method_support,
+        pathlist=args.files_or_directories,
+        recursive=args.recursive,
+        path=args.write_path,
+        backup=args.no_backup,
+        stdout=args.stdout,
+        show_lines=args.show_lines,
+        tometh=args.to_method_support,
     )
