@@ -101,7 +101,7 @@ c.setCheckState(QtCore.Qt.UnChecked)
 ```
 
 This is one of the most notable *opinions* that QtPyConvert will enforce upon your code.
-Another notable one that it will enforce, unless you set the "<sub>**--preserve-star-imports**</sub>" flag is shown below
+Another notable one that it will enforce is shown below
 ```python
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
