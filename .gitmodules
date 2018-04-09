@@ -1,0 +1,3 @@
+[submodule "src/python/qt_py_convert/external/redbaron"]
+	path = src/python/qt_py_convert/external/redbaron
+	url = git@github.com:PyCQA/redbaron.git
