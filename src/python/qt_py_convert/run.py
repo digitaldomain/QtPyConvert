@@ -26,7 +26,7 @@ import traceback
 
 
 from qt_py_convert.external import Qt
-from qt_py_convert.external import redbaron
+import redbaron
 
 from qt_py_convert._modules import from_imports
 from qt_py_convert._modules import imports
