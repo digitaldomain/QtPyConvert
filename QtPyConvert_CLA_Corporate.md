@@ -9,12 +9,12 @@ This CLA is modified from the Apache CLA found here: http://www.apache.org/licen
 
 This license is for your protection as a Contributor as well as the protection of Digital Domain 3.0 and its users; it does not change your rights to use your own Contributions for any other purpose.  This version of the Agreement allows an entity (the "Corporation") to submit Contributions to Digital Domain 3.0, to authorize Contributions by its designated employees to Digital Domain 3.0, and to grant copyright and patent licenses thereto.  
 
-If you have not already done so, please complete and sign, then scan and email a pdf file of this Agreement to oss-cla@d2.com.  If necessary, send an original signed Agreement to:  
+If you have not already done so, please complete and sign, then scan and email a pdf file of this Agreement to opensource@d2.com.  If necessary, send an original signed Agreement to:  
 
 Digial Domain 3.0  
 Attn: The QtPyConvert Project  
-1200 Park Avenue  
-Emeryville, CA 94608  
+12641 Beatrice Street
+Los Angeles, CA 90066  
 U.S.A.  
 
   Please read this document carefully before signing and keep a copy for your records.
