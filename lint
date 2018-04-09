@@ -1,5 +1,0 @@
-#!/bin/bash
-
-#export ENV_VAR=value
-
-./.lint.py $*
