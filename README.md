@@ -54,7 +54,15 @@ Redbaron allows us to modify the source code and write it back out again, preser
 pip install redbaron
 ```
 
-You should also have access to any of your source bindings so that Qy.py can import them freely.
+You should also have access to any of your source bindings so that Qy.py can import them freely.  
+
+A full list of dependencies is as follows:
+ - rebaron
+ - baron
+ - rply
+ - appdirs
+ - qt_py
+ - argparse
 
 
 ### Usage
