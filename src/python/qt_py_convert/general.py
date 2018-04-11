@@ -141,6 +141,17 @@ class ErrorClass(object):
         self.reason = reason
         ALIAS_DICT["errors"].add(self)
 
+    @classmethod
+    def manually(cls, row, row_to, reason):
+        klass = type(cls.__name__, cls.__bases__, cls.__dict__)
+        klass.row = row
+        klass.row_to = row_to
+        klass.reason = reason
+        self = klass()
+
+        ALIAS_DICT["errors"].add(self)
+        return self()
+
 
 class UserInputRequiredException(BaseException):
     """

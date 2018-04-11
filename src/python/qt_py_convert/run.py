@@ -32,7 +32,7 @@ from qt_py_convert._modules import from_imports
 from qt_py_convert._modules import imports
 from qt_py_convert._modules import psep0101
 from qt_py_convert._modules import unsupported
-from qt_py_convert.general import merge_dict, _custom_misplaced_members, \
+from qt_py_convert.general import merge_dict, ErrorClass, \
     ALIAS_DICT, change, UserInputRequiredException, ANSI,  \
     __suplimentary_bindings__, is_py, build_exc, WriteFlag
 from qt_py_convert.color import color_text
@@ -487,11 +487,7 @@ def run(text, skip_lineno=False, tometh_flag=False, explicit_signals_flag=False)
         MAIN_LOG.critical(str(err))
         traceback.print_exc()
 
-        d = object()
-        setattr(d, "row", 0)
-        setattr(d, "row_to", 0)
-        setattr(d, "reaspm", traceback.format_exc())
-        ALIAS_DICT["errors"].add(d)
+        ErrorClass.manually(0, 0, traceback.format_exc())
         return ALIAS_DICT, {}, text
 
     from_a, from_m = from_imports.process(red, skip_lineno=skip_lineno)
