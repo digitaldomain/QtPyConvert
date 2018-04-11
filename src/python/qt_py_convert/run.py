@@ -487,7 +487,7 @@ def run(text, skip_lineno=False, tometh_flag=False, explicit_signals_flag=False)
         MAIN_LOG.critical(str(err))
         traceback.print_exc()
 
-        ErrorClass.manually(0, 0, traceback.format_exc())
+        ErrorClass(row_from=0, row_to=0, reason=traceback.format_exc())
         return ALIAS_DICT, {}, text
 
     from_a, from_m = from_imports.process(red, skip_lineno=skip_lineno)
