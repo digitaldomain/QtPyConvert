@@ -126,7 +126,7 @@ class ErrorClass(object):
 
     It takes a redbaron node and a str to describe why it can't be fixed.
     """
-    def __init__(self, node, reason):
+    def __init__(self, row_from, row_to, reason):
         """
         :param node: Redbaron node that can't be fixed.
         :type node: redbaron.Node
@@ -134,23 +134,20 @@ class ErrorClass(object):
         :type reason: str
         """
         super(ErrorClass, self).__init__()
-        bbox = node.absolute_bounding_box
 
-        self.row = bbox.top_left.line - 1
-        self.row_to = bbox.bottom_right.line - 1
+        self.row = row_from
+        self.row_to = row_to
         self.reason = reason
         ALIAS_DICT["errors"].add(self)
 
     @classmethod
-    def manually(cls, row, row_to, reason):
-        klass = type(cls.__name__, cls.__bases__, cls.__dict__)
-        klass.row = row
-        klass.row_to = row_to
-        klass.reason = reason
-        self = klass()
+    def from_node(cls, node, reason):
+        bbox = node.absolute_bounding_box
 
-        ALIAS_DICT["errors"].add(self)
-        return self()
+        row = bbox.top_left.line - 1
+        row_to = bbox.bottom_right.line - 1
+        reason = reason
+        return cls(row_from=row, row_to=row_to, reason=reason)
 
 
 class UserInputRequiredException(BaseException):
