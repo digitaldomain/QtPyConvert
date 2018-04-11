@@ -75,7 +75,7 @@ class Processes(object):
                     # This leads to an invalid statement and cannot be
                     #   resolved in api 2.0.
                     # We are adding it to warnings and continuing on.
-                    ErrorClass(
+                    ErrorClass.from_node(
                         node=node,
                         reason="""
 As of api v2.0, there is no concept of a "QVariant" object.

@@ -29,7 +29,7 @@ class Processes(object):
     @staticmethod
     def _process_load_ui_type(red, objects, skip_lineno=False):
         for node in objects:
-            ErrorClass(
+            ErrorClass.from_node(
                 node=node,
                 reason="""
     The Qt.py module does not support uic.loadUiType as it is not a method in PySide.
