@@ -1,0 +1,3 @@
+[submodule "src/python/qt_py_convert/external/Qt.py"]
+	path = src/python/qt_py_convert/external/Qt.py
+	url = git@github.com:digitaldomain/Qt.py.git
