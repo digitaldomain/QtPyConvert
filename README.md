@@ -67,7 +67,8 @@ A full list of dependencies is as follows:
 
 ### Usage
 ```bash
-$ qt_py_convert [-h] [-r --recursive] [-w|-o] [--show-lines] [--to-method-support]
+$ qt_py_convert [-h] [-r] [--stdout] [--write-path WRITE_PATH] [--backup]
+                [--show-lines] [--to-method-support] [--explicit-signals-flag]
                 files_or_directories [files_or_directories ...]
 ```
 
@@ -83,8 +84,6 @@ $ qt_py_convert [-h] [-r --recursive] [-w|-o] [--show-lines] [--to-method-suppor
 | --to-method-support 		| <sub>**EXPERIMENTAL**</sub>: An attempt to replace all api1.0 style "*toString*", "*toInt*", "*toBool*", "*toPyObject*", "*toAscii*" methods that are unavailable in api2.0. |
 | --explicit-signals-flag 	| <sub>**EXPERIMENTAL**</sub>: Modification on the api1.0 style signal conversion logic. It will explicitly slice into the QtCore.Signal object to find the signal with the matching signature.<br> This is a fairly unknown feature of PySide/PyQt and is usually worked around by the developer. However, this should be safe to turn on whichever the case. |
 
-*If you don't pass "-o" or "-w <path>" to QtPyConvert, it will write to stdout.*
-
 
 ### Customization
 
@@ -95,7 +94,7 @@ This is done through environment variables:
 | Key                           | Value                                                                          | Description |
 | ----------------------------- | ------------------------------------------------------------------------------ | ----------- |
 | QT_CUSTOM_BINDINGS_SUPPORT    | The names of custom abstraction layers or bindings separated by **os.pathsep** | This can be used if you have code that was already doing it's own abstraction and you want to move to the Qt.py layer. |
-| CUSTOM_MISPLACED_MEMBERS      | This is a json dictionary that you have saved into your environment variables. | This json dictionary should look similar to the Qt.py _misplaced_members dictionary but instead of mapping to Qt.py it maps the source bindings to your abstraction layer. |
+| QT_CUSTOM_MISPLACED_MEMBERS      | This is a json dictionary that you have saved into your environment variables. | This json dictionary should look similar to the Qt.py _misplaced_members dictionary but instead of mapping to Qt.py it maps the source bindings to your abstraction layer. |
 
 > **Note** This feature is *experimental* and has only been used internally a few times. Support for this feature will probably be slower than support for the core functionality of QyPyConvert.
 
@@ -230,7 +229,7 @@ See also the list of [contributors](https://github.com/DigitalDomain/QtPyConvert
 
 ### License
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/DigitalDomain/QtPyConvert/LICENSE) file for details
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/DigitalDomain/QtPyConvert/blob/master/LICENSE) file for details
 
 ### Acknowledgments
 
