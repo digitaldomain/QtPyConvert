@@ -215,7 +215,7 @@ There are several things that we would love to have support for in QtPyConvert b
 
 ### Contributing
 
-Please read [CONTRIBUTING.md](https://github.com/DigitalDomain/QtPyConvert/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+Please read [CONTRIBUTING.md](https://github.com/DigitalDomain/QtPyConvert/blob/master/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
 ### Versioning
 
