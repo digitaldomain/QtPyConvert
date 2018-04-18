@@ -84,7 +84,7 @@ def change(logger, node, replacement, skip_lineno=False, msg=None):
 
 
 # Default binding support out of the box.
-__supported_bindings__ = Qt._QT_PREFERRED_BINDING_DEFAULT_ORDER
+__supported_bindings__ = ("PySide2", "PyQt5", "PySide", "PyQt4")
 __suplimentary_bindings__ = ["sip", "shiboken"]
 # Adding support for custom bindings.
 CUSTOM_MISPLACED_MEMBERS = "QT_CUSTOM_MISPLACED_MEMBERS"
