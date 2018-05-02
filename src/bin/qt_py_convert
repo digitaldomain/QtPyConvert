@@ -168,7 +168,7 @@ if __name__ == "__main__":
         pathlist=args.files_or_directories,
         recursive=args.recursive,
         path=args.write_path,
-        backup=args.no_backup,
+        backup=args.backup,
         stdout=args.stdout,
         show_lines=args.show_lines,
         tometh=args.to_method_support,
