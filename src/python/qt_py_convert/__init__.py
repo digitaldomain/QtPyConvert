@@ -19,7 +19,7 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 # KIND, either express or implied. See the Apache License for the specific
 # language governing permissions and limitations under the Apache License.
-__version__ = "3.0.0"
+__version__ = "3.1.0"
 """
 An automatic Python Qt binding transpiler to the Qt.py abstraction layer. 
 It aims to help in your modernization of your Python Qt code. 
