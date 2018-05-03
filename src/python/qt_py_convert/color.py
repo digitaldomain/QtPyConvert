@@ -22,7 +22,7 @@
 import os
 import subprocess
 import sys
-
+from builtins import bytes
 
 class ANSI(object):
     """ANSI is a namespace object. Useful for passing values into "_color" """
@@ -56,7 +56,7 @@ def supports_color():
     p = subprocess.Popen(
         ["tput", "colors"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
-    has_colors = p.communicate()[0].strip("\n")
+    has_colors = p.communicate()[0].strip(bytes("\n", encoding="UTF-8"))
     try:
         has_colors = int(has_colors)
     except:
