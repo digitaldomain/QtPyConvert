@@ -53,14 +53,17 @@ def supports_color():
     plat = sys.platform
     supported_platform = plat != 'Pocket PC' and (plat != 'win32' or
                                                   'ANSICON' in os.environ)
-    p = subprocess.Popen(
-        ["tput", "colors"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
-    has_colors = p.communicate()[0].strip(b"\n")
     try:
-        has_colors = int(has_colors)
-    except:
-        has_colors = False
+        p = subprocess.Popen(
+            ["tput", "colors"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        has_colors = p.communicate()[0].strip(b"\n")
+        try:
+            has_colors = int(has_colors)
+        except:
+            has_colors = False
+    except OSError:  # Cannot find tput on windows
+        return False
 
     # isatty is not always implemented, #6223.
     is_a_tty = hasattr(sys.stdout, 'isatty') and sys.stdout.isatty()
