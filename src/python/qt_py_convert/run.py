@@ -577,7 +577,7 @@ def process_file(fp, write_mode=None, path=None, backup=False, skip_lineno=False
             if write_mode & WriteFlag.WRITE_TO_STDOUT:
                 sys.stdout.write(modified_code)
             else:
-                if path:  # We are writing elsewhere than the source.
+                if path and path[0]:  # We are writing elsewhere than the source.
                     src_root, dst_root = path
                     root_relative = fp.replace(src_root, "").lstrip("/")
                     write_path = os.path.join(dst_root, root_relative)
