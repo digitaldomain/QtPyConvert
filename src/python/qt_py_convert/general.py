@@ -27,10 +27,12 @@ import json
 import os
 import re
 
+import Qt
+
 from qt_py_convert.color import ANSI, color_text
 from qt_py_convert.diff import highlight_diffs
 from qt_py_convert.log import get_logger
-from qt_py_convert.external import Qt
+
 
 GENERAL_LOGGER = get_logger("general", name_color=ANSI.colors.green)
 

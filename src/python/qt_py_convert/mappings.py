@@ -21,7 +21,8 @@
 # language governing permissions and limitations under the Apache License.
 import re
 
-from qt_py_convert.external import Qt
+import Qt
+
 from qt_py_convert.log import get_logger
 from qt_py_convert.general import _custom_misplaced_members
 
