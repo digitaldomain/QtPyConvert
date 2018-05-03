@@ -19,4 +19,4 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 # KIND, either express or implied. See the Apache License for the specific
 # language governing permissions and limitations under the Apache License.
-from process import process
+from qt_py_convert._modules.unsupported.process import process

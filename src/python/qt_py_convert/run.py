@@ -43,7 +43,7 @@ from qt_py_convert.color import color_text
 from qt_py_convert.mappings import convert_mappings, misplaced_members
 from qt_py_convert.log import get_logger
 
-COMMON_MODULES = Qt._common_members.keys() + ["QtCompat"]
+COMMON_MODULES = list(Qt._common_members.keys()) + ["QtCompat"]
 
 
 MAIN_LOG = get_logger("run")

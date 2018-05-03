@@ -56,7 +56,7 @@ def supports_color():
     p = subprocess.Popen(
         ["tput", "colors"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
-    has_colors = p.communicate()[0].strip("\n")
+    has_colors = p.communicate()[0].strip(b"\n")
     try:
         has_colors = int(has_colors)
     except:

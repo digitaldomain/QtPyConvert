@@ -216,9 +216,9 @@ def merge_dict(lhs, rhs, keys=None, keys_both=False):
     lhs = copy.copy(lhs)
     rhs = copy.copy(rhs)
     if not keys:
-        keys = lhs.keys()
+        keys = list(lhs.keys())
         if keys_both:
-            keys.extend(rhs.keys())
+            keys.extend(list(rhs.keys()))
     for key in keys:
         if key not in rhs:
             rhs[key] = type(lhs[key])()
