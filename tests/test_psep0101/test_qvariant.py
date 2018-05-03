@@ -1,5 +1,5 @@
 from qt_py_convert._modules.psep0101 import process
-from qt_py_convert.external.redbaron import redbaron
+from redbaron import redbaron
 from qt_py_convert.general import ALIAS_DICT
 
 

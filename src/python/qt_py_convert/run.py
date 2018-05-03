@@ -25,7 +25,11 @@ import sys
 import traceback
 
 
-from qt_py_convert.external import Qt
+import Qt
+if Qt.__version__ < "1.2.0.b2":
+    raise ImportError(
+        "Improper Qt.py version installed. Qt.py must be version 1.2.0.b2 or above.
+    )
 import redbaron
 
 from qt_py_convert._modules import from_imports
