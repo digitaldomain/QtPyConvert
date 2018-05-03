@@ -54,6 +54,11 @@ Redbaron allows us to modify the source code and write it back out again, preser
 pip install redbaron
 ```
 
+We also provide a requirements.txt file which you could install instead by...  
+```
+pip install -r requirements.txt
+```
+
 You should also have access to any of your source bindings so that Qy.py can import them freely.  
 
 A full list of dependencies is as follows:
