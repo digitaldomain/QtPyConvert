@@ -28,7 +28,7 @@ import traceback
 import Qt
 if Qt.__version__ < "1.2.0.b2":
     raise ImportError(
-        "Improper Qt.py version installed. Qt.py must be version 1.2.0.b2 or above."
+        "Improper Qt.py version installed. Qt.py must be version 1.2.0.b2 or above. Version %s installed instead." % Qt.__version__
     )
 import redbaron
 
