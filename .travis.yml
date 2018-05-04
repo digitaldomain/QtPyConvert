@@ -1,0 +1,25 @@
+language: python
+
+sudo: required
+dist: trusty
+
+python:
+  - 2.7
+#   - 3.5
+
+services:
+  - docker
+
+install:
+  - docker build -f Dockerfile-py${TRAVIS_PYTHON_VERSION} -t digitaldomain/qt_py_convert .
+
+# Enable virtual framebuffer, this way we can instantiate
+# a QApplication and create widgets.
+# https://docs.travis-ci.com/user/gui-and-headless-browsers/
+before_script:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
+
+script:
+  - docker run --rm -v $(pwd):/QtPyConvert digitaldomain/qt_py_convert
