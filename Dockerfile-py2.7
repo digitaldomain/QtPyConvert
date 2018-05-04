@@ -23,6 +23,7 @@ ENV QT_VERBOSE true
 
 # Xvfb
 ENV DISPLAY :99
+ENV PYTHONPATH="${PYTHONPATH}:/workspace/QtPyConvert/src/python"
 
 WORKDIR /workspace/QtPyConvert/src/python
 ENTRYPOINT cp -r /QtPyConvert /workspace && \
