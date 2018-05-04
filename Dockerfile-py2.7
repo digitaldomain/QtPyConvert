@@ -24,12 +24,15 @@ ENV QT_VERBOSE true
 # Xvfb
 ENV DISPLAY :99
 
-WORKDIR /workspace/QtPyConvert
+WORKDIR /workspace/QtPyConvert/src/python
 ENTRYPOINT cp -r /QtPyConvert /workspace && \
+        ls /workspace && \
+        ls /workspace/QtPyConvert && \
+        cd
         Xvfb :99 -screen 0 1024x768x16 2>/dev/null & \
         sleep 3 && \
-    python tests/test_core/test_binding_supported.py && \
-    python tests/test_core/test_replacements.py && \
-    python tests/test_psep0101/test_qsignal.py && \
-    python tests/test_psep0101/test_qvariant.py && \
-    python tests/test_qtcompat/test_compatibility_members.py
+    python /workspace/QtPyConvert/tests/test_core/test_binding_supported.py && \
+    python /workspace/QtPyConvert/tests/test_core/test_replacements.py && \
+    python /workspace/QtPyConvert/tests/test_psep0101/test_qsignal.py && \
+    python /workspace/QtPyConvert/tests/test_psep0101/test_qvariant.py && \
+    python /workspace/QtPyConvert/tests/test_qtcompat/test_compatibility_members.py
