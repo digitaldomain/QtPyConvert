@@ -28,7 +28,6 @@ WORKDIR /workspace/QtPyConvert/src/python
 ENTRYPOINT cp -r /QtPyConvert /workspace && \
         ls /workspace && \
         ls /workspace/QtPyConvert && \
-        cd
         Xvfb :99 -screen 0 1024x768x16 2>/dev/null & \
         sleep 3 && \
     python /workspace/QtPyConvert/tests/test_core/test_binding_supported.py && \
