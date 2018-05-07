@@ -234,7 +234,7 @@ See also the list of [contributors](https://github.com/DigitalDomain/QtPyConvert
 
 ### License
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/DigitalDomain/QtPyConvert/blob/master/LICENSE) file for details
+This project is licensed under a modified Apache 2.0 license - see the [LICENSE](https://github.com/DigitalDomain/QtPyConvert/blob/master/LICENSE) file for details
 
 ### Acknowledgments
 
