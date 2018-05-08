@@ -1,25 +1,28 @@
 language: python
-
 sudo: required
 dist: trusty
-
 python:
-  - 2.7
-#   - 3.5
-
+- 2.7
 services:
-  - docker
-
+- docker
 install:
-  - docker build -f Dockerfile-py${TRAVIS_PYTHON_VERSION} -t digitaldomain/qt_py_convert .
-
-# Enable virtual framebuffer, this way we can instantiate
-# a QApplication and create widgets.
-# https://docs.travis-ci.com/user/gui-and-headless-browsers/
+- docker build -f Dockerfile-py${TRAVIS_PYTHON_VERSION} -t digitaldomain/qt_py_convert
+  .
 before_script:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - sleep 3 # give xvfb some time to start
-
+- export DISPLAY=:99.0
+- sh -e /etc/init.d/xvfb start
+- sleep 3
 script:
-  - docker run --rm -v $(pwd):/QtPyConvert digitaldomain/qt_py_convert
+- docker run --rm -v $(pwd):/QtPyConvert digitaldomain/qt_py_convert
+
+
+deploy:
+  provider: pypi
+  user: ahuge
+  password: 
+    secure: feCnW/zvH2IucqzdkCS/yv6NINuC5PgWqrm9tGNId+FKN7Y805qXx4NVzPJsBAKpzPIK6Aj+d5pcrFYWhyoCZMHs+xzymiPbeT9X/a7o9v+aFnV1Xs3vX5gZP00xwJM/NcKAJepSVZc+oH1hQ/c2KCdXA2Uh7YGNiawQny6Qqvqq4e0GVi7BmZBc2N/FS2mDFTtQhvrvsNV2c/mbBrfKB9W3lxhECeOV/9cXWTkchTWwETdrF2MDR9s3KYF5EwijbaWSct7l/9gO0Yj4RyOne9kOFfAB/ZkIiQKVzx06I6E+/KCyBVtBjTXXqF2iSXKIx7l4OlYwpJE2T5IMmD4vylreqMtcSwtEScSB0XlnqsTTFtqjZ3UZH/sxpq8UK3aJUR3KRghf2M1yK7VyPVw0c2PhqJll7rBmB805cUYLthsMgYyvXZk1HD3y8DqonDBn9SW0lrO6c4vM4igYJsddS8luUT8nmy0lR62vnemiORoEIYj5w6ipF5Uzxpemdtw9zgmVkFR+4cOfWCUwSZ7Dj55MphM9xbb4LdbL2oQhMnLf4wqdYgwOCqzmlVcSGHKHPkFvbl1p4+D10uWGwH5MBqUQWjqlzXBukqW2m5O1IB4BONh39k50MCNS7zkg6Bw7pYhZfYHpN4M0oz06P6aD2voCnmeFPepxoW43KaDgGDw=
+  distributions: "sdist bdist_wheel" # Your distributions here
+  server: https://testpypi.python.org/pypi # Remove for deployment to official PyPi repo
+  on:
+    tags: true
+    repo: digitaldomain/QtPyConvert
