@@ -22,7 +22,7 @@ deploy:
   password: 
     secure: feCnW/zvH2IucqzdkCS/yv6NINuC5PgWqrm9tGNId+FKN7Y805qXx4NVzPJsBAKpzPIK6Aj+d5pcrFYWhyoCZMHs+xzymiPbeT9X/a7o9v+aFnV1Xs3vX5gZP00xwJM/NcKAJepSVZc+oH1hQ/c2KCdXA2Uh7YGNiawQny6Qqvqq4e0GVi7BmZBc2N/FS2mDFTtQhvrvsNV2c/mbBrfKB9W3lxhECeOV/9cXWTkchTWwETdrF2MDR9s3KYF5EwijbaWSct7l/9gO0Yj4RyOne9kOFfAB/ZkIiQKVzx06I6E+/KCyBVtBjTXXqF2iSXKIx7l4OlYwpJE2T5IMmD4vylreqMtcSwtEScSB0XlnqsTTFtqjZ3UZH/sxpq8UK3aJUR3KRghf2M1yK7VyPVw0c2PhqJll7rBmB805cUYLthsMgYyvXZk1HD3y8DqonDBn9SW0lrO6c4vM4igYJsddS8luUT8nmy0lR62vnemiORoEIYj5w6ipF5Uzxpemdtw9zgmVkFR+4cOfWCUwSZ7Dj55MphM9xbb4LdbL2oQhMnLf4wqdYgwOCqzmlVcSGHKHPkFvbl1p4+D10uWGwH5MBqUQWjqlzXBukqW2m5O1IB4BONh39k50MCNS7zkg6Bw7pYhZfYHpN4M0oz06P6aD2voCnmeFPepxoW43KaDgGDw=
   distributions: "sdist bdist_wheel" # Your distributions here
-  server: https://testpypi.python.org/pypi # Remove for deployment to official PyPi repo
+  server: https://test.pypi.org/legacy/ # Remove for deployment to official PyPi repo
   on:
     branch: feature-pypi_releases
     repo: digitaldomain/QtPyConvert
