@@ -21,6 +21,8 @@ classifiers = [
             "Topic :: Utilities"
 ]
 
+requires = ["Qt.py>=1.2.0.b2", "redbaron"]
+
 long_description = """
 QtPyConvert
 ===========
@@ -99,7 +101,7 @@ file for details
 print("Finding packages: %s" % find_packages("src/python"))
 
 setup(
-    name="QtPyConvertTEST8",
+    name="QtPyConvertTEST13",
     version=version,
     description="An automatic Python Qt binding transpiler to the Qt.py abstraction layer. It aims to help in your modernization of your Python Qt code. QtPyConvert supports the following bindings out of the box: PyQt4, PySide, PyQt5, PySide2. It also has experimental support for defining your own bindings.",
     long_description=long_description,
@@ -108,8 +110,10 @@ setup(
     url="https://github.com/digitaldomain/QtPyConvert",
     license="Modified Apache 2.0",
     zip_safe=False,
-    data_files=["LICENSE"],
-    install_requires=open("requirements.txt").readlines(),
+    package_data={"":["LICENSE", "requirements.txt"]},
+    include_package_data=True,
+    scripts=["src/bin/qt_py_convert", "src/bin/qresource_convert"],
+    install_requires=requires,
     package_dir={"":"src/python"},
     packages=find_packages("src/python"),
     classifiers=classifiers

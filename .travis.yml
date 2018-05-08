@@ -1,25 +1,32 @@
 language: python
+
 sudo: required
 dist: trusty
+
 python:
-- 2.7
+  - 2.7
+#  - 3.6
+
 services:
-- docker
+  - docker
+
 install:
-- docker build -f Dockerfile-py${TRAVIS_PYTHON_VERSION} -t digitaldomain/qt_py_convert
-  .
+  - docker build -f Dockerfile-py${TRAVIS_PYTHON_VERSION} -t digitaldomain/qt_py_convert .
+
 before_script:
-- export DISPLAY=:99.0
-- sh -e /etc/init.d/xvfb start
-- sleep 3
-script:
-- docker run --rm -v $(pwd):/QtPyConvert digitaldomain/qt_py_convert
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3
+
 deploy:
   provider: pypi
   user: ahuge
   password:
     secure: WHR6jwd+RkMS2N2UWqHYBwqHibsSyijxG+6kbmAURwImvokrKc9M8iDEu6P7MnhFzeS96C7L1qTu6i1V+cuEymjhEU7mZcnD+MnnKa8YnWLjnY21M9vis/m4vG3TU1m7DrenNNp45U3gpX0Rh0F9lexdUqU/rkIyO7F4820Z59WbyVAZa7+pnGc8C7C9AaRcCqWKaPEC4wGX5bPiiKa0iMgnDdVPFBehINbIJw7jOXuenzJ2JF1G/7jRCD+e2iOIL+VRHMpmBsqL9nPTjX10hCo+NPn578HUhejGm74XsP9hPNCFM1MeE7kuuZGXiIb/9BJcbQ19jogUtn/zgyIWGdF1KNH7VeZBfw18qCe+ebJuIcoJ9nHhdwCU3mBVmRwhsGrvNf0Fuz1l/i2L21pDtjNSvqBFDorEiq2duapM/7sr1Sq81ner+xdHXgwJ8g0heAxZNqqVIWYRFS3A77FlBKjR7dVYdVVD6d1HiELLTjZqOX825AgIohVno0KHvK85QAg9x2UcEnkKX2ubm6/loeF8PlMitAKgn7DHL/tex5t+fdzQcO0jqWC83B/FLiuXDj1w+b87LIX6xHuVj/XsRHwQMH58K2Oj2iLEEOScgSoh7nQnf3DpmMKBC9xwGnZbPNztyGESQqrQub+EUGM4v1PoJojFEpGHc2FJGELTClc=
-  distributions: sdist bdist_wheel
+  distributions: "sdist bdist_wheel"
   on:
     branch: feature-pypi_releases
     repo: digitaldomain/QtPyConvert
+
+script:
+  - docker run --rm -v $(pwd):/QtPyConvert digitaldomain/qt_py_convert
