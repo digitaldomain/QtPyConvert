@@ -91,7 +91,7 @@ who participated in this project.
 License
 ~~~~~~~
 
-This project is licensed under the MIT License - see the
+This project is licensed under a modified Apache 2.0 license - see the
 `LICENSE <https://github.com/DigitalDomain/QtPyConvert/blob/master/LICENSE>`__
 file for details
 """
