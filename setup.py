@@ -101,7 +101,7 @@ file for details
 print("Finding packages: %s" % find_packages("src/python"))
 
 setup(
-    name="QtPyConvertTEST13",
+    name="QtPyConvert",
     version=version,
     description="An automatic Python Qt binding transpiler to the Qt.py abstraction layer. It aims to help in your modernization of your Python Qt code. QtPyConvert supports the following bindings out of the box: PyQt4, PySide, PyQt5, PySide2. It also has experimental support for defining your own bindings.",
     long_description=long_description,
